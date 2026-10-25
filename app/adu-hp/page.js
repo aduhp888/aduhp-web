@@ -25,7 +25,11 @@ import {
   ChevronRight,
   Filter,
   SlidersHorizontal,
-  Check
+  Check,
+  Lock,
+  Trophy,
+  Radio,
+  Play
 } from 'lucide-react';
 import { ALL_PHONES, PRICE_TIERS, BRAND_OPTIONS } from '../data/entryPhones';
 
@@ -87,6 +91,12 @@ export default function AduHpDedicatedPage() {
     'poco-f6',
     'samsung-galaxy-s24-ultra'
   ]);
+
+  // Battle state: 'idle' (waiting for user to click Start) | 'battling' (running simulation) | 'ready' (results revealed)
+  const [battleState, setBattleState] = useState('idle');
+  const [battleProgress, setBattleProgress] = useState(0);
+  const [battlePhaseText, setBattlePhaseText] = useState('Mengunci spesifikasi hardware...');
+  const [liveTickerNumber, setLiveTickerNumber] = useState(850000);
 
   // Modal selector state
   const [swapSlotIndex, setSwapSlotIndex] = useState(null); // 0, 1, or 2
@@ -155,6 +165,44 @@ export default function AduHpDedicatedPage() {
     });
   }, [searchQuery, selectedBrand, selectedPriceTier]);
 
+  function handleStartBattle() {
+    setBattleState('battling');
+    setBattleProgress(0);
+    setBattlePhaseText('📡 Mengunci arsitektur chipset, fabrikasi nm & clock speed...');
+
+    const startTime = Date.now();
+    const duration = 2200; // 2.2 seconds simulation
+
+    const interval = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(Math.round((elapsed / duration) * 100), 100);
+      setBattleProgress(progress);
+
+      // Random dynamic rolling AnTuTu score ticker
+      setLiveTickerNumber(Math.floor(450000 + Math.random() * 1650000));
+
+      if (progress < 25) {
+        setBattlePhaseText('📡 Memindai arsitektur chipset, fabrikasi nm & sensor...');
+      } else if (progress < 55) {
+        setBattlePhaseText('🔥 Stress test CPU multi-core & render 3D AnTuTu v10...');
+      } else if (progress < 80) {
+        setBattlePhaseText('🎮 Menguji frame-rate (FPS) Mobile Legends, PUBG & Genshin...');
+      } else if (progress < 100) {
+        setBattlePhaseText('👑 Mengkalkulasi stabilitas thermal & menentukan sang juara...');
+      } else {
+        clearInterval(interval);
+        setBattleState('ready');
+        triggerToast('🏆 Adu HP Selesai! Hasil Benchmark & Gaming Terbuka!');
+      }
+    }, 40);
+  }
+
+  function handleResetBattle() {
+    setBattleState('idle');
+    setBattleProgress(0);
+    triggerToast('Arena di-reset. Pilih petarung lalu tekan Start!');
+  }
+
   function handleSwapPhone(newPhoneId) {
     if (swapSlotIndex === null) return;
     setSelectedPhoneIds(prev => {
@@ -163,7 +211,8 @@ export default function AduHpDedicatedPage() {
       return next;
     });
     setSwapSlotIndex(null);
-    triggerToast('HP berhasil diganti di Meja Aduan!');
+    setBattleState('idle'); // Hide results until Start is clicked
+    triggerToast('HP baru masuk arena! Tekan Start untuk mengadu.');
   }
 
   function handleSelectDerby(derby) {
@@ -172,7 +221,8 @@ export default function AduHpDedicatedPage() {
     if (derby.tier) {
       setActiveMainPriceTier(derby.tier);
     }
-    triggerToast(`Memuat perbandingan: ${derby.label}`);
+    setBattleState('idle'); // Hide results until Start is clicked
+    triggerToast(`Pilihan ${derby.label} siap. Tekan Start untuk mengadu!`);
   }
 
   function handleSelectMainTier(tierId) {
@@ -181,26 +231,26 @@ export default function AduHpDedicatedPage() {
     if (tierId === '1-2-jt') {
       setSelectedPhoneIds(['redmi-14c', 'samsung-galaxy-a06', 'poco-m6']);
       setActiveDerby('derby-1jt');
-      triggerToast('Memuat HP Pilihan Kelas Rp 1 - 2 Jutaan (Entry Level)');
+      triggerToast('Memuat HP Pilihan Kelas Rp 1 - 2 Jutaan. Tekan Start untuk mengadu!');
     } else if (tierId === '2-4-jt') {
       setSelectedPhoneIds(['infinix-hot-50-pro-plus', 'samsung-galaxy-a15', 'poco-x6-5g']);
       setActiveDerby('derby-2jt');
-      triggerToast('Memuat HP Pilihan Kelas Rp 2 - 4 Jutaan (Mid-Range)');
+      triggerToast('Memuat HP Pilihan Kelas Rp 2 - 4 Jutaan. Tekan Start untuk mengadu!');
     } else if (tierId === '4-8-jt') {
       setSelectedPhoneIds(['poco-f6', 'samsung-galaxy-a55', 'xiaomi-14t']);
       setActiveDerby('derby-flagship-killer');
-      triggerToast('Memuat HP Pilihan Kelas Rp 4 - 8 Jutaan (Flagship Killer)');
+      triggerToast('Memuat HP Pilihan Kelas Rp 4 - 8 Jutaan. Tekan Start untuk mengadu!');
     } else if (tierId === 'flagship') {
       setSelectedPhoneIds(['samsung-galaxy-s24-ultra', 'iphone-16-pro-max', 'xiaomi-14-ultra']);
       setActiveDerby('derby-flagship');
-      triggerToast('Memuat HP Pilihan Kelas Di Atas Rp 8 Juta (Ultra Flagship)');
+      triggerToast('Memuat HP Pilihan Di Atas Rp 8 Juta (Ultra Flagship). Tekan Start!');
     } else {
       setSelectedPhoneIds(['infinix-hot-50-pro-plus', 'poco-f6', 'samsung-galaxy-s24-ultra']);
       setActiveDerby('derby-cross-tier');
-      triggerToast('Menampilkan Semua Kategori HP dari Entry s/d Flagship');
+      triggerToast('Menampilkan Semua Kategori HP. Tekan Start untuk mengadu!');
     }
+    setBattleState('idle'); // Hide results until Start is clicked
   }
-
 
   function triggerToast(msg) {
     setShowToast(msg);
@@ -387,6 +437,7 @@ export default function AduHpDedicatedPage() {
           </div>
 
           {/* 3. Meja Aduan 3 Slots Grid */}
+          {/* 3. Meja Aduan 3 Slots Grid */}
           <div className="adu-slots-grid">
             {slotPhones.map((phone, idx) => {
               const isHighestAnTuTu = idx === highestAnTuTuSlotIdx;
@@ -395,13 +446,13 @@ export default function AduHpDedicatedPage() {
               return (
                 <div 
                   key={phone.id + '-' + idx} 
-                  className={`adu-slot-card ${isHighestAnTuTu ? 'slot-winner' : ''}`}
+                  className={`adu-slot-card ${battleState === 'ready' && isHighestAnTuTu ? 'slot-winner' : ''} ${battleState === 'battling' ? 'slot-scanning-active' : ''}`}
                 >
                   {/* Top Bar Label */}
                   <div className="slot-top-row">
                     <div className="slot-label">
                       <span>SLOT {idx + 1}</span>
-                      {isHighestAnTuTu && (
+                      {battleState === 'ready' && isHighestAnTuTu && (
                         <span style={{ 
                           color: 'var(--accent-lime)', 
                           display: 'inline-flex', 
@@ -441,54 +492,80 @@ export default function AduHpDedicatedPage() {
                     )}
                   </div>
 
-                  {/* AnTuTu Spotlight Card */}
-                  <div className="antutu-spotlight-card">
-                    <div className="antutu-spotlight-header">
-                      <div className="antutu-badge-mini">
-                        <Flame size={11} />
-                        <span>ANTUTU v10</span>
-                      </div>
-                      <span className="antutu-tier-label">{phone.antutu.tier}</span>
-                    </div>
+                  {/* CONDITIONAL: AnTuTu Box (Revealed only when battle completed) vs Locked Placeholder (Idle/Battling) */}
+                  {battleState === 'ready' ? (
+                    <>
+                      {/* AnTuTu Spotlight Card */}
+                      <div className="antutu-spotlight-card" style={{ animation: 'revealFadeIn 0.5s ease' }}>
+                        <div className="antutu-spotlight-header">
+                          <div className="antutu-badge-mini">
+                            <Flame size={11} />
+                            <span>ANTUTU v10</span>
+                          </div>
+                          <span className="antutu-tier-label">{phone.antutu.tier}</span>
+                        </div>
 
-                    <div className="antutu-score-huge">
-                      {phone.antutu.total.toLocaleString('id-ID')}
-                      <span style={{ fontSize: '13px', color: '#999', fontWeight: 600, marginLeft: '6px' }}>Poin</span>
-                    </div>
+                        <div className="antutu-score-huge">
+                          {phone.antutu.total.toLocaleString('id-ID')}
+                          <span style={{ fontSize: '13px', color: '#999', fontWeight: 600, marginLeft: '6px' }}>Poin</span>
+                        </div>
 
-                    <div className="antutu-subscores-grid">
-                      <div className="subscore-item">
-                        <span className="subscore-label">CPU (Proses)</span>
-                        <span className="subscore-value" style={{ color: '#60a5fa' }}>
-                          {phone.antutu.cpu.toLocaleString('id-ID')}
-                        </span>
+                        <div className="antutu-subscores-grid">
+                          <div className="subscore-item">
+                            <span className="subscore-label">CPU (Proses)</span>
+                            <span className="subscore-value" style={{ color: '#60a5fa' }}>
+                              {phone.antutu.cpu.toLocaleString('id-ID')}
+                            </span>
+                          </div>
+                          <div className="subscore-item">
+                            <span className="subscore-label">GPU (Gaming)</span>
+                            <span className="subscore-value" style={{ color: '#f87171' }}>
+                              {phone.antutu.gpu.toLocaleString('id-ID')}
+                            </span>
+                          </div>
+                          <div className="subscore-item">
+                            <span className="subscore-label">Memory (RAM/ROM)</span>
+                            <span className="subscore-value" style={{ color: '#fbbf24' }}>
+                              {phone.antutu.memory.toLocaleString('id-ID')}
+                            </span>
+                          </div>
+                          <div className="subscore-item">
+                            <span className="subscore-label">UX (Kelancaran)</span>
+                            <span className="subscore-value" style={{ color: '#34d399' }}>
+                              {phone.antutu.ux.toLocaleString('id-ID')}
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                      <div className="subscore-item">
-                        <span className="subscore-label">GPU (Gaming)</span>
-                        <span className="subscore-value" style={{ color: '#f87171' }}>
-                          {phone.antutu.gpu.toLocaleString('id-ID')}
-                        </span>
+
+                      {/* Value for Money Index */}
+                      <div className="vfm-badge-row">
+                        <span className="vfm-label">⚡ Rasio Nilai (Poin/Rp 1.000):</span>
+                        <span className="vfm-value">{vfm} Poin</span>
                       </div>
-                      <div className="subscore-item">
-                        <span className="subscore-label">Memory (RAM/ROM)</span>
-                        <span className="subscore-value" style={{ color: '#fbbf24' }}>
-                          {phone.antutu.memory.toLocaleString('id-ID')}
-                        </span>
+                    </>
+                  ) : (
+                    /* Locked Benchmark Box when idle or during battle simulation */
+                    <div className="slot-locked-box">
+                      <div className="locked-icon-badge">
+                        <Lock size={12} />
+                        <span>{battleState === 'battling' ? 'SEDANG MEMINDAI' : 'SKOR DIKUNCI'}</span>
                       </div>
-                      <div className="subscore-item">
-                        <span className="subscore-label">UX (Kelancaran)</span>
-                        <span className="subscore-value" style={{ color: '#34d399' }}>
-                          {phone.antutu.ux.toLocaleString('id-ID')}
-                        </span>
+                      <div className="locked-chipset-highlight">
+                        <Cpu size={13} color="#60a5fa" />
+                        <span>{phone.specs.chipset}</span>
+                      </div>
+                      <p className="locked-hint">
+                        {battleState === 'battling' 
+                          ? 'Menganalisis clock speed, fabrikasi & render 3D AnTuTu...' 
+                          : 'Tekan tombol "MULAI ADU HP" di bawah untuk melihat skor & gaming FPS!'}
+                      </p>
+                      <div className="locked-meter-placeholder">
+                        <div className="meter-placeholder-bar"></div>
+                        <div className="meter-placeholder-bar short"></div>
                       </div>
                     </div>
-                  </div>
-
-                  {/* Value for Money Index */}
-                  <div className="vfm-badge-row">
-                    <span className="vfm-label">⚡ Rasio Nilai (Poin/Rp 1.000):</span>
-                    <span className="vfm-value">{vfm} Poin</span>
-                  </div>
+                  )}
 
                   {/* Specs Quick Pill */}
                   <div style={{
@@ -529,10 +606,115 @@ export default function AduHpDedicatedPage() {
             })}
           </div>
 
+          {/* BATTLE LAUNCHER & SIMULATION HUD CONTROLLER */}
+          <div className="battle-launcher-wrapper">
+            {battleState === 'idle' && (
+              <div className="battle-launcher-box">
+                <div className="battle-ready-indicator">
+                  <Flame size={13} />
+                  <span>3 HANDPHONE TERPILIH SIAP DIADU</span>
+                </div>
+                <h3 className="battle-launcher-title">Mulai Duel Performa & Benchmark</h3>
+                <p className="battle-launcher-desc">
+                  Tekan tombol Start di bawah untuk menjalankan simulasi AnTuTu Benchmark v10 resmi, uji gaming FPS riil, dan penentuan juara!
+                </p>
+                <button 
+                  onClick={handleStartBattle}
+                  className="btn-start-battle-epic"
+                  id="btn-start-adu"
+                >
+                  <Flame size={24} color="#000" />
+                  <div className="btn-text-block">
+                    <span className="btn-main-label">⚡ MULAI ADU HP SEKARANG!</span>
+                    <span className="btn-sub-label">START ANTUTU v10 & GAMING FPS SIMULATION</span>
+                  </div>
+                  <Zap size={24} color="#000" />
+                </button>
+              </div>
+            )}
+
+            {battleState === 'battling' && (
+              <div className="battle-sim-hud">
+                <div className="sim-hud-header">
+                  <div className="sim-hud-status">
+                    <Radio size={16} />
+                    <span>SIMULASI BENCHMARK SEDANG BERJALAN...</span>
+                  </div>
+                  <div className="sim-hud-ticker-label">
+                    LIVE TELEMETRY: <strong>{liveTickerNumber.toLocaleString('id-ID')} PTS</strong>
+                  </div>
+                </div>
+
+                <div className="sim-progress-track">
+                  <div className="sim-progress-bar" style={{ width: `${battleProgress}%` }}></div>
+                </div>
+
+                <div className="sim-telemetry-row">
+                  <div className="sim-phase-text">
+                    <Cpu size={16} color="var(--accent-lime)" />
+                    <span>{battlePhaseText}</span>
+                  </div>
+                  <div className="sim-percentage">{battleProgress}%</div>
+                </div>
+
+                <div className="sim-equalizer-bars">
+                  <div className="sim-eq-bar"></div>
+                  <div className="sim-eq-bar"></div>
+                  <div className="sim-eq-bar"></div>
+                  <div className="sim-eq-bar"></div>
+                  <div className="sim-eq-bar"></div>
+                  <div className="sim-eq-bar"></div>
+                  <div className="sim-eq-bar"></div>
+                  <div className="sim-eq-bar"></div>
+                </div>
+              </div>
+            )}
+
+            {battleState === 'ready' && (
+              <div className="battle-winner-banner" style={{ width: '100%' }}>
+                <div className="winner-banner-left">
+                  <div className="winner-trophy-badge">
+                    <Trophy size={32} />
+                  </div>
+                  <div className="winner-banner-meta">
+                    <h3>
+                      <span>👑 JUARA PERFORMA DITETAPKAN:</span>
+                      <span className="winner-champion-name">{slotPhones[highestAnTuTuSlotIdx].name}</span>
+                    </h3>
+                    <p>
+                      Mencetak skor tertinggi <strong>{slotPhones[highestAnTuTuSlotIdx].antutu.total.toLocaleString('id-ID')} Poin</strong> AnTuTu v10 dengan chipset <strong>{slotPhones[highestAnTuTuSlotIdx].specs.chipset}</strong>!
+                    </p>
+                  </div>
+                </div>
+
+                <div className="winner-banner-actions">
+                  <button 
+                    onClick={handleStartBattle}
+                    className="btn-battle-replay"
+                    title="Jalankan animasi duel lagi"
+                  >
+                    <RefreshCw size={14} />
+                    <span>Adu Ulang</span>
+                  </button>
+                  <button 
+                    onClick={() => setSwapSlotIndex(0)}
+                    className="btn-battle-replay"
+                    style={{ borderColor: 'var(--accent-lime)', color: 'var(--accent-lime)' }}
+                  >
+                    <Smartphone size={14} />
+                    <span>Ganti Lawan</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* 4. Tab Navigation for Deep Dive Comparison */}
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
+          {battleState === 'ready' ? (
+            <>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'center',
             gap: '10px',
             marginBottom: '32px',
             flexWrap: 'wrap'
@@ -1121,6 +1303,29 @@ export default function AduHpDedicatedPage() {
               </a>
             </div>
           </div>
+            </>
+          ) : (
+            <div className="battle-idle-notice">
+              <div style={{
+                width: '64px',
+                height: '64px',
+                borderRadius: '50%',
+                background: 'rgba(198, 255, 0, 0.08)',
+                border: '1px solid rgba(198, 255, 0, 0.25)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '14px',
+                color: 'var(--accent-lime)'
+              }}>
+                <Gauge size={32} />
+              </div>
+              <h4>Hasil Analisis Lengkap & Benchmark Terkunci</h4>
+              <p>
+                Pilih model handphone di atas, lalu tekan tombol <strong>"MULAI ADU HP SEKARANG!"</strong> untuk mengungkap perbandingan visual skor AnTuTu v10, matriks FPS gaming, dan rekomendasi spesifikasi.
+              </p>
+            </div>
+          )}
 
         </div>
       </main>
