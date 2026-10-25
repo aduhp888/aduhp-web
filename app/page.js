@@ -28,79 +28,11 @@ import {
   Mail
 } from 'lucide-react';
 
-// Fallback seed data in case API endpoint is temporarily unreachable
-const FALLBACK_PRODUCTS = [
-  {
-    id: 'a1000000-0000-0000-0000-000000000001',
-    name: 'iPhone 16 Pro Max 256GB',
-    brand: 'Apple',
-    condition: 'baru',
-    grade: 'Baru (BNIB Segel)',
-    battery_health: null,
-    official_distributor: 'iBox / Digimap Resmi 1 Tahun',
-    price: 24999000,
-    original_price: 26999000,
-    images: ['https://images.unsplash.com/photo-1695048133142-1a20484d2569?q=80&w=1000&auto=format&fit=crop'],
-    specs: { chipset: 'Apple A18 Pro (3nm)', display: '6.9 Super Retina XDR OLED 120Hz', battery: '4685 mAh', os: 'iOS 18' },
-    scores: { ngojol: 88, game: 98, ngonten: 99, tiktok: 98, kuliah: 89, awet: 95 }
-  },
-  {
-    id: 'a1000000-0000-0000-0000-000000000002',
-    name: 'Samsung Galaxy S24 Ultra 512GB',
-    brand: 'Samsung',
-    condition: 'baru',
-    grade: 'Baru (BNIB Segel)',
-    battery_health: null,
-    official_distributor: 'SEIN Resmi Indonesia 1 Tahun',
-    price: 23999000,
-    original_price: 25999000,
-    images: ['https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?q=80&w=1000&auto=format&fit=crop'],
-    specs: { chipset: 'Snapdragon 8 Gen 3 for Galaxy', display: '6.8 Dynamic AMOLED 2X 120Hz', battery: '5000 mAh 45W', os: 'Android 14' },
-    scores: { ngojol: 92, game: 99, ngonten: 97, tiktok: 96, kuliah: 92, awet: 96 }
-  },
-  {
-    id: 'a1000000-0000-0000-0000-000000000003',
-    name: 'iPhone 13 Pro 256GB (Second Grade A+)',
-    brand: 'Apple',
-    condition: 'second',
-    grade: 'Second Grade A+ (Mulus 99%)',
-    battery_health: 92,
-    official_distributor: 'Eks Resmi iBox • Garansi Toko 30 Hari',
-    price: 9499000,
-    original_price: 18499000,
-    images: ['https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?q=80&w=1000&auto=format&fit=crop'],
-    specs: { chipset: 'Apple A15 Bionic', display: '6.1 Super Retina XDR ProMotion 120Hz', battery: 'BH 92% Original', os: 'iOS 18 Supported' },
-    scores: { ngojol: 94, game: 91, ngonten: 94, tiktok: 93, kuliah: 96, awet: 97 }
-  },
-  {
-    id: 'a1000000-0000-0000-0000-000000000004',
-    name: 'Xiaomi 14 Ultra 512GB (Leica Quad-Cam)',
-    brand: 'Xiaomi',
-    condition: 'baru',
-    grade: 'Baru (BNIB Segel)',
-    battery_health: null,
-    official_distributor: 'TAM Resmi Indonesia 15 Bulan',
-    price: 17999000,
-    original_price: 19999000,
-    images: ['https://images.unsplash.com/photo-1598327105666-5b89351aff97?q=80&w=1000&auto=format&fit=crop'],
-    specs: { chipset: 'Snapdragon 8 Gen 3', display: '6.73 WQHD+ LTPO 120Hz', battery: '5000 mAh 90W HyperCharge', os: 'HyperOS' },
-    scores: { ngojol: 90, game: 97, ngonten: 100, tiktok: 95, kuliah: 88, awet: 92 }
-  },
-  {
-    id: 'a1000000-0000-0000-0000-000000000005',
-    name: 'Samsung Galaxy S23 Ultra 256GB (Second Eks SEIN)',
-    brand: 'Samsung',
-    condition: 'second',
-    grade: 'Second Grade A+ (Mulus 98%)',
-    battery_health: 95,
-    official_distributor: 'Eks SEIN Resmi • Bebas Blokir IMEI',
-    price: 11499000,
-    original_price: 19999000,
-    images: ['https://images.unsplash.com/photo-1580910051074-3eb694886505?q=80&w=1000&auto=format&fit=crop'],
-    specs: { chipset: 'Snapdragon 8 Gen 2 for Galaxy', display: '6.8 Dynamic AMOLED 2X 120Hz', battery: 'BH 95% 5000 mAh', os: 'Android 14 One UI 6.1' },
-    scores: { ngojol: 93, game: 94, ngonten: 95, tiktok: 94, kuliah: 95, awet: 98 }
-  }
-];
+import { ENTRY_LEVEL_PHONES } from './data/entryPhones';
+
+// Handphone Baru Entry Level Resmi Indonesia dengan Skor Benchmark AnTuTu v10
+const FALLBACK_PRODUCTS = ENTRY_LEVEL_PHONES;
+
 
 const NEEDS_LIST = [
   {
@@ -155,11 +87,11 @@ export default function LandingPage() {
   const [loading, setLoading] = useState(true);
   const [selectedNeed, setSelectedNeed] = useState('ngojol'); // Default checked like screenshot
   
-  // 3 Comparison slots
+  // 3 Comparison slots (Handphone Baru Entry Level)
   const [comparedIds, setComparedIds] = useState([
-    'a1000000-0000-0000-0000-000000000003', // iPhone 13 Pro Second
-    'a1000000-0000-0000-0000-000000000005', // Galaxy S23 Ultra Second
-    'a1000000-0000-0000-0000-000000000001', // iPhone 16 Pro Max
+    'infinix-hot-50-pro-plus', // Infinix Hot 50 Pro+ Baru
+    'samsung-galaxy-a15',    // Galaxy A15 Super AMOLED Baru
+    'poco-m6',               // Poco M6 108MP Baru
   ]);
 
   // Modals & Drawers
@@ -239,7 +171,7 @@ export default function LandingPage() {
     setModalOpen(null);
   }
 
-  // Fetch live products from dapur.aduhp.com/api/products
+  // Fetch live products from dapur.aduhp.com/api/products with fallback to curated entry phones
   useEffect(() => {
     async function fetchProducts() {
       try {
@@ -248,26 +180,16 @@ export default function LandingPage() {
           const json = await res.json();
           const list = json.data && json.data.length > 0 ? json.data : json;
           if (Array.isArray(list) && list.length > 0) {
-            // Enhance fetched data with algorithmic score mapping if needed
-            const enriched = list.map((item, idx) => {
-              const base = FALLBACK_PRODUCTS[idx % FALLBACK_PRODUCTS.length];
-              return {
-                ...item,
-                scores: item.scores || base.scores || {
-                  ngojol: 90,
-                  game: 92,
-                  ngonten: 95,
-                  tiktok: 93,
-                  kuliah: 91,
-                  awet: 94
-                }
-              };
+            const merged = [...ENTRY_LEVEL_PHONES];
+            list.forEach(item => {
+              if (item.condition === 'baru' && !merged.some(m => m.id === item.id)) {
+                merged.push({
+                  ...item,
+                  antutu: item.antutu || { total: 285000, cpu: 88000, gpu: 45000, memory: 76000, ux: 76000, tier: 'Entry Value' }
+                });
+              }
             });
-            setProducts(enriched);
-            // Default first 3
-            if (enriched.length >= 3) {
-              setComparedIds([enriched[2]?.id || enriched[0].id, enriched[4]?.id || enriched[1].id, enriched[0].id]);
-            }
+            setProducts(merged);
           }
         }
       } catch (err) {
@@ -278,6 +200,7 @@ export default function LandingPage() {
     }
     fetchProducts();
   }, []);
+
 
   // Compute products currently in the battle arena
   const comparedProducts = useMemo(() => {
@@ -397,16 +320,24 @@ export default function LandingPage() {
                 Katalog
               </button>
 
-              <button 
-                onClick={() => {
-                  const el = document.getElementById('meja-aduan');
-                  if (el) el.scrollIntoView({ behavior: 'smooth' });
-                }} 
+              <Link 
+                href="/adu-hp" 
                 className="nav-link"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: 'rgba(198, 255, 0, 0.1)',
+                  border: '1px solid var(--border-lime)',
+                  color: 'var(--accent-lime)',
+                  fontWeight: 800,
+                  textDecoration: 'none'
+                }}
               >
                 <span>⚔️</span>
-                <span>Adu HP</span>
-              </button>
+                <span>Menu Adu HP</span>
+                <span style={{ fontSize: '9px', background: 'var(--accent-lime)', color: '#000', padding: '1px 5px', borderRadius: '4px', fontWeight: 900 }}>BARU</span>
+              </Link>
 
               <button 
                 onClick={() => setModalOpen('cart')} 
@@ -499,29 +430,31 @@ export default function LandingPage() {
 
           {/* Subtext */}
           <p className="hero-desc">
-            Nggak ada HP yang 100% sempurna. Yang ada cuma HP yang <strong>pas buat kebutuhan dan dompet lu</strong>. Adu 2-3 HP langsung secara objektif, tanpa sensor, no endorse!
+            Nggak ada HP yang 100% sempurna. Yang ada cuma HP yang <strong>pas buat kebutuhan dan dompet lu</strong>. Adu handphone baru garansi resmi entry level secara objektif, lengkap dengan benchmark AnTuTu v10!
           </p>
 
           {/* 2 CTA Buttons */}
           <div className="hero-cta-group">
+            <Link 
+              href="/adu-hp"
+              className="btn-primary-lime"
+              style={{ textDecoration: 'none' }}
+            >
+              <span>⚔️ Buka Menu Khusus Adu HP</span>
+              <ArrowRight size={17} />
+            </Link>
+
             <button 
               onClick={() => {
                 const el = document.getElementById('meja-aduan');
                 if (el) el.scrollIntoView({ behavior: 'smooth' });
               }}
-              className="btn-primary-lime"
-            >
-              <span>⚔️ Buka Meja Aduan HP</span>
-              <ArrowRight size={17} />
-            </button>
-
-            <button 
-              onClick={() => setModalOpen('budget')}
               className="btn-secondary-dark"
             >
-              <span>Cari Sesuai Budget</span>
+              <span>Lihat Meja Aduan di Bawah</span>
             </button>
           </div>
+
 
           {/* 4 Trust Badges */}
           <div className="trust-grid">
@@ -619,7 +552,16 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '10px' }}>
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+              <Link 
+                href="/adu-hp"
+                className="btn-primary-lime" 
+                style={{ padding: '8px 16px', fontSize: '12.5px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+              >
+                <span>⚔️ Buka Menu Khusus Adu HP</span>
+                <ExternalLink size={13} />
+              </Link>
+
               <button 
                 onClick={() => setModalOpen('katalog')}
                 className="btn-secondary-dark" 
@@ -655,8 +597,8 @@ export default function LandingPage() {
                   <div className="phone-info-body">
                     <div className="phone-brand-condition">
                       <span className="phone-brand-tag">{phone?.brand}</span>
-                      <span className={`phone-condition-badge ${phone?.condition === 'baru' ? 'badge-baru' : 'badge-second'}`}>
-                        {phone?.grade || (phone?.condition === 'baru' ? 'Baru BNIB' : 'Second Grade A+')}
+                      <span className="phone-condition-badge badge-baru">
+                        {phone?.grade || 'Baru (BNIB Segel)'}
                       </span>
                     </div>
 
@@ -668,6 +610,28 @@ export default function LandingPage() {
                         <span className="price-strike">{formatIDR(phone?.original_price)}</span>
                       )}
                     </div>
+
+                    {/* AnTuTu Score Badge */}
+                    {phone?.antutu && (
+                      <div style={{
+                        background: 'linear-gradient(135deg, rgba(255, 109, 0, 0.12) 0%, rgba(20, 20, 20, 0.9) 100%)',
+                        border: '1px solid rgba(255, 109, 0, 0.35)',
+                        borderRadius: '10px',
+                        padding: '8px 12px',
+                        marginBottom: '12px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <Flame size={14} color="#FF9100" />
+                          <span style={{ fontSize: '11px', fontWeight: 800, color: '#FF9100' }}>AnTuTu v10</span>
+                        </div>
+                        <div style={{ fontSize: '13.5px', fontWeight: 900, fontFamily: 'var(--font-mono)', color: '#fff' }}>
+                          {phone.antutu.total.toLocaleString('id-ID')} Poin
+                        </div>
+                      </div>
+                    )}
 
                     {/* AI Score Bar */}
                     <div className="ai-score-container">
@@ -687,12 +651,12 @@ export default function LandingPage() {
                     <div className="spec-list">
                       <div className="spec-item">
                         <span className="spec-key">Chipset</span>
-                        <span className="spec-val">{phone?.specs?.chipset || 'Flagship SoC'}</span>
+                        <span className="spec-val">{phone?.specs?.chipset || 'Entry Level SoC'}</span>
                       </div>
 
                       <div className="spec-item">
                         <span className="spec-key">Layar & Hz</span>
-                        <span className="spec-val">{phone?.specs?.display || 'OLED 120Hz'}</span>
+                        <span className="spec-val">{phone?.specs?.display || '120Hz / 90Hz'}</span>
                       </div>
 
                       <div className="spec-item">
@@ -706,15 +670,6 @@ export default function LandingPage() {
                           {phone?.official_distributor || 'Resmi Indonesia'}
                         </span>
                       </div>
-
-                      {phone?.battery_health && (
-                        <div className="spec-item">
-                          <span className="spec-key">Battery Health</span>
-                          <span className="spec-val" style={{ color: '#34d399' }}>
-                            {phone.battery_health}% Original Sehat
-                          </span>
-                        </div>
-                      )}
                     </div>
 
                     {/* Action Buttons */}
@@ -728,6 +683,24 @@ export default function LandingPage() {
                         <span>Ganti HP</span>
                       </button>
 
+                      <Link
+                        href="/adu-hp"
+                        className="btn-secondary-dark"
+                        style={{
+                          padding: '8px 12px',
+                          fontSize: '12px',
+                          textDecoration: 'none',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '4px'
+                        }}
+                        title="Buka Menu Khusus Adu HP Lengkap"
+                      >
+                        <span>Adu</span>
+                        <ArrowRight size={12} />
+                      </Link>
+
                       <a
                         href={makeWhatsAppUrl(phone?.name, phone?.price, phone?.condition)}
                         target="_blank"
@@ -735,7 +708,7 @@ export default function LandingPage() {
                         className="btn-order-wa"
                       >
                         <MessageCircle size={14} />
-                        <span>Beli (WA)</span>
+                        <span>Beli</span>
                       </a>
                     </div>
                   </div>
@@ -801,7 +774,7 @@ export default function LandingPage() {
                     type="text"
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
-                    placeholder="Cari iPhone, Galaxy, Xiaomi..."
+                    placeholder="Cari Infinix, Poco, Samsung, Redmi, Tecno..."
                     style={{
                       width: '100%',
                       background: '#000',
@@ -815,15 +788,15 @@ export default function LandingPage() {
                   />
                 </div>
 
-                <div style={{ display: 'flex', gap: '6px' }}>
-                  {['all', 'Apple', 'Samsung', 'Xiaomi'].map(b => (
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                  {['all', 'Infinix', 'Xiaomi', 'Samsung', 'Tecno', 'Realme', 'Vivo', 'iQOO'].map(b => (
                     <button
                       key={b}
                       onClick={() => setFilterBrand(b)}
                       style={{
-                        padding: '8px 14px',
+                        padding: '6px 12px',
                         borderRadius: '8px',
-                        fontSize: '12px',
+                        fontSize: '11.5px',
                         fontWeight: 600,
                         border: filterBrand === b ? '1px solid var(--accent-lime)' : '1px solid var(--border-subtle)',
                         background: filterBrand === b ? 'rgba(198, 255, 0, 0.1)' : '#181818',
