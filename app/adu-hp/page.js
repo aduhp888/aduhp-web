@@ -1555,13 +1555,22 @@ export default function AduHpDedicatedPage() {
             <div className="footer-copy">
               © {new Date().getFullYear()} aduHP Indonesia. Semua HP diadu 100% Baru BNIB Garansi Resmi SEIN, TAM, Carlcare, Realme & Vivo.
             </div>
-            <div style={{ display: 'flex', gap: '16px' }}>
+            <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
               <Link href="/" style={{ color: '#888', textDecoration: 'none', fontSize: '12.5px' }}>
                 Beranda
               </Link>
               <Link href="/adu-hp" style={{ color: 'var(--accent-lime)', textDecoration: 'none', fontSize: '12.5px', fontWeight: 700 }}>
                 ⚔️ Menu Adu HP
               </Link>
+              <a 
+                href="https://dapur.aduhp.com" 
+                target="_blank" 
+                rel="noreferrer" 
+                style={{ color: '#555', textDecoration: 'none', fontSize: '12px' }}
+                title="Buka Admin Panel dapur.aduhp.com"
+              >
+                dapur.aduhp.com ↗
+              </a>
             </div>
           </div>
         </div>
