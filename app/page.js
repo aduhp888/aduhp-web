@@ -21,7 +21,11 @@ import {
   MessageCircle,
   SlidersHorizontal,
   ChevronDown,
-  Trash2
+  Trash2,
+  User,
+  LogOut,
+  Phone,
+  Mail
 } from 'lucide-react';
 
 // Fallback seed data in case API endpoint is temporarily unreachable
@@ -165,6 +169,75 @@ export default function LandingPage() {
   const [filterBrand, setFilterBrand] = useState('all');
   const [filterBudgetMax, setFilterBudgetMax] = useState(null);
   const [cartItems, setCartItems] = useState([]);
+
+  // User Authentication State
+  const [currentUser, setCurrentUser] = useState(null);
+  const [loginInput, setLoginInput] = useState('');
+  const [loginName, setLoginName] = useState('');
+  const [loginMethod, setLoginMethod] = useState('whatsapp'); // 'whatsapp' | 'email'
+  const [loginStep, setLoginStep] = useState('input'); // 'input' | 'otp'
+  const [otpCode, setOtpCode] = useState('');
+
+  // Restore user session from localStorage on mount
+  useEffect(() => {
+    try {
+      const savedUser = localStorage.getItem('aduhp_user');
+      if (savedUser) {
+        setCurrentUser(JSON.parse(savedUser));
+      }
+    } catch (err) {
+      console.warn('Could not read user session:', err);
+    }
+  }, []);
+
+  function handleSendOtp(e) {
+    e.preventDefault();
+    if (!loginInput.trim()) return;
+    setLoginStep('otp');
+    setOtpCode('7890');
+  }
+
+  function handleVerifyOtp(e) {
+    e.preventDefault();
+    const finalName = loginName.trim() || (loginMethod === 'whatsapp' ? `Pengguna (${loginInput.slice(-4)})` : loginInput.split('@')[0]);
+    const userObj = {
+      name: finalName,
+      contact: loginInput.trim(),
+      method: loginMethod,
+      loggedInAt: new Date().toISOString(),
+    };
+    setCurrentUser(userObj);
+    try {
+      localStorage.setItem('aduhp_user', JSON.stringify(userObj));
+    } catch (err) {}
+    setModalOpen(null);
+    setLoginStep('input');
+    setLoginInput('');
+    setLoginName('');
+    setOtpCode('');
+  }
+
+  function handleUserLogout() {
+    setCurrentUser(null);
+    try {
+      localStorage.removeItem('aduhp_user');
+    } catch (err) {}
+    setModalOpen(null);
+  }
+
+  function handleGuestLogin() {
+    const userObj = {
+      name: 'Pengguna Tamu',
+      contact: 'Guest User',
+      method: 'guest',
+      loggedInAt: new Date().toISOString(),
+    };
+    setCurrentUser(userObj);
+    try {
+      localStorage.setItem('aduhp_user', JSON.stringify(userObj));
+    } catch (err) {}
+    setModalOpen(null);
+  }
 
   // Fetch live products from dapur.aduhp.com/api/products
   useEffect(() => {
@@ -363,16 +436,47 @@ export default function LandingPage() {
                 )}
               </button>
 
-              <a 
-                href="https://dapur.aduhp.com" 
-                target="_blank" 
-                rel="noreferrer" 
-                className="nav-link"
-                title="Buka Admin Panel Rahasia dapur.aduhp.com"
-              >
-                <span>🛡️</span>
-                <span>Admin Panel</span>
-              </a>
+              {currentUser ? (
+                <button 
+                  onClick={() => setModalOpen('user-profile')} 
+                  className="nav-link"
+                  style={{
+                    background: 'rgba(198, 255, 0, 0.08)',
+                    border: '1px solid rgba(198, 255, 0, 0.35)',
+                    color: 'var(--accent-lime)',
+                    borderRadius: '8px',
+                    padding: '7px 14px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '7px'
+                  }}
+                  title="Buka Profil Pengguna"
+                >
+                  <User size={15} />
+                  <span>{currentUser.name}</span>
+                </button>
+              ) : (
+                <button 
+                  onClick={() => {
+                    setLoginStep('input');
+                    setModalOpen('user-login');
+                  }} 
+                  className="nav-link"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    border: '1px solid rgba(255, 255, 255, 0.14)',
+                    borderRadius: '8px',
+                    padding: '7px 14px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '7px'
+                  }}
+                  title="Masuk Akun Pengguna"
+                >
+                  <User size={15} />
+                  <span>Masuk</span>
+                </button>
+              )}
             </nav>
           </div>
         </div>
@@ -1007,6 +1111,255 @@ export default function LandingPage() {
         </div>
       )}
 
+      {/* Modal: Login Pengguna */}
+      {modalOpen === 'user-login' && (
+        <div className="modal-overlay" onClick={() => setModalOpen(null)}>
+          <div className="modal-content-box" style={{ maxWidth: '440px' }} onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'var(--accent-lime)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#000', fontWeight: 800 }}>
+                  <User size={16} />
+                </div>
+                <h3 className="modal-title">Masuk Akun Pengguna</h3>
+              </div>
+              <button onClick={() => setModalOpen(null)} className="modal-close-btn">
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="modal-body">
+              <p style={{ fontSize: '12.5px', color: '#888', marginBottom: '18px', lineHeight: 1.5 }}>
+                Bandingkan HP secara objektif, simpan wishlist aduan, & dapatkan rekomendasi AI personal.
+              </p>
+
+              {/* Method Tabs */}
+              <div style={{ display: 'flex', background: '#090909', borderRadius: '8px', padding: '4px', marginBottom: '18px', border: '1px solid var(--border-subtle)' }}>
+                <button
+                  type="button"
+                  onClick={() => { setLoginMethod('whatsapp'); setLoginStep('input'); }}
+                  style={{
+                    flex: 1,
+                    padding: '8px 12px',
+                    borderRadius: '6px',
+                    border: 'none',
+                    fontSize: '12.5px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    background: loginMethod === 'whatsapp' ? 'var(--accent-lime)' : 'transparent',
+                    color: loginMethod === 'whatsapp' ? '#000' : '#888',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  <Phone size={13} />
+                  <span>WhatsApp</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => { setLoginMethod('email'); setLoginStep('input'); }}
+                  style={{
+                    flex: 1,
+                    padding: '8px 12px',
+                    borderRadius: '6px',
+                    border: 'none',
+                    fontSize: '12.5px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    background: loginMethod === 'email' ? 'var(--accent-lime)' : 'transparent',
+                    color: loginMethod === 'email' ? '#000' : '#888',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  <Mail size={13} />
+                  <span>Email</span>
+                </button>
+              </div>
+
+              {loginStep === 'input' ? (
+                <form onSubmit={handleSendOtp} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  <div>
+                    <label style={{ fontSize: '11.5px', color: '#aaa', fontWeight: 600, display: 'block', marginBottom: '6px' }}>
+                      Nama Panggilan (Opsional)
+                    </label>
+                    <input
+                      type="text"
+                      value={loginName}
+                      onChange={e => setLoginName(e.target.value)}
+                      placeholder="Contoh: Budi Pratama"
+                      style={{
+                        width: '100%',
+                        background: '#050505',
+                        border: '1px solid var(--border-medium)',
+                        borderRadius: '8px',
+                        padding: '11px 14px',
+                        color: '#fff',
+                        fontSize: '13.5px',
+                        outline: 'none'
+                      }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ fontSize: '11.5px', color: '#aaa', fontWeight: 600, display: 'block', marginBottom: '6px' }}>
+                      {loginMethod === 'whatsapp' ? 'Nomor WhatsApp Aktif *' : 'Alamat Email *'}
+                    </label>
+                    <input
+                      type={loginMethod === 'whatsapp' ? 'tel' : 'email'}
+                      required
+                      value={loginInput}
+                      onChange={e => setLoginInput(e.target.value)}
+                      placeholder={loginMethod === 'whatsapp' ? '081234567890' : 'nama@gmail.com'}
+                      style={{
+                        width: '100%',
+                        background: '#050505',
+                        border: '1px solid var(--border-medium)',
+                        borderRadius: '8px',
+                        padding: '11px 14px',
+                        color: '#fff',
+                        fontSize: '13.5px',
+                        outline: 'none'
+                      }}
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="btn-primary-lime"
+                    style={{ width: '100%', justifyContent: 'center', padding: '12px', marginTop: '6px' }}
+                  >
+                    <span>Lanjutkan Verifikasi ➔</span>
+                  </button>
+                </form>
+              ) : (
+                <form onSubmit={handleVerifyOtp} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  <div style={{ background: '#0a0a0a', border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '12px', fontSize: '12px', color: '#aaa' }}>
+                    Kode verifikasi demo telah dikirimkan ke <strong style={{ color: '#fff' }}>{loginInput}</strong>.
+                  </div>
+
+                  <div>
+                    <label style={{ fontSize: '11.5px', color: '#aaa', fontWeight: 600, display: 'block', marginBottom: '6px' }}>
+                      Masukkan Kode OTP
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      maxLength={6}
+                      value={otpCode}
+                      onChange={e => setOtpCode(e.target.value)}
+                      placeholder="7890"
+                      style={{
+                        width: '100%',
+                        background: '#050505',
+                        border: '1px solid var(--accent-lime)',
+                        borderRadius: '8px',
+                        padding: '11px 14px',
+                        color: 'var(--accent-lime)',
+                        fontSize: '18px',
+                        fontWeight: 800,
+                        letterSpacing: '4px',
+                        textAlign: 'center',
+                        outline: 'none'
+                      }}
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="btn-primary-lime"
+                    style={{ width: '100%', justifyContent: 'center', padding: '12px' }}
+                  >
+                    <span>Verifikasi & Masuk ➔</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setLoginStep('input')}
+                    style={{ background: 'transparent', border: 'none', color: '#888', fontSize: '12px', cursor: 'pointer', textAlign: 'center' }}
+                  >
+                    Ubah Nomor / Email
+                  </button>
+                </form>
+              )}
+
+              {/* Quick Guest Access */}
+              <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)', textAlign: 'center' }}>
+                <button
+                  type="button"
+                  onClick={handleGuestLogin}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: '#888',
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                    textDecoration: 'underline'
+                  }}
+                >
+                  Atau masuk instan sebagai Pengguna Tamu
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Profil Pengguna */}
+      {modalOpen === 'user-profile' && currentUser && (
+        <div className="modal-overlay" onClick={() => setModalOpen(null)}>
+          <div className="modal-content-box" style={{ maxWidth: '440px' }} onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3 className="modal-title">Akun Pengguna</h3>
+              <button onClick={() => setModalOpen(null)} className="modal-close-btn">
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="modal-body">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '14px', background: '#161616', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-subtle)', marginBottom: '18px' }}>
+                <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'var(--accent-lime)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#000', fontWeight: 900, fontSize: '18px' }}>
+                  {currentUser.name?.[0]?.toUpperCase() || 'U'}
+                </div>
+                <div>
+                  <div style={{ fontSize: '15px', fontWeight: 800, color: '#fff' }}>{currentUser.name}</div>
+                  <div style={{ fontSize: '12px', color: '#888' }}>{currentUser.contact}</div>
+                  <div style={{ fontSize: '11px', color: 'var(--accent-lime)', marginTop: '2px', fontWeight: 600 }}>
+                    ● Akun Pengguna Aktif
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
+                <div style={{ background: '#090909', padding: '12px 14px', borderRadius: '8px', border: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12.5px' }}>
+                  <span style={{ color: '#aaa' }}>Keranjang Belanja</span>
+                  <span style={{ color: '#fff', fontWeight: 700 }}>{cartItems.length} Item</span>
+                </div>
+                <div style={{ background: '#090909', padding: '12px 14px', borderRadius: '8px', border: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12.5px' }}>
+                  <span style={{ color: '#aaa' }}>Status Pesanan</span>
+                  <span style={{ color: 'var(--accent-lime)', fontWeight: 700 }}>Siap Checkout</span>
+                </div>
+              </div>
+
+              <button
+                onClick={handleUserLogout}
+                className="btn-secondary-dark"
+                style={{ width: '100%', justifyContent: 'center', borderColor: 'rgba(239, 68, 68, 0.3)', color: '#f87171' }}
+              >
+                <LogOut size={14} />
+                <span>Keluar dari Akun</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 9. Footer */}
       <footer className="site-footer">
         <div className="container">
@@ -1022,10 +1375,7 @@ export default function LandingPage() {
             </div>
 
             <div className="footer-copy">
-              © {new Date().getFullYear()} aduhp.com • Terhubung langsung dengan Gudang Stok Real-Time{' '}
-              <a href="https://dapur.aduhp.com" target="_blank" rel="noreferrer" className="footer-link-dapur">
-                dapur.aduhp.com ↗
-              </a>
+              © {new Date().getFullYear()} aduhp.com • Platform Adu Spek & Rekomendasi Gadget AI No. 1 Indonesia. All rights reserved.
             </div>
           </div>
         </div>
