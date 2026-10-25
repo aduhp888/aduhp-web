@@ -27,7 +27,7 @@ import {
   SlidersHorizontal,
   Check
 } from 'lucide-react';
-import { ENTRY_LEVEL_PHONES, PRICE_TIER_OPTIONS, BRAND_OPTIONS } from '../data/entryPhones';
+import { ALL_PHONES, PRICE_TIERS, BRAND_OPTIONS } from '../data/entryPhones';
 
 function formatIDR(amount) {
   if (!amount && amount !== 0) return 'Rp 0';
@@ -38,40 +38,54 @@ function formatIDR(amount) {
   }).format(amount);
 }
 
-// Preset Head-to-Head Derby Aduan
+// Preset Head-to-Head Derby Aduan per Kategori Harga
 const PRESET_DERBIES = [
   {
-    id: 'derby-2jt',
-    label: '⚔️ Derby 2 Jutaan Terbaik',
-    desc: 'Infinix Hot 50 Pro+ vs Galaxy A15 vs Tecno Spark 30 Pro',
-    phoneIds: ['infinix-hot-50-pro-plus', 'samsung-galaxy-a15', 'tecno-spark-30-pro']
+    id: 'derby-flagship',
+    label: '👑 Raja Flagship (AnTuTu 2 Juta+)',
+    tier: 'flagship',
+    desc: 'Galaxy S24 Ultra vs iPhone 16 Pro Max vs Xiaomi 14 Ultra',
+    phoneIds: ['samsung-galaxy-s24-ultra', 'iphone-16-pro-max', 'xiaomi-14-ultra']
   },
   {
-    id: 'derby-gaming',
-    label: '🚀 Raja Skor AnTuTu & Baterai',
-    desc: 'iQOO Z9x (530k AnTuTu) vs Vivo Y28 (6000mAh) vs Poco M6',
-    phoneIds: ['iqoo-z9x-5g', 'vivo-y28', 'poco-m6']
+    id: 'derby-flagship-killer',
+    label: '🚀 Flagship Killer (Rp 4 - 8 Juta)',
+    tier: '4-8-jt',
+    desc: 'Poco F6 vs Galaxy A55 vs Xiaomi 14T Leica',
+    phoneIds: ['poco-f6', 'samsung-galaxy-a55', 'xiaomi-14t']
+  },
+  {
+    id: 'derby-2jt',
+    label: '⚡ Mid-Range Best Value (Rp 2 - 4 Juta)',
+    tier: '2-4-jt',
+    desc: 'Infinix Hot 50 Pro+ vs Galaxy A15 vs Poco X6 5G',
+    phoneIds: ['infinix-hot-50-pro-plus', 'samsung-galaxy-a15', 'poco-x6-5g']
   },
   {
     id: 'derby-1jt',
-    label: '💰 Adu Budget Murah Rp 1 Jutaan',
-    desc: 'Redmi 14C (120Hz) vs Galaxy A06 (Knox) vs Poco C65',
-    phoneIds: ['redmi-14c', 'samsung-galaxy-a06', 'poco-c65']
+    label: '💰 Entry Level Hemat (Rp 1 - 2 Juta)',
+    tier: '1-2-jt',
+    desc: 'Redmi 14C (120Hz) vs Galaxy A06 (Knox) vs Poco M6 (108MP)',
+    phoneIds: ['redmi-14c', 'samsung-galaxy-a06', 'poco-m6']
   },
   {
-    id: 'derby-layar',
-    label: '✨ Layar AMOLED & 108MP',
-    desc: 'Redmi Note 13 vs Infinix Hot 50 Pro+ vs Tecno Spark 30 Pro',
-    phoneIds: ['redmi-note-13-4g', 'infinix-hot-50-pro-plus', 'tecno-spark-30-pro']
+    id: 'derby-cross-tier',
+    label: '⚔️ Duel Lintas Kelas (Entry vs Mid vs Flagship)',
+    tier: 'all',
+    desc: 'Redmi 14C (Rp 1.3jt) vs Poco F6 (Rp 5.4jt) vs S24 Ultra (Rp 21.9jt)',
+    phoneIds: ['redmi-14c', 'poco-f6', 'samsung-galaxy-s24-ultra']
   }
 ];
 
 export default function AduHpDedicatedPage() {
-  // Current active phones in the 3 battle slots
+  // Active Main Price Tier Filter
+  const [activeMainPriceTier, setActiveMainPriceTier] = useState('all');
+
+  // Current active phones in the 3 battle slots (Default: Lintas Kelas)
   const [selectedPhoneIds, setSelectedPhoneIds] = useState([
     'infinix-hot-50-pro-plus',
-    'samsung-galaxy-a15',
-    'iqoo-z9x-5g'
+    'poco-f6',
+    'samsung-galaxy-s24-ultra'
   ]);
 
   // Modal selector state
@@ -80,36 +94,36 @@ export default function AduHpDedicatedPage() {
   const [selectedBrand, setSelectedBrand] = useState('Semua Brand');
   const [selectedPriceTier, setSelectedPriceTier] = useState('all');
   const [activeTab, setActiveTab] = useState('antutu'); // 'antutu' | 'gaming' | 'specs' | 'verdict'
-  const [activeDerby, setActiveDerby] = useState('derby-2jt');
+  const [activeDerby, setActiveDerby] = useState('derby-cross-tier');
   const [showToast, setShowToast] = useState(null);
 
   // Get full phone objects
   const slotPhones = useMemo(() => {
     return selectedPhoneIds.map(id => {
-      return ENTRY_LEVEL_PHONES.find(p => p.id === id) || ENTRY_LEVEL_PHONES[0];
+      return ALL_PHONES.find(p => p.id === id) || ALL_PHONES[0];
     });
   }, [selectedPhoneIds]);
 
-  // Find max scores for comparative percentages
+  // Find max scores dynamically from the current slot phones for high-contrast comparative bars
   const maxAnTuTu = useMemo(() => {
-    return Math.max(...ENTRY_LEVEL_PHONES.map(p => p.antutu.total));
-  }, []);
+    return Math.max(...slotPhones.map(p => p.antutu.total), 1);
+  }, [slotPhones]);
 
   const maxCPU = useMemo(() => {
-    return Math.max(...ENTRY_LEVEL_PHONES.map(p => p.antutu.cpu));
-  }, []);
+    return Math.max(...slotPhones.map(p => p.antutu.cpu), 1);
+  }, [slotPhones]);
 
   const maxGPU = useMemo(() => {
-    return Math.max(...ENTRY_LEVEL_PHONES.map(p => p.antutu.gpu));
-  }, []);
+    return Math.max(...slotPhones.map(p => p.antutu.gpu), 1);
+  }, [slotPhones]);
 
   const maxMemory = useMemo(() => {
-    return Math.max(...ENTRY_LEVEL_PHONES.map(p => p.antutu.memory));
-  }, []);
+    return Math.max(...slotPhones.map(p => p.antutu.memory), 1);
+  }, [slotPhones]);
 
   const maxUX = useMemo(() => {
-    return Math.max(...ENTRY_LEVEL_PHONES.map(p => p.antutu.ux));
-  }, []);
+    return Math.max(...slotPhones.map(p => p.antutu.ux), 1);
+  }, [slotPhones]);
 
   // Determine the highest AnTuTu score among current compared slots
   const highestAnTuTuSlotIdx = useMemo(() => {
@@ -132,7 +146,7 @@ export default function AduHpDedicatedPage() {
 
   // Filter phones for swap modal
   const filteredCatalog = useMemo(() => {
-    return ENTRY_LEVEL_PHONES.filter(phone => {
+    return ALL_PHONES.filter(phone => {
       const matchSearch = phone.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           phone.specs.chipset.toLowerCase().includes(searchQuery.toLowerCase());
       const matchBrand = selectedBrand === 'Semua Brand' || phone.brand.toLowerCase() === selectedBrand.toLowerCase();
@@ -155,8 +169,38 @@ export default function AduHpDedicatedPage() {
   function handleSelectDerby(derby) {
     setActiveDerby(derby.id);
     setSelectedPhoneIds(derby.phoneIds);
+    if (derby.tier) {
+      setActiveMainPriceTier(derby.tier);
+    }
     triggerToast(`Memuat perbandingan: ${derby.label}`);
   }
+
+  function handleSelectMainTier(tierId) {
+    setActiveMainPriceTier(tierId);
+    setSelectedPriceTier(tierId);
+    if (tierId === '1-2-jt') {
+      setSelectedPhoneIds(['redmi-14c', 'samsung-galaxy-a06', 'poco-m6']);
+      setActiveDerby('derby-1jt');
+      triggerToast('Memuat HP Pilihan Kelas Rp 1 - 2 Jutaan (Entry Level)');
+    } else if (tierId === '2-4-jt') {
+      setSelectedPhoneIds(['infinix-hot-50-pro-plus', 'samsung-galaxy-a15', 'poco-x6-5g']);
+      setActiveDerby('derby-2jt');
+      triggerToast('Memuat HP Pilihan Kelas Rp 2 - 4 Jutaan (Mid-Range)');
+    } else if (tierId === '4-8-jt') {
+      setSelectedPhoneIds(['poco-f6', 'samsung-galaxy-a55', 'xiaomi-14t']);
+      setActiveDerby('derby-flagship-killer');
+      triggerToast('Memuat HP Pilihan Kelas Rp 4 - 8 Jutaan (Flagship Killer)');
+    } else if (tierId === 'flagship') {
+      setSelectedPhoneIds(['samsung-galaxy-s24-ultra', 'iphone-16-pro-max', 'xiaomi-14-ultra']);
+      setActiveDerby('derby-flagship');
+      triggerToast('Memuat HP Pilihan Kelas Di Atas Rp 8 Juta (Ultra Flagship)');
+    } else {
+      setSelectedPhoneIds(['infinix-hot-50-pro-plus', 'poco-f6', 'samsung-galaxy-s24-ultra']);
+      setActiveDerby('derby-cross-tier');
+      triggerToast('Menampilkan Semua Kategori HP dari Entry s/d Flagship');
+    }
+  }
+
 
   function triggerToast(msg) {
     setShowToast(msg);
@@ -260,7 +304,7 @@ export default function AduHpDedicatedPage() {
           <div className="adu-page-header">
             <div className="adu-badge-hero">
               <Sparkles size={14} />
-              <span>100% HANDPHONE BARU BNIB • BENCHMARK ANTUTU v10 • HARGA ENTRY LEVEL</span>
+              <span>100% HANDPHONE BARU BNIB • BENCHMARK ANTUTU v10 • LENGKAP ENTRY S/D FLAGSHIP</span>
             </div>
 
             <h1 className="adu-title">
@@ -268,8 +312,58 @@ export default function AduHpDedicatedPage() {
             </h1>
 
             <p className="adu-subtitle">
-              Bandingkan 3 HP Baru segel Garansi Resmi Indonesia di kelas <strong>Entry Level (Rp 1 Juta - Rp 3 Juta)</strong>. Telusuri skor AnTuTu v10 asli, performa gaming FPS, efisiensi fabrikasi chipset, hingga rasio skor per rupiah!
+              Pilih tier harga: <strong>Rp 1 - 2 Jutaan</strong>, <strong>Rp 2 - 4 Jutaan</strong>, <strong>Rp 4 - 8 Jutaan</strong>, hingga <strong>Ultra Flagship (8 Juta+)</strong>. Telusuri skor AnTuTu v10 asli, performa gaming FPS, efisiensi chipset, hingga rasio nilai per rupiah!
             </p>
+
+            {/* Pilihan Kategori Harga HP: 1-2 Juta, 2-4 Juta, 4-8 Juta, Flagship */}
+            <div className="price-tier-selector-container">
+              <div className="price-tier-header-label">
+                <SlidersHorizontal size={14} color="var(--accent-lime)" />
+                <span>PILIH TIER HARGA HANDPHONE:</span>
+              </div>
+              <div className="price-tier-pills-row">
+                {PRICE_TIERS.map(tier => {
+                  const isSelected = activeMainPriceTier === tier.id;
+                  return (
+                    <button
+                      key={tier.id}
+                      onClick={() => handleSelectMainTier(tier.id)}
+                      className={`price-tier-pill-btn ${isSelected ? 'active' : ''}`}
+                      style={{
+                        border: isSelected ? `1.5px solid ${tier.color}` : '1px solid var(--border-subtle)',
+                        boxShadow: isSelected ? `0 0 20px ${tier.color}33` : 'none'
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginBottom: '4px' }}>
+                        <span style={{ fontWeight: 800, fontSize: '13.5px', color: isSelected ? tier.color : '#fff' }}>
+                          {tier.label}
+                        </span>
+                        {tier.badge && (
+                          <span style={{
+                            fontSize: '9.5px',
+                            fontWeight: 800,
+                            background: isSelected ? tier.color : 'rgba(255,255,255,0.08)',
+                            color: isSelected ? '#000' : '#888',
+                            padding: '1px 5px',
+                            borderRadius: '4px'
+                          }}>
+                            {tier.badge}
+                          </span>
+                        )}
+                      </div>
+                      <div style={{ fontSize: '11px', color: isSelected ? '#eee' : '#777' }}>
+                        {tier.range}
+                      </div>
+                      {tier.antutuAvg && (
+                        <div style={{ fontSize: '10px', color: isSelected ? tier.color : '#555', marginTop: '3px', fontFamily: 'var(--font-mono)' }}>
+                          AnTuTu {tier.antutuAvg}
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
 
             {/* Quick Match / Derby Presets */}
             <div className="preset-matches-wrapper">
@@ -1094,19 +1188,20 @@ export default function AduHpDedicatedPage() {
 
                 {/* Price Tier Filter Pills */}
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  {PRICE_TIER_OPTIONS.map(opt => (
+                  {PRICE_TIERS.map(opt => (
                     <button
                       key={opt.id}
                       onClick={() => setSelectedPriceTier(opt.id)}
                       style={{
-                        padding: '6px 12px',
+                        padding: '6px 14px',
                         borderRadius: '8px',
                         fontSize: '12px',
-                        fontWeight: 600,
-                        border: selectedPriceTier === opt.id ? '1px solid var(--accent-lime)' : '1px solid var(--border-subtle)',
-                        background: selectedPriceTier === opt.id ? 'rgba(198, 255, 0, 0.12)' : '#161616',
-                        color: selectedPriceTier === opt.id ? 'var(--accent-lime)' : '#aaa',
-                        cursor: 'pointer'
+                        fontWeight: 700,
+                        border: selectedPriceTier === opt.id ? `1.5px solid ${opt.color}` : '1px solid var(--border-subtle)',
+                        background: selectedPriceTier === opt.id ? `${opt.color}15` : '#161616',
+                        color: selectedPriceTier === opt.id ? opt.color : '#aaa',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease'
                       }}
                     >
                       {opt.label}

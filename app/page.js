@@ -28,10 +28,11 @@ import {
   Mail
 } from 'lucide-react';
 
-import { ENTRY_LEVEL_PHONES } from './data/entryPhones';
+import { ALL_PHONES, PRICE_TIERS } from './data/entryPhones';
 
-// Handphone Baru Entry Level Resmi Indonesia dengan Skor Benchmark AnTuTu v10
-const FALLBACK_PRODUCTS = ENTRY_LEVEL_PHONES;
+// Handphone Baru Resmi Indonesia dengan Skor Benchmark AnTuTu v10 (1-2jt, 2-4jt, 4-8jt, Flagship)
+const FALLBACK_PRODUCTS = ALL_PHONES;
+
 
 
 const NEEDS_LIST = [
@@ -87,20 +88,40 @@ export default function LandingPage() {
   const [loading, setLoading] = useState(true);
   const [selectedNeed, setSelectedNeed] = useState('ngojol'); // Default checked like screenshot
   
-  // 3 Comparison slots (Handphone Baru Entry Level)
+  const [homePriceTier, setHomePriceTier] = useState('all');
+  
+  // 3 Comparison slots (Default: Lintas Kelas)
   const [comparedIds, setComparedIds] = useState([
-    'infinix-hot-50-pro-plus', // Infinix Hot 50 Pro+ Baru
-    'samsung-galaxy-a15',    // Galaxy A15 Super AMOLED Baru
-    'poco-m6',               // Poco M6 108MP Baru
+    'infinix-hot-50-pro-plus', // Mid-Range Rp 2 Jutaan
+    'poco-f6',                 // Flagship Killer Rp 5 Jutaan
+    'samsung-galaxy-s24-ultra' // Ultra Flagship Rp 21 Jutaan
   ]);
+
+  function handleSelectHomeTier(tierId) {
+    setHomePriceTier(tierId);
+    if (tierId === '1-2-jt') {
+      setComparedIds(['redmi-14c', 'samsung-galaxy-a06', 'poco-m6']);
+    } else if (tierId === '2-4-jt') {
+      setComparedIds(['infinix-hot-50-pro-plus', 'samsung-galaxy-a15', 'poco-x6-5g']);
+    } else if (tierId === '4-8-jt') {
+      setComparedIds(['poco-f6', 'samsung-galaxy-a55', 'xiaomi-14t']);
+    } else if (tierId === 'flagship') {
+      setComparedIds(['samsung-galaxy-s24-ultra', 'iphone-16-pro-max', 'xiaomi-14-ultra']);
+    } else {
+      setComparedIds(['infinix-hot-50-pro-plus', 'poco-f6', 'samsung-galaxy-s24-ultra']);
+    }
+  }
+
 
   // Modals & Drawers
   const [modalOpen, setModalOpen] = useState(null); // 'katalog' | 'budget' | 'cart' | 'swap-slot'
   const [activeSlotToSwap, setActiveSlotToSwap] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterBrand, setFilterBrand] = useState('all');
+  const [filterCatalogTier, setFilterCatalogTier] = useState('all');
   const [filterBudgetMax, setFilterBudgetMax] = useState(null);
   const [cartItems, setCartItems] = useState([]);
+
 
   // User Authentication State
   const [currentUser, setCurrentUser] = useState(null);
@@ -284,12 +305,15 @@ export default function LandingPage() {
   const filteredCatalog = useMemo(() => {
     return products.filter(p => {
       const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                            p.brand.toLowerCase().includes(searchQuery.toLowerCase());
+                            p.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            (p.specs?.chipset && p.specs.chipset.toLowerCase().includes(searchQuery.toLowerCase()));
       const matchesBrand = filterBrand === 'all' || p.brand.toLowerCase() === filterBrand.toLowerCase();
       const matchesBudget = !filterBudgetMax || p.price <= filterBudgetMax;
-      return matchesSearch && matchesBrand && matchesBudget;
+      const matchesTier = filterCatalogTier === 'all' || p.price_tier === filterCatalogTier;
+      return matchesSearch && matchesBrand && matchesBudget && matchesTier;
     });
-  }, [products, searchQuery, filterBrand, filterBudgetMax]);
+  }, [products, searchQuery, filterBrand, filterBudgetMax, filterCatalogTier]);
+
 
   return (
     <>
@@ -572,6 +596,46 @@ export default function LandingPage() {
             </div>
           </div>
 
+          {/* Quick Price Tier Filter for Meja Aduan */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '12px',
+            marginBottom: '20px',
+            background: '#131313',
+            border: '1px solid var(--border-medium)',
+            borderRadius: '14px',
+            padding: '12px 18px',
+            flexWrap: 'wrap'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 800, color: '#888', textTransform: 'uppercase' }}>
+              <SlidersHorizontal size={14} color="var(--accent-lime)" />
+              <span>Pilihan Kelas Harga:</span>
+            </div>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              {PRICE_TIERS.map(tier => (
+                <button
+                  key={tier.id}
+                  onClick={() => handleSelectHomeTier(tier.id)}
+                  style={{
+                    padding: '6px 14px',
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    border: homePriceTier === tier.id ? `1.5px solid ${tier.color}` : '1px solid var(--border-subtle)',
+                    background: homePriceTier === tier.id ? `${tier.color}18` : '#181818',
+                    color: homePriceTier === tier.id ? tier.color : '#888',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  {tier.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* 3 HP Comparison Grid */}
           <div className="battle-arena-grid">
             {comparedProducts.map((phone, index) => {
@@ -788,27 +852,53 @@ export default function LandingPage() {
                   />
                 </div>
 
-                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                  {['all', 'Infinix', 'Xiaomi', 'Samsung', 'Tecno', 'Realme', 'Vivo', 'iQOO'].map(b => (
-                    <button
-                      key={b}
-                      onClick={() => setFilterBrand(b)}
-                      style={{
-                        padding: '6px 12px',
-                        borderRadius: '8px',
-                        fontSize: '11.5px',
-                        fontWeight: 600,
-                        border: filterBrand === b ? '1px solid var(--accent-lime)' : '1px solid var(--border-subtle)',
-                        background: filterBrand === b ? 'rgba(198, 255, 0, 0.1)' : '#181818',
-                        color: filterBrand === b ? 'var(--accent-lime)' : '#aaa',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      {b === 'all' ? 'Semua Brand' : b}
-                    </button>
-                  ))}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
+                  {/* Price Tier Filter Pills in Modal */}
+                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                    {PRICE_TIERS.map(tier => (
+                      <button
+                        key={tier.id}
+                        onClick={() => setFilterCatalogTier(tier.id)}
+                        style={{
+                          padding: '5px 12px',
+                          borderRadius: '6px',
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          border: filterCatalogTier === tier.id ? `1.5px solid ${tier.color}` : '1px solid var(--border-subtle)',
+                          background: filterCatalogTier === tier.id ? `${tier.color}15` : '#141414',
+                          color: filterCatalogTier === tier.id ? tier.color : '#777',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {tier.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Brand Filter Pills */}
+                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                    {['all', 'Infinix', 'Xiaomi', 'Samsung', 'Tecno', 'iQOO', 'Vivo', 'Realme', 'Apple'].map(b => (
+                      <button
+                        key={b}
+                        onClick={() => setFilterBrand(b)}
+                        style={{
+                          padding: '5px 12px',
+                          borderRadius: '6px',
+                          fontSize: '11px',
+                          fontWeight: 600,
+                          border: filterBrand === b ? '1px solid var(--accent-lime)' : '1px solid var(--border-subtle)',
+                          background: filterBrand === b ? 'rgba(198, 255, 0, 0.1)' : '#181818',
+                          color: filterBrand === b ? 'var(--accent-lime)' : '#aaa',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {b === 'all' ? 'Semua Brand' : b}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
+
 
               {/* Product List */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
