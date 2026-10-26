@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { 
   Sparkles, 
@@ -31,7 +31,8 @@ import {
   Radio,
   Play
 } from 'lucide-react';
-import { ALL_PHONES, PRICE_TIERS, BRAND_OPTIONS } from '../data/entryPhones';
+import { PRICE_TIERS, BRAND_OPTIONS } from '../data/entryPhones';
+import { supabase } from '../lib/supabase';
 
 function formatIDR(amount) {
   if (!amount && amount !== 0) return 'Rp 0';
@@ -42,42 +43,37 @@ function formatIDR(amount) {
   }).format(amount);
 }
 
-// Preset Head-to-Head Derby Aduan per Kategori Harga
+// Preset Head-to-Head Derby Aduan per Kategori Harga (Dinamis dari Supabase)
 const PRESET_DERBIES = [
   {
     id: 'derby-flagship',
     label: '👑 Raja Flagship (AnTuTu 2 Juta+)',
     tier: 'flagship',
-    desc: 'Galaxy S24 Ultra vs iPhone 16 Pro Max vs Xiaomi 14 Ultra',
-    phoneIds: ['samsung-galaxy-s24-ultra', 'iphone-16-pro-max', 'xiaomi-14-ultra']
+    desc: 'Duel HP Kelas Ultra Flagship Tertinggi'
   },
   {
     id: 'derby-flagship-killer',
     label: '🚀 Flagship Killer (Rp 4 - 8 Juta)',
     tier: '4-8-jt',
-    desc: 'Poco F6 vs Galaxy A55 vs Xiaomi 14T Leica',
-    phoneIds: ['poco-f6', 'samsung-galaxy-a55', 'xiaomi-14t']
+    desc: 'Duel HP Flagship Killer Performa Tinggi'
   },
   {
     id: 'derby-2jt',
     label: '⚡ Mid-Range Best Value (Rp 2 - 4 Juta)',
     tier: '2-4-jt',
-    desc: 'Infinix Hot 50 Pro+ vs Galaxy A15 vs Poco X6 5G',
-    phoneIds: ['infinix-hot-50-pro-plus', 'samsung-galaxy-a15', 'poco-x6-5g']
+    desc: 'Duel HP Mid-Range Value & Gaming'
   },
   {
     id: 'derby-1jt',
     label: '💰 Entry Level Hemat (Rp 1 - 2 Juta)',
     tier: '1-2-jt',
-    desc: 'Redmi 14C (120Hz) vs Galaxy A06 (Knox) vs Poco M6 (108MP)',
-    phoneIds: ['redmi-14c', 'samsung-galaxy-a06', 'poco-m6']
+    desc: 'Duel HP Entry Level Paling Terjangkau'
   },
   {
     id: 'derby-cross-tier',
-    label: '⚔️ Duel Lintas Kelas (Entry vs Mid vs Flagship)',
+    label: '⚔️ Duel Lintas Kelas (Semua Kelas)',
     tier: 'all',
-    desc: 'Redmi 14C (Rp 1.3jt) vs Poco F6 (Rp 5.4jt) vs S24 Ultra (Rp 21.9jt)',
-    phoneIds: ['redmi-14c', 'poco-f6', 'samsung-galaxy-s24-ultra']
+    desc: 'Duel HP Antar Kategori Harga'
   }
 ];
 
@@ -85,12 +81,46 @@ export default function AduHpDedicatedPage() {
   // Active Main Price Tier Filter
   const [activeMainPriceTier, setActiveMainPriceTier] = useState('all');
 
-  // Current active phones in the 3 battle slots (Default: Lintas Kelas)
-  const [selectedPhoneIds, setSelectedPhoneIds] = useState([
-    'infinix-hot-50-pro-plus',
-    'poco-f6',
-    'samsung-galaxy-s24-ultra'
-  ]);
+  // Live products dari Supabase
+  const [allPhones, setAllPhones] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedPhoneIds, setSelectedPhoneIds] = useState([]);
+
+  // Fetch live products dari Supabase dapur_products
+  useEffect(() => {
+    async function fetchPhones() {
+      try {
+        const { data, error } = await supabase
+          .from('dapur_products')
+          .select('*')
+          .eq('is_active', true)
+          .order('created_at', { ascending: false });
+
+        if (data && data.length > 0) {
+          const formatted = data.map(p => ({
+            ...p,
+            is_for_sale: p.is_for_sale !== false,
+            sale_status: p.sale_status || (p.is_for_sale === false ? 'compare_only' : 'dijual'),
+            antutu: p.antutu || { total: 0, cpu: 0, gpu: 0, memory: 0, ux: 0, tier: '' },
+            gaming_fps: p.gaming_fps || { mlbb: '60 FPS', pubg: '60 FPS', genshin: '45 FPS' },
+            specs: p.specs || {}
+          }));
+          setAllPhones(formatted);
+          setSelectedPhoneIds(formatted.slice(0, 3).map(p => p.id));
+        } else {
+          setAllPhones([]);
+          setSelectedPhoneIds([]);
+        }
+      } catch (err) {
+        console.warn('Error fetching phones for battle arena:', err.message);
+        setAllPhones([]);
+        setSelectedPhoneIds([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchPhones();
+  }, []);
 
   // Battle state: 'idle' (waiting for user to click Start) | 'battling' (running simulation) | 'ready' (results revealed)
   const [battleState, setBattleState] = useState('idle');
@@ -110,39 +140,47 @@ export default function AduHpDedicatedPage() {
 
   // Get full phone objects
   const slotPhones = useMemo(() => {
-    return selectedPhoneIds.map(id => {
-      return ALL_PHONES.find(p => p.id === id) || ALL_PHONES[0];
-    });
-  }, [selectedPhoneIds]);
+    if (!allPhones || allPhones.length === 0) return [];
+    const found = selectedPhoneIds.map(id => allPhones.find(p => p.id === id || p.slug === id)).filter(Boolean);
+    if (found.length > 0) return found;
+    return allPhones.slice(0, 3);
+  }, [selectedPhoneIds, allPhones]);
 
   // Find max scores dynamically from the current slot phones for high-contrast comparative bars
   const maxAnTuTu = useMemo(() => {
-    return Math.max(...slotPhones.map(p => p.antutu.total), 1);
+    if (slotPhones.length === 0) return 1;
+    return Math.max(...slotPhones.map(p => p?.antutu?.total || 0), 1);
   }, [slotPhones]);
 
   const maxCPU = useMemo(() => {
-    return Math.max(...slotPhones.map(p => p.antutu.cpu), 1);
+    if (slotPhones.length === 0) return 1;
+    return Math.max(...slotPhones.map(p => p?.antutu?.cpu || 0), 1);
   }, [slotPhones]);
 
   const maxGPU = useMemo(() => {
-    return Math.max(...slotPhones.map(p => p.antutu.gpu), 1);
+    if (slotPhones.length === 0) return 1;
+    return Math.max(...slotPhones.map(p => p?.antutu?.gpu || 0), 1);
   }, [slotPhones]);
 
   const maxMemory = useMemo(() => {
-    return Math.max(...slotPhones.map(p => p.antutu.memory), 1);
+    if (slotPhones.length === 0) return 1;
+    return Math.max(...slotPhones.map(p => p?.antutu?.memory || 0), 1);
   }, [slotPhones]);
 
   const maxUX = useMemo(() => {
-    return Math.max(...slotPhones.map(p => p.antutu.ux), 1);
+    if (slotPhones.length === 0) return 1;
+    return Math.max(...slotPhones.map(p => p?.antutu?.ux || 0), 1);
   }, [slotPhones]);
 
   // Determine the highest AnTuTu score among current compared slots
   const highestAnTuTuSlotIdx = useMemo(() => {
+    if (slotPhones.length === 0) return 0;
     let max = -1;
     let maxIdx = 0;
     slotPhones.forEach((phone, idx) => {
-      if (phone.antutu.total > max) {
-        max = phone.antutu.total;
+      const total = phone?.antutu?.total || 0;
+      if (total > max) {
+        max = total;
         maxIdx = idx;
       }
     });
@@ -152,22 +190,23 @@ export default function AduHpDedicatedPage() {
   // Calculate AnTuTu value score (points per Rp 1.000)
   function getVfmScore(phone) {
     if (!phone?.price) return 0;
-    return (phone.antutu.total / (phone.price / 1000)).toFixed(1);
+    return ((phone.antutu?.total || 0) / (phone.price / 1000)).toFixed(1);
   }
 
   // Filter phones for swap modal
   const filteredCatalog = useMemo(() => {
-    return ALL_PHONES.filter(phone => {
-      const matchSearch = phone.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          phone.specs.chipset.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchBrand = selectedBrand === 'Semua Brand' || phone.brand.toLowerCase() === selectedBrand.toLowerCase();
+    return allPhones.filter(phone => {
+      const nameMatch = (phone.name || '').toLowerCase().includes(searchQuery.toLowerCase());
+      const chipsetMatch = (phone.specs?.chipset || '').toLowerCase().includes(searchQuery.toLowerCase());
+      const matchSearch = nameMatch || chipsetMatch;
+      const matchBrand = selectedBrand === 'Semua Brand' || (phone.brand || '').toLowerCase() === selectedBrand.toLowerCase();
       const matchTier = selectedPriceTier === 'all' || phone.price_tier === selectedPriceTier;
       const matchSale = selectedSaleStatus === 'all' ||
                         (selectedSaleStatus === 'dijual' && phone.is_for_sale !== false) ||
                         (selectedSaleStatus === 'compare_only' && phone.is_for_sale === false);
       return matchSearch && matchBrand && matchTier && matchSale;
     });
-  }, [searchQuery, selectedBrand, selectedPriceTier, selectedSaleStatus]);
+  }, [allPhones, searchQuery, selectedBrand, selectedPriceTier, selectedSaleStatus]);
 
   function handleStartBattle() {
     setBattleState('battling');
@@ -221,39 +260,41 @@ export default function AduHpDedicatedPage() {
 
   function handleSelectDerby(derby) {
     setActiveDerby(derby.id);
-    setSelectedPhoneIds(derby.phoneIds);
+    if (!allPhones || allPhones.length === 0) return;
+    if (derby.tier === 'all') {
+      setSelectedPhoneIds(allPhones.slice(0, 3).map(p => p.id));
+    } else {
+      const matching = allPhones.filter(p => p.price_tier === derby.tier);
+      if (matching.length > 0) {
+        setSelectedPhoneIds(matching.slice(0, 3).map(p => p.id));
+      } else {
+        setSelectedPhoneIds(allPhones.slice(0, 3).map(p => p.id));
+      }
+    }
     if (derby.tier) {
       setActiveMainPriceTier(derby.tier);
     }
-    setBattleState('idle'); // Hide results until Start is clicked
+    setBattleState('idle');
     triggerToast(`Pilihan ${derby.label} siap. Tekan Start untuk mengadu!`);
   }
 
   function handleSelectMainTier(tierId) {
     setActiveMainPriceTier(tierId);
     setSelectedPriceTier(tierId);
-    if (tierId === '1-2-jt') {
-      setSelectedPhoneIds(['redmi-14c', 'samsung-galaxy-a06', 'poco-m6']);
-      setActiveDerby('derby-1jt');
-      triggerToast('Memuat HP Pilihan Kelas Rp 1 - 2 Jutaan. Tekan Start untuk mengadu!');
-    } else if (tierId === '2-4-jt') {
-      setSelectedPhoneIds(['infinix-hot-50-pro-plus', 'samsung-galaxy-a15', 'poco-x6-5g']);
-      setActiveDerby('derby-2jt');
-      triggerToast('Memuat HP Pilihan Kelas Rp 2 - 4 Jutaan. Tekan Start untuk mengadu!');
-    } else if (tierId === '4-8-jt') {
-      setSelectedPhoneIds(['poco-f6', 'samsung-galaxy-a55', 'xiaomi-14t']);
-      setActiveDerby('derby-flagship-killer');
-      triggerToast('Memuat HP Pilihan Kelas Rp 4 - 8 Jutaan. Tekan Start untuk mengadu!');
-    } else if (tierId === 'flagship') {
-      setSelectedPhoneIds(['samsung-galaxy-s24-ultra', 'iphone-16-pro-max', 'xiaomi-14-ultra']);
-      setActiveDerby('derby-flagship');
-      triggerToast('Memuat HP Pilihan Di Atas Rp 8 Juta (Ultra Flagship). Tekan Start!');
-    } else {
-      setSelectedPhoneIds(['infinix-hot-50-pro-plus', 'poco-f6', 'samsung-galaxy-s24-ultra']);
+    if (!allPhones || allPhones.length === 0) return;
+    if (tierId === 'all') {
+      setSelectedPhoneIds(allPhones.slice(0, 3).map(p => p.id));
       setActiveDerby('derby-cross-tier');
-      triggerToast('Menampilkan Semua Kategori HP. Tekan Start untuk mengadu!');
+    } else {
+      const matching = allPhones.filter(p => p.price_tier === tierId);
+      if (matching.length > 0) {
+        setSelectedPhoneIds(matching.slice(0, 3).map(p => p.id));
+      } else {
+        setSelectedPhoneIds(allPhones.slice(0, 3).map(p => p.id));
+      }
+      setActiveDerby(tierId === '1-2-jt' ? 'derby-1jt' : tierId === '2-4-jt' ? 'derby-2jt' : tierId === '4-8-jt' ? 'derby-flagship-killer' : 'derby-flagship');
     }
-    setBattleState('idle'); // Hide results until Start is clicked
+    setBattleState('idle');
   }
 
   function triggerToast(msg) {
@@ -452,8 +493,42 @@ export default function AduHpDedicatedPage() {
           </div>
 
           {/* 3. Meja Aduan 3 Slots Grid */}
-          {/* 3. Meja Aduan 3 Slots Grid */}
-          <div className="adu-slots-grid">
+          {loading ? (
+            <div style={{ padding: '80px 0', textAlign: 'center', color: '#888' }}>
+              <div className="spin" style={{ width: '36px', height: '36px', border: '3px solid var(--accent-lime)', borderTopColor: 'transparent', borderRadius: '50%', margin: '0 auto 16px' }} />
+              Memuat data petarung dari database...
+            </div>
+          ) : slotPhones.length === 0 ? (
+            <div style={{
+              padding: '70px 24px',
+              textAlign: 'center',
+              background: '#141416',
+              borderRadius: '20px',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              maxWidth: '640px',
+              margin: '30px auto'
+            }}>
+              <div style={{ fontSize: '48px', marginBottom: '16px' }}>📱</div>
+              <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#fff', marginBottom: '8px' }}>
+                Database HP Masih Kosong
+              </h3>
+              <p style={{ color: '#888', fontSize: '14px', lineHeight: 1.6, marginBottom: '24px' }}>
+                Belum ada handphone yang tersimpan di database Supabase untuk diadu. Silakan tambahkan HP Baru atau HP Second melalui Admin Panel Dapur aduHP.
+              </p>
+              <a
+                href="https://dapur.aduhp.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-primary-lime"
+                style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 24px', fontWeight: 800 }}
+              >
+                <span>Buka Admin Panel Dapur aduHP</span>
+                <ExternalLink size={15} />
+              </a>
+            </div>
+          ) : (
+            <>
+              <div className="adu-slots-grid">
             {slotPhones.map((phone, idx) => {
               const isHighestAnTuTu = idx === highestAnTuTuSlotIdx;
               const vfm = getVfmScore(phone);
@@ -763,6 +838,8 @@ export default function AduHpDedicatedPage() {
               </div>
             )}
           </div>
+            </>
+          )}
 
           {/* 4. Tab Navigation for Deep Dive Comparison */}
           {battleState === 'ready' ? (

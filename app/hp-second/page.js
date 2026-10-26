@@ -42,7 +42,7 @@ function formatIDR(amount) {
 }
 
 export default function HpSecondPage() {
-  const [products, setProducts] = useState(CERTIFIED_SECOND_PHONES);
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedBrand, setSelectedBrand] = useState('all');
   const [selectedGrade, setSelectedGrade] = useState('all');
@@ -69,17 +69,14 @@ export default function HpSecondPage() {
           .eq('condition', 'second')
           .order('created_at', { ascending: false });
 
-        if (data && data.length > 0) {
-          const merged = [...CERTIFIED_SECOND_PHONES];
-          data.forEach(item => {
-            if (!merged.some(m => m.id === item.id || m.slug === item.slug)) {
-              merged.unshift(item); // Newly uploaded second phones at the top!
-            }
-          });
-          setProducts(merged);
+        if (data) {
+          setProducts(data);
+        } else {
+          setProducts([]);
         }
       } catch (err) {
-        console.warn('Using certified second phones database:', err.message);
+        console.warn('Error fetching certified second phones:', err.message);
+        setProducts([]);
       } finally {
         setLoading(false);
       }

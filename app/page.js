@@ -28,12 +28,8 @@ import {
   Mail
 } from 'lucide-react';
 
-import { ALL_PHONES, PRICE_TIERS } from './data/entryPhones';
-
-// Handphone Baru Resmi Indonesia dengan Skor Benchmark AnTuTu v10 (1-2jt, 2-4jt, 4-8jt, Flagship)
-const FALLBACK_PRODUCTS = ALL_PHONES;
-
-
+import { PRICE_TIERS } from './data/entryPhones';
+import { supabase } from './lib/supabase';
 
 const NEEDS_LIST = [
   {
@@ -84,31 +80,27 @@ function formatIDR(amount) {
 }
 
 export default function LandingPage() {
-  const [products, setProducts] = useState(FALLBACK_PRODUCTS);
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedNeed, setSelectedNeed] = useState('ngojol'); // Default checked like screenshot
+  const [selectedNeed, setSelectedNeed] = useState('ngojol');
   
   const [homePriceTier, setHomePriceTier] = useState('all');
   
-  // 3 Comparison slots (Default: Lintas Kelas)
-  const [comparedIds, setComparedIds] = useState([
-    'infinix-hot-50-pro-plus', // Mid-Range Rp 2 Jutaan
-    'poco-f6',                 // Flagship Killer Rp 5 Jutaan
-    'samsung-galaxy-s24-ultra' // Ultra Flagship Rp 21 Jutaan
-  ]);
+  // 3 Comparison slots
+  const [comparedIds, setComparedIds] = useState([]);
 
   function handleSelectHomeTier(tierId) {
     setHomePriceTier(tierId);
-    if (tierId === '1-2-jt') {
-      setComparedIds(['redmi-14c', 'samsung-galaxy-a06', 'poco-m6']);
-    } else if (tierId === '2-4-jt') {
-      setComparedIds(['infinix-hot-50-pro-plus', 'samsung-galaxy-a15', 'poco-x6-5g']);
-    } else if (tierId === '4-8-jt') {
-      setComparedIds(['poco-f6', 'samsung-galaxy-a55', 'xiaomi-14t']);
-    } else if (tierId === 'flagship') {
-      setComparedIds(['samsung-galaxy-s24-ultra', 'iphone-16-pro-max', 'xiaomi-14-ultra']);
+    if (!products || products.length === 0) return;
+    if (tierId === 'all') {
+      setComparedIds(products.slice(0, 3).map(p => p.id));
     } else {
-      setComparedIds(['infinix-hot-50-pro-plus', 'poco-f6', 'samsung-galaxy-s24-ultra']);
+      const tierPhones = products.filter(p => p.price_tier === tierId);
+      if (tierPhones.length > 0) {
+        setComparedIds(tierPhones.slice(0, 3).map(p => p.id));
+      } else {
+        setComparedIds(products.slice(0, 3).map(p => p.id));
+      }
     }
   }
 
@@ -192,31 +184,41 @@ export default function LandingPage() {
     setModalOpen(null);
   }
 
-  // Fetch live products from dapur.aduhp.com/api/products with fallback to curated entry phones
+  // Fetch live products directly from Supabase dapur_products
   useEffect(() => {
     async function fetchProducts() {
       try {
-        const res = await fetch('https://dapur.aduhp.com/api/products');
-        if (res.ok) {
-          const json = await res.json();
-          const list = json.data && json.data.length > 0 ? json.data : json;
-          if (Array.isArray(list) && list.length > 0) {
-            const merged = [...ALL_PHONES];
-            list.forEach(item => {
-              if (item.condition === 'baru' && !merged.some(m => m.id === item.id)) {
-                merged.push({
-                  ...item,
-                  is_for_sale: item.is_for_sale !== false,
-                  sale_status: item.sale_status || (item.is_for_sale === false ? 'compare_only' : 'dijual'),
-                  antutu: item.antutu || { total: 285000, cpu: 88000, gpu: 45000, memory: 76000, ux: 76000, tier: 'Entry Value' }
-                });
-              }
-            });
-            setProducts(merged);
-          }
+        const { data, error } = await supabase
+          .from('dapur_products')
+          .select('*')
+          .eq('is_active', true)
+          .order('created_at', { ascending: false });
+
+        if (data && data.length > 0) {
+          const formatted = data.map(item => ({
+            ...item,
+            is_for_sale: item.is_for_sale !== false,
+            sale_status: item.sale_status || (item.is_for_sale === false ? 'compare_only' : 'dijual'),
+            antutu: item.antutu || { total: 0, cpu: 0, gpu: 0, memory: 0, ux: 0, tier: '' },
+            scores: item.scores || {
+              ngojol: 95,
+              game: 88,
+              ngonten: 85,
+              tiktok: 90,
+              kuliah: 92,
+              awet: 94
+            }
+          }));
+          setProducts(formatted);
+          setComparedIds(formatted.slice(0, 3).map(p => p.id));
+        } else {
+          setProducts([]);
+          setComparedIds([]);
         }
       } catch (err) {
-        console.warn('Using curated gadget catalogue data:', err.message);
+        console.warn('Error fetching products from Supabase:', err.message);
+        setProducts([]);
+        setComparedIds([]);
       } finally {
         setLoading(false);
       }
@@ -224,14 +226,17 @@ export default function LandingPage() {
     fetchProducts();
   }, []);
 
-
   // Compute products currently in the battle arena
   const comparedProducts = useMemo(() => {
-    return comparedIds.map(id => products.find(p => p.id === id) || products[0]);
+    if (!products || products.length === 0) return [];
+    const found = comparedIds.map(id => products.find(p => p.id === id || p.slug === id)).filter(Boolean);
+    if (found.length > 0) return found;
+    return products.slice(0, 3);
   }, [comparedIds, products]);
 
   // Determine the Winner based on the selected need score
   const winnerIndex = useMemo(() => {
+    if (comparedProducts.length === 0) return 0;
     let maxScore = -1;
     let winIdx = 0;
     comparedProducts.forEach((p, idx) => {
@@ -811,7 +816,41 @@ export default function LandingPage() {
           </div>
 
           {/* 3 HP Comparison Grid */}
-          <div className="battle-arena-grid">
+          {loading ? (
+            <div style={{ padding: '80px 0', textAlign: 'center', color: '#888' }}>
+              <div className="spin" style={{ width: '36px', height: '36px', border: '3px solid var(--accent-lime)', borderTopColor: 'transparent', borderRadius: '50%', margin: '0 auto 16px' }} />
+              Memuat data handphone dari database...
+            </div>
+          ) : comparedProducts.length === 0 ? (
+            <div style={{
+              padding: '70px 24px',
+              textAlign: 'center',
+              background: '#141416',
+              borderRadius: '20px',
+              border: '1px solid var(--border-medium)',
+              maxWidth: '640px',
+              margin: '30px auto'
+            }}>
+              <div style={{ fontSize: '48px', marginBottom: '16px' }}>📱</div>
+              <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#fff', marginBottom: '8px' }}>
+                Katalog HP Masih Kosong
+              </h3>
+              <p style={{ color: '#888', fontSize: '14px', lineHeight: 1.6, marginBottom: '24px' }}>
+                Belum ada handphone yang tersimpan di database Supabase untuk diadu. Silakan tambahkan HP Baru atau HP Second melalui Admin Panel Dapur aduHP.
+              </p>
+              <a
+                href="https://dapur.aduhp.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-primary-lime"
+                style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 24px', fontWeight: 800 }}
+              >
+                <span>Buka Admin Panel Dapur aduHP</span>
+                <ExternalLink size={15} />
+              </a>
+            </div>
+          ) : (
+            <div className="battle-arena-grid">
             {comparedProducts.map((phone, index) => {
               const isWinner = index === winnerIndex;
               const score = phone?.scores?.[selectedNeed] || (92 + index * 2);
@@ -993,6 +1032,7 @@ export default function LandingPage() {
               );
             })}
           </div>
+          )}
 
           {/* Quick Add All Banner */}
           <div style={{

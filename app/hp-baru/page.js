@@ -28,7 +28,7 @@ import {
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
-import { ALL_PHONES, PRICE_TIERS } from '../data/entryPhones';
+import { PRICE_TIERS } from '../data/entryPhones';
 import { supabase } from '../lib/supabase';
 
 // Brand-brand smartphone resmi di Indonesia beserta distributor resminya
@@ -58,7 +58,7 @@ function formatIDR(amount) {
 }
 
 export default function HpBaruPage() {
-  const [products, setProducts] = useState(ALL_PHONES);
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedBrand, setSelectedBrand] = useState('all');
   const [selectedTier, setSelectedTier] = useState('all');
@@ -76,7 +76,7 @@ export default function HpBaruPage() {
     setActivePhotoMap(prev => ({ ...prev, [phoneId]: idx }));
   }
 
-  // Fetch live products from Supabase (or Dapur API)
+  // Fetch live products from Supabase
   useEffect(() => {
     async function fetchLiveProducts() {
       try {
@@ -87,22 +87,19 @@ export default function HpBaruPage() {
           .eq('condition', 'baru')
           .order('created_at', { ascending: false });
 
-        if (data && data.length > 0) {
-          // Merge with ALL_PHONES ensuring no duplicates
-          const merged = [...ALL_PHONES];
-          data.forEach(item => {
-            if (!merged.some(m => m.id === item.id || m.slug === item.slug)) {
-              merged.push({
-                ...item,
-                is_for_sale: item.is_for_sale !== false,
-                sale_status: item.sale_status || (item.is_for_sale === false ? 'compare_only' : 'dijual')
-              });
-            }
-          });
-          setProducts(merged);
+        if (data) {
+          const list = data.map(item => ({
+            ...item,
+            is_for_sale: item.is_for_sale !== false,
+            sale_status: item.sale_status || (item.is_for_sale === false ? 'compare_only' : 'dijual')
+          }));
+          setProducts(list);
+        } else {
+          setProducts([]);
         }
       } catch (err) {
-        console.warn('Using curated Indonesian phone database:', err.message);
+        console.warn('Error fetching live products:', err.message);
+        setProducts([]);
       } finally {
         setLoading(false);
       }
