@@ -307,8 +307,18 @@ export default function AduHpDedicatedPage() {
                 }}
               >
                 <span>⚔️</span>
-                <span>Menu Adu HP</span>
+                <span>Adu HP</span>
               </button>
+
+              <Link href="/hp-baru" className="nav-link" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <span>📱</span>
+                <span>HP Baru</span>
+              </Link>
+
+              <Link href="/hp-second" className="nav-link" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: '#00E5FF' }}>
+                <span>🔄</span>
+                <span>HP Second</span>
+              </Link>
 
               <button 
                 onClick={() => setSwapSlotIndex(0)} 

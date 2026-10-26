@@ -337,15 +337,24 @@ export default function LandingPage() {
 
             {/* Nav Menu */}
             <nav className="nav-menu">
-              <button 
-                onClick={() => setModalOpen('katalog')} 
-                className="nav-link nav-pill-katalog"
-              >
-                Katalog
-              </button>
-
               <Link 
                 href="/adu-hp" 
+                className="nav-link"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  color: '#fff',
+                  fontWeight: 700,
+                  textDecoration: 'none'
+                }}
+              >
+                <span>⚔️</span>
+                <span>Adu HP</span>
+              </Link>
+
+              <Link 
+                href="/hp-baru" 
                 className="nav-link"
                 style={{
                   display: 'inline-flex',
@@ -355,13 +364,43 @@ export default function LandingPage() {
                   border: '1px solid var(--border-lime)',
                   color: 'var(--accent-lime)',
                   fontWeight: 800,
-                  textDecoration: 'none'
+                  textDecoration: 'none',
+                  borderRadius: '100px',
+                  padding: '5px 12px'
                 }}
               >
-                <span>⚔️</span>
-                <span>Menu Adu HP</span>
-                <span style={{ fontSize: '9px', background: 'var(--accent-lime)', color: '#000', padding: '1px 5px', borderRadius: '4px', fontWeight: 900 }}>BARU</span>
+                <span>📱</span>
+                <span>HP Baru</span>
+                <span style={{ fontSize: '9px', background: 'var(--accent-lime)', color: '#000', padding: '1px 5px', borderRadius: '4px', fontWeight: 900 }}>MEREK</span>
               </Link>
+
+              <Link 
+                href="/hp-second" 
+                className="nav-link"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: 'rgba(0, 229, 255, 0.1)',
+                  border: '1px solid rgba(0, 229, 255, 0.4)',
+                  color: '#00E5FF',
+                  fontWeight: 800,
+                  textDecoration: 'none',
+                  borderRadius: '100px',
+                  padding: '5px 12px'
+                }}
+              >
+                <span>🔄</span>
+                <span>HP Second</span>
+                <span style={{ fontSize: '9px', background: '#00E5FF', color: '#000', padding: '1px 5px', borderRadius: '4px', fontWeight: 900 }}>5 FOTO</span>
+              </Link>
+
+              <button 
+                onClick={() => setModalOpen('katalog')} 
+                className="nav-link nav-pill-katalog"
+              >
+                Katalog
+              </button>
 
               <button 
                 onClick={() => setModalOpen('cart')} 
@@ -521,6 +560,141 @@ export default function LandingPage() {
                 <div className="trust-desc">Packing kayu & asuransi</div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 2.5 Quick Access Showcase: HP Baru Berbagai Merek & HP Second 5 Foto */}
+      <section style={{ padding: '0 0 40px', marginTop: '-10px' }}>
+        <div className="container">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+            
+            {/* CARD 1: MENU HP BARU */}
+            <div style={{
+              background: 'linear-gradient(135deg, rgba(198, 255, 0, 0.08) 0%, rgba(20, 20, 25, 0.9) 100%)',
+              border: '1px solid rgba(198, 255, 0, 0.3)',
+              borderRadius: '20px',
+              padding: '24px',
+              display: 'flex',
+              flexDirection: 'column',
+              position: 'relative',
+              overflow: 'hidden'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                <span style={{
+                  fontSize: '11px',
+                  fontWeight: 900,
+                  background: 'var(--accent-lime)',
+                  color: '#000',
+                  padding: '3px 8px',
+                  borderRadius: '6px',
+                  letterSpacing: '0.5px'
+                }}>
+                  MENU HP BARU
+                </span>
+                <span style={{ fontSize: '12px', color: '#aaa' }}>12+ Merek Resmi ID</span>
+              </div>
+
+              <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#fff', marginBottom: '8px' }}>
+                Katalog HP Baru Berbagai Merek di Indonesia
+              </h3>
+              <p style={{ color: '#aaa', fontSize: '13px', lineHeight: 1.5, marginBottom: '16px' }}>
+                Pilih smartphone baru impianmu: Samsung (SEIN), Xiaomi & POCO (TAM), Apple (iBox), Infinix, Oppo, Vivo, Realme, Tecno. Segel resmi BNIB & skor AnTuTu v10 lengkap.
+              </p>
+
+              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '20px' }}>
+                {['Samsung', 'Xiaomi', 'Apple', 'POCO', 'Infinix', 'Oppo', 'Vivo', 'Realme'].map(brand => (
+                  <span key={brand} style={{ fontSize: '11px', background: 'rgba(255, 255, 255, 0.06)', padding: '2px 8px', borderRadius: '4px', color: '#ccc' }}>
+                    {brand}
+                  </span>
+                ))}
+              </div>
+
+              <div style={{ marginTop: 'auto' }}>
+                <Link
+                  href="/hp-baru"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    background: 'var(--accent-lime)',
+                    color: '#000',
+                    fontWeight: 800,
+                    padding: '10px 20px',
+                    borderRadius: '10px',
+                    fontSize: '13px',
+                    textDecoration: 'none'
+                  }}
+                >
+                  <span>Buka Menu HP Baru</span>
+                  <ArrowRight size={15} />
+                </Link>
+              </div>
+            </div>
+
+            {/* CARD 2: MENU HP SECOND */}
+            <div style={{
+              background: 'linear-gradient(135deg, rgba(0, 229, 255, 0.08) 0%, rgba(20, 20, 25, 0.9) 100%)',
+              border: '1px solid rgba(0, 229, 255, 0.35)',
+              borderRadius: '20px',
+              padding: '24px',
+              display: 'flex',
+              flexDirection: 'column',
+              position: 'relative',
+              overflow: 'hidden'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                <span style={{
+                  fontSize: '11px',
+                  fontWeight: 900,
+                  background: '#00E5FF',
+                  color: '#000',
+                  padding: '3px 8px',
+                  borderRadius: '6px',
+                  letterSpacing: '0.5px'
+                }}>
+                  MENU HP SECOND
+                </span>
+                <span style={{ fontSize: '12px', color: '#00E5FF', fontWeight: 700 }}>⚡ 5 Foto Fisik QC</span>
+              </div>
+
+              <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#fff', marginBottom: '8px' }}>
+                Katalog HP Second Lolos 35 Titik Inspeksi Lab
+              </h3>
+              <p style={{ color: '#aaa', fontSize: '13px', lineHeight: 1.5, marginBottom: '16px' }}>
+                Beli HP second transparan tanpa was-was. Setiap unit difoto dari <strong>5 sudut fisik riil</strong>, lolos uji teknisi, Battery Health original, IMEI Kemenperin bebas blokir, dan garansi toko 30 hari.
+              </p>
+
+              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '20px' }}>
+                {['5 Foto Fisik Riil', 'BH Original', 'IMEI Permanen', 'Garansi 30 Hari', 'Grade A+ Mulus'].map(badge => (
+                  <span key={badge} style={{ fontSize: '11px', background: 'rgba(0, 229, 255, 0.08)', border: '1px solid rgba(0, 229, 255, 0.2)', padding: '2px 8px', borderRadius: '4px', color: '#00E5FF' }}>
+                    {badge}
+                  </span>
+                ))}
+              </div>
+
+              <div style={{ marginTop: 'auto' }}>
+                <Link
+                  href="/hp-second"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    background: '#00E5FF',
+                    color: '#000',
+                    fontWeight: 900,
+                    padding: '10px 20px',
+                    borderRadius: '10px',
+                    fontSize: '13px',
+                    textDecoration: 'none'
+                  }}
+                >
+                  <span>Buka Menu HP Second (5 Foto)</span>
+                  <ArrowRight size={15} />
+                </Link>
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
