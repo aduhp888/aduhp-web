@@ -604,7 +604,7 @@ function CheckoutContent() {
                 {/* Free Wooden Packing Notice */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', color: '#888', marginTop: '12px' }}>
                   <PackageCheck size={14} color="var(--accent-lime)" />
-                  <span>Packing kayu tebal & bubble wrap gratis ditanggung oleh PT ADU HP INDONESIA.</span>
+                  <span>Packing kayu tebal & bubble wrap gratis ditanggung oleh PT. SECOND CIRCLE TEKNOLOGI.</span>
                 </div>
               </div>
 
@@ -620,7 +620,7 @@ function CheckoutContent() {
                     <Building2 size={18} color="var(--accent-lime)" /> 4. Rekening Pembayaran Resmi PT
                   </h3>
                   <p style={{ fontSize: '12px', color: '#aaa', marginTop: '4px' }}>
-                    Pembayaran transaksi sah <strong>hanya ditujukan ke rekening berbadan hukum PT ADU HP INDONESIA</strong>. Kami tidak pernah meminta transfer ke rekening atas nama perorangan/pribadi.
+                    Pembayaran transaksi sah <strong>hanya ditujukan ke rekening berbadan hukum PT. SECOND CIRCLE TEKNOLOGI</strong>. Kami tidak pernah meminta transfer ke rekening atas nama perorangan/pribadi.
                   </p>
                 </div>
 
@@ -819,7 +819,7 @@ function CheckoutContent() {
                   lineHeight: 1.5,
                   textAlign: 'center'
                 }}>
-                  🔒 Dengan melanjutkan, pesanan Anda terlindungi oleh <strong>Garansi Pembayaran PT ADU HP INDONESIA</strong>. Stok unit Anda akan dikunci selama masa transfer.
+                  🔒 Dengan melanjutkan, pesanan Anda terlindungi oleh <strong>Garansi Pembayaran PT. SECOND CIRCLE TEKNOLOGI</strong>. Stok unit Anda akan dikunci selama masa transfer.
                 </div>
               </div>
             </div>

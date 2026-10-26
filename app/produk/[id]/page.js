@@ -301,28 +301,6 @@ export default function ProductDetailPage({ params: paramsPromise }) {
               justifyContent: 'center',
               boxShadow: '0 20px 40px rgba(0,0,0,0.6)'
             }}>
-              {/* Badge Slot Info */}
-              <div style={{
-                position: 'absolute',
-                top: '16px',
-                left: '16px',
-                zIndex: 3,
-                background: 'rgba(0, 0, 0, 0.75)',
-                backdropFilter: 'blur(8px)',
-                padding: '6px 12px',
-                borderRadius: '8px',
-                border: '1px solid rgba(255, 255, 255, 0.15)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                fontSize: '12px',
-                color: '#fff',
-                fontWeight: 600
-              }}>
-                <span style={{ color: themeColor }}>●</span>
-                <span>Foto {activePhotoIdx + 1}/5: {photoGallery[activePhotoIdx]?.title}</span>
-              </div>
-
               {/* Fullscreen Zoom Trigger */}
               <button
                 onClick={() => { setZoomLevel(1); setIsLightboxOpen(true); }}
@@ -335,7 +313,7 @@ export default function ProductDetailPage({ params: paramsPromise }) {
                   border: '1px solid rgba(255, 255, 255, 0.2)',
                   color: '#fff',
                   borderRadius: '8px',
-                  padding: '8px',
+                  padding: '8px 12px',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
@@ -396,7 +374,7 @@ export default function ProductDetailPage({ params: paramsPromise }) {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={photoGallery[activePhotoIdx]?.url}
-                alt={`${product.name} - ${photoGallery[activePhotoIdx]?.title}`}
+                alt={product.name}
                 style={{
                   width: '92%',
                   height: '92%',
@@ -404,24 +382,6 @@ export default function ProductDetailPage({ params: paramsPromise }) {
                   transition: 'transform 0.25s ease'
                 }}
               />
-
-              {/* Bottom Caption Overlay */}
-              <div style={{
-                position: 'absolute',
-                bottom: '12px',
-                left: '12px',
-                right: '12px',
-                background: 'rgba(10, 10, 14, 0.85)',
-                backdropFilter: 'blur(6px)',
-                padding: '8px 14px',
-                borderRadius: '8px',
-                fontSize: '11px',
-                color: '#bbb',
-                border: '1px solid rgba(255, 255, 255, 0.08)'
-              }}>
-                <strong style={{ color: '#fff' }}>Detail: </strong>
-                {photoGallery[activePhotoIdx]?.desc}
-              </div>
             </div>
 
             {/* 5 Thumbnail Slots Selector */}
@@ -438,29 +398,25 @@ export default function ProductDetailPage({ params: paramsPromise }) {
                   style={{
                     background: '#16161c',
                     borderRadius: '10px',
-                    padding: '4px',
+                    padding: '6px',
                     border: activePhotoIdx === idx ? `2px solid ${themeColor}` : '1px solid rgba(255, 255, 255, 0.1)',
                     aspectRatio: '1 / 1',
                     cursor: 'pointer',
                     position: 'relative',
                     overflow: 'hidden',
                     display: 'flex',
-                    flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
                     transition: 'all 0.15s ease'
                   }}
-                  title={slot.title}
+                  title={`Foto ${idx + 1}`}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={slot.url}
-                    alt={slot.title}
-                    style={{ width: '100%', height: '80%', objectFit: 'contain' }}
+                    alt={`Thumbnail ${idx + 1}`}
+                    style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                   />
-                  <span style={{ fontSize: '9px', fontWeight: 700, color: activePhotoIdx === idx ? themeColor : '#777', marginTop: '2px' }}>
-                    Foto {idx + 1}
-                  </span>
                 </button>
               ))}
             </div>
@@ -595,7 +551,7 @@ export default function ProductDetailPage({ params: paramsPromise }) {
                 )}
               </div>
               <p style={{ fontSize: '12px', color: '#aaa', marginTop: '8px' }}>
-                Transfer langsung ke <strong>Rekening Resmi PT ADU HP INDONESIA</strong>. Dilindungi jaminan pengiriman berasuransi.
+                Transfer langsung ke <strong>Rekening Resmi PT. SECOND CIRCLE TEKNOLOGI</strong>. Dilindungi jaminan pengiriman berasuransi.
               </p>
             </div>
 
@@ -898,9 +854,6 @@ export default function ProductDetailPage({ params: paramsPromise }) {
               <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#fff' }}>
                 {product.name}
               </h3>
-              <p style={{ fontSize: '12px', color: themeColor }}>
-                Foto {activePhotoIdx + 1}/5: {photoGallery[activePhotoIdx]?.title}
-              </p>
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>

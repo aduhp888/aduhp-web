@@ -122,7 +122,7 @@ export default function InvoicePage({ params: paramsPromise }) {
         unique_code: 0,
         total_amount: 5533000,
         bank_name: 'BCA (Bank Central Asia)',
-        bank_account_name: 'PT ADU HP INDONESIA',
+        bank_account_name: 'PT. SECOND CIRCLE TEKNOLOGI',
         bank_account_number: '8830 9291 88',
         payment_status: 'menunggu_pembayaran',
         created_at: new Date().toISOString()
@@ -173,7 +173,7 @@ export default function InvoicePage({ params: paramsPromise }) {
   // WhatsApp confirmation text generator
   const getWhatsAppConfirmationUrl = () => {
     if (!order) return '#';
-    const text = `Halo Tim Finance PT ADU HP INDONESIA,%0A%0ASaya ingin konfirmasi pembayaran pesanan HP:%0A- No. Invoice: *${order.order_number}*%0A- Nama Pembeli: *${order.customer_name}*%0A- Unit HP: *${order.product_name}* (${order.variant_ram || 8}GB / ${order.variant_storage || 256}GB)%0A- Total Transfer: *${formatIDR(order.total_amount)}*%0A- Bank Tujuan: *${order.bank_name || 'BCA'} a.n. PT ADU HP INDONESIA*%0A%0ABukti transfer telah saya lampirkan. Mohon segera diverifikasi untuk proses packing kayu & pengiriman. Terima kasih!`;
+    const text = `Halo Tim Finance PT. SECOND CIRCLE TEKNOLOGI,%0A%0ASaya ingin konfirmasi pembayaran pesanan HP:%0A- No. Invoice: *${order.order_number}*%0A- Nama Pembeli: *${order.customer_name}*%0A- Unit HP: *${order.product_name}* (${order.variant_ram || 8}GB / ${order.variant_storage || 256}GB)%0A- Total Transfer: *${formatIDR(order.total_amount)}*%0A- Bank Tujuan: *${order.bank_name || 'BCA'} a.n. PT. SECOND CIRCLE TEKNOLOGI*%0A%0ABukti transfer telah saya lampirkan. Mohon segera diverifikasi untuk proses packing kayu & pengiriman. Terima kasih!`;
     return `https://wa.me/${CORPORATE_ACCOUNTS.financeWhatsapp}?text=${text}`;
   };
 
@@ -782,7 +782,7 @@ export default function InvoicePage({ params: paramsPromise }) {
               background: 'rgba(198, 255, 0, 0.04)'
             }}>
               <div style={{ fontSize: '9px', fontWeight: 900, color: 'var(--accent-lime)', letterSpacing: '0.5px' }}>
-                PT ADU HP INDONESIA
+                PT. SECOND CIRCLE TEKNOLOGI
               </div>
               <div style={{ fontSize: '8px', color: '#aaa', marginTop: '2px' }}>
                 FINANCE & BILLING VERIFIED
@@ -808,7 +808,7 @@ export default function InvoicePage({ params: paramsPromise }) {
             Sudah Melakukan Transfer ke Rekening PT?
           </h4>
           <p style={{ fontSize: '12px', color: '#aaa', marginBottom: '16px', lineHeight: 1.5 }}>
-            Unggah bukti struk transfer Anda di bawah atau langsung kirimkan konfirmasi via WhatsApp ke tim Finance resmi PT ADU HP INDONESIA.
+            Unggah bukti struk transfer Anda di bawah atau langsung kirimkan konfirmasi via WhatsApp ke tim Finance resmi PT. SECOND CIRCLE TEKNOLOGI.
           </p>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
