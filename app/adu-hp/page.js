@@ -279,8 +279,9 @@ export default function AduHpDedicatedPage() {
         <div className="container">
           <div className="header-inner">
             <Link href="/" className="brand-wrapper">
-              <div className="brand-vs-box">
-                VS
+              <div className="brand-vs-box" style={{ padding: 0, overflow: 'hidden', background: '#000', border: '1px solid var(--border-lime)', boxShadow: '0 0 10px rgba(198, 255, 0, 0.35)' }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/logo.png" alt="AduHP Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               </div>
               <div className="brand-meta">
                 <div className="brand-title-row">

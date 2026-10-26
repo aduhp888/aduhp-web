@@ -151,7 +151,10 @@ export default function HpSecondPage() {
         <div className="container">
           <div className="header-inner">
             <Link href="/" className="brand-wrapper">
-              <div className="brand-vs-box" style={{ background: '#00E5FF', color: '#000' }}>VS</div>
+              <div className="brand-vs-box" style={{ padding: 0, overflow: 'hidden', background: '#000', border: '1px solid rgba(0, 229, 255, 0.4)', boxShadow: '0 0 10px rgba(0, 229, 255, 0.35)' }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/logo.png" alt="AduHP Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              </div>
               <div className="brand-meta">
                 <div className="brand-title-row">
                   <span className="brand-name">AduHP</span>
