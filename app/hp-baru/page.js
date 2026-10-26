@@ -62,6 +62,7 @@ export default function HpBaruPage() {
   const [loading, setLoading] = useState(true);
   const [selectedBrand, setSelectedBrand] = useState('all');
   const [selectedTier, setSelectedTier] = useState('all');
+  const [saleFilter, setSaleFilter] = useState('all'); // 'all' | 'dijual' | 'compare_only'
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSpecModal, setSelectedSpecModal] = useState(null);
   const [activePhotoMap, setActivePhotoMap] = useState({});
@@ -91,7 +92,11 @@ export default function HpBaruPage() {
           const merged = [...ALL_PHONES];
           data.forEach(item => {
             if (!merged.some(m => m.id === item.id || m.slug === item.slug)) {
-              merged.push(item);
+              merged.push({
+                ...item,
+                is_for_sale: item.is_for_sale !== false,
+                sale_status: item.sale_status || (item.is_for_sale === false ? 'compare_only' : 'dijual')
+              });
             }
           });
           setProducts(merged);
@@ -124,6 +129,11 @@ export default function HpBaruPage() {
       // Tier filter
       const matchesTier = selectedTier === 'all' || p.price_tier === selectedTier;
 
+      // Sale status filter
+      const matchesSale = saleFilter === 'all' ||
+        (saleFilter === 'dijual' && p.is_for_sale !== false) ||
+        (saleFilter === 'compare_only' && p.is_for_sale === false);
+
       // Search filter
       const q = searchQuery.toLowerCase();
       const matchesSearch = !q || 
@@ -131,9 +141,9 @@ export default function HpBaruPage() {
         p.brand?.toLowerCase().includes(q) ||
         p.specs?.chipset?.toLowerCase().includes(q);
 
-      return matchesBrand && matchesTier && matchesSearch;
+      return matchesBrand && matchesTier && matchesSale && matchesSearch;
     });
-  }, [products, selectedBrand, selectedTier, searchQuery]);
+  }, [products, selectedBrand, selectedTier, saleFilter, searchQuery]);
 
   function getWhatsAppBuyUrl(phone) {
     const text = encodeURIComponent(
@@ -399,6 +409,42 @@ export default function HpBaruPage() {
                 );
               })}
             </div>
+
+            {/* Status Penjualan Tabs */}
+            <div style={{ display: 'flex', gap: '8px', width: '100%', paddingTop: '10px', borderTop: '1px solid rgba(255, 255, 255, 0.08)', flexWrap: 'wrap' }}>
+              {[
+                { id: 'all', label: `Semua Katalog (${products.filter(p => !p.condition || p.condition === 'baru').length})` },
+                { id: 'dijual', label: `🛍️ Dijual oleh aduHP (${products.filter(p => (!p.condition || p.condition === 'baru') && p.is_for_sale !== false).length})` },
+                { id: 'compare_only', label: `⚖️ Database Pembanding (${products.filter(p => (!p.condition || p.condition === 'baru') && p.is_for_sale === false).length})` },
+              ].map(tab => {
+                const isSelected = saleFilter === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setSaleFilter(tab.id)}
+                    style={{
+                      padding: '8px 14px',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                      fontWeight: isSelected ? 800 : 600,
+                      cursor: 'pointer',
+                      border: isSelected 
+                        ? (tab.id === 'compare_only' ? '1px solid #00E5FF' : '1px solid var(--accent-lime)')
+                        : '1px solid rgba(255, 255, 255, 0.1)',
+                      background: isSelected 
+                        ? (tab.id === 'compare_only' ? 'rgba(0, 229, 255, 0.15)' : 'rgba(198, 255, 0, 0.12)')
+                        : '#18181c',
+                      color: isSelected 
+                        ? (tab.id === 'compare_only' ? '#00E5FF' : 'var(--accent-lime)')
+                        : '#aaa',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       </section>
@@ -472,7 +518,7 @@ export default function HpBaruPage() {
                   >
                     {/* Image Area */}
                     <div style={{ position: 'relative', height: '210px', background: 'radial-gradient(circle, #222 0%, #0d0d10 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '14px' }}>
-                      {/* Badge Brand & BNIB */}
+                      {/* Badge Brand & Status Penjualan */}
                       <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', gap: '6px', zIndex: 2 }}>
                         <span style={{
                           background: 'rgba(0, 0, 0, 0.7)',
@@ -485,17 +531,31 @@ export default function HpBaruPage() {
                         }}>
                           {phone.brand}
                         </span>
-                        <span style={{
-                          background: 'rgba(198, 255, 0, 0.15)',
-                          border: '1px solid var(--border-lime)',
-                          color: 'var(--accent-lime)',
-                          padding: '3px 8px',
-                          borderRadius: '6px',
-                          fontSize: '11px',
-                          fontWeight: 800
-                        }}>
-                          BARU BNIB
-                        </span>
+                        {phone.is_for_sale === false ? (
+                          <span style={{
+                            background: 'rgba(0, 229, 255, 0.2)',
+                            border: '1px solid rgba(0, 229, 255, 0.45)',
+                            color: '#00E5FF',
+                            padding: '3px 8px',
+                            borderRadius: '6px',
+                            fontSize: '11px',
+                            fontWeight: 800
+                          }}>
+                            ⚖️ DATA PEMBANDING
+                          </span>
+                        ) : (
+                          <span style={{
+                            background: 'rgba(198, 255, 0, 0.15)',
+                            border: '1px solid var(--border-lime)',
+                            color: 'var(--accent-lime)',
+                            padding: '3px 8px',
+                            borderRadius: '6px',
+                            fontSize: '11px',
+                            fontWeight: 800
+                          }}>
+                            🟢 DIJUAL ADUHP
+                          </span>
+                        )}
                       </div>
 
                       {/* Zoom Trigger Button if multi-photos */}
@@ -626,13 +686,24 @@ export default function HpBaruPage() {
                       {/* Price Section */}
                       <div style={{ marginTop: 'auto', paddingTop: '10px', borderTop: '1px solid rgba(255, 255, 255, 0.06)' }}>
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                          <span style={{ fontSize: '18px', fontWeight: 900, color: 'var(--accent-lime)', fontFamily: 'var(--font-mono)' }}>
-                            {formatIDR(phone.price)}
-                          </span>
-                          {hasDiscount && (
-                            <span style={{ fontSize: '12px', color: '#777', textDecoration: 'line-through', fontFamily: 'var(--font-mono)' }}>
-                              {formatIDR(phone.original_price)}
-                            </span>
+                          {phone.is_for_sale === false ? (
+                            <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+                              <span style={{ fontSize: '15px', fontWeight: 800, color: '#aaa', fontFamily: 'var(--font-mono)' }}>
+                                SRP: {formatIDR(phone.price)}
+                              </span>
+                              <span style={{ fontSize: '10px', color: '#777' }}>(Tidak Dijual)</span>
+                            </div>
+                          ) : (
+                            <>
+                              <span style={{ fontSize: '18px', fontWeight: 900, color: 'var(--accent-lime)', fontFamily: 'var(--font-mono)' }}>
+                                {formatIDR(phone.price)}
+                              </span>
+                              {hasDiscount && (
+                                <span style={{ fontSize: '12px', color: '#777', textDecoration: 'line-through', fontFamily: 'var(--font-mono)' }}>
+                                  {formatIDR(phone.original_price)}
+                                </span>
+                              )}
+                            </>
                           )}
                         </div>
 
@@ -646,16 +717,39 @@ export default function HpBaruPage() {
                           >
                             <span>⚔️ Adukan</span>
                           </Link>
-                          <a
-                            href={getWhatsAppBuyUrl(phone)}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="btn btn-primary btn-sm"
-                            style={{ flex: 1.2, justifyContent: 'center', fontSize: '12px', background: 'var(--accent-lime)', color: '#000', fontWeight: 800 }}
-                          >
-                            <ShoppingBag size={13} />
-                            <span>Beli BNIB</span>
-                          </a>
+                          {phone.is_for_sale === false ? (
+                            <div
+                              style={{
+                                flex: 1.2,
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                padding: '6px 10px',
+                                borderRadius: '6px',
+                                background: 'rgba(255, 255, 255, 0.04)',
+                                border: '1px dashed rgba(255, 255, 255, 0.18)',
+                                color: '#888',
+                                fontSize: '11px',
+                                fontWeight: 600,
+                                textAlign: 'center',
+                                cursor: 'default'
+                              }}
+                              title="Tipe handphone ini adalah data spesifikasi pembanding di arena duel, tidak dijual oleh aduHP."
+                            >
+                              <span>⚖️ Hanya Pembanding</span>
+                            </div>
+                          ) : (
+                            <a
+                              href={getWhatsAppBuyUrl(phone)}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="btn btn-primary btn-sm"
+                              style={{ flex: 1.2, justifyContent: 'center', fontSize: '12px', background: 'var(--accent-lime)', color: '#000', fontWeight: 800 }}
+                            >
+                              <ShoppingBag size={13} />
+                              <span>Beli BNIB</span>
+                            </a>
+                          )}
                         </div>
                       </div>
                     </div>

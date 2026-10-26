@@ -1359,6 +1359,23 @@ export const ALL_PHONES = [
   }
 ];
 
+// Set ID handphone yang murni untuk database pembanding aduan (TIDAK dijual oleh toko aduHP)
+const COMPARE_ONLY_IDS = new Set([
+  'vivo-v40-5g',
+  'iqoo-12-5g',
+  'vivo-x100-pro',
+  'xiaomi-14-ultra',
+  'samsung-galaxy-s24-ultra',
+  'iphone-16-pro-max'
+]);
+
+// Berikan flag is_for_sale dan sale_status pada seluruh katalog
+ALL_PHONES.forEach(phone => {
+  const isCompareOnly = COMPARE_ONLY_IDS.has(phone.id);
+  phone.is_for_sale = !isCompareOnly;
+  phone.sale_status = isCompareOnly ? 'compare_only' : 'dijual';
+});
+
 // Backwards compatibility alias for components importing ENTRY_LEVEL_PHONES
 export const ENTRY_LEVEL_PHONES = ALL_PHONES;
 

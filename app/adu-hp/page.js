@@ -103,6 +103,7 @@ export default function AduHpDedicatedPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedBrand, setSelectedBrand] = useState('Semua Brand');
   const [selectedPriceTier, setSelectedPriceTier] = useState('all');
+  const [selectedSaleStatus, setSelectedSaleStatus] = useState('all'); // 'all' | 'dijual' | 'compare_only'
   const [activeTab, setActiveTab] = useState('antutu'); // 'antutu' | 'gaming' | 'specs' | 'verdict'
   const [activeDerby, setActiveDerby] = useState('derby-cross-tier');
   const [showToast, setShowToast] = useState(null);
@@ -161,9 +162,12 @@ export default function AduHpDedicatedPage() {
                           phone.specs.chipset.toLowerCase().includes(searchQuery.toLowerCase());
       const matchBrand = selectedBrand === 'Semua Brand' || phone.brand.toLowerCase() === selectedBrand.toLowerCase();
       const matchTier = selectedPriceTier === 'all' || phone.price_tier === selectedPriceTier;
-      return matchSearch && matchBrand && matchTier;
+      const matchSale = selectedSaleStatus === 'all' ||
+                        (selectedSaleStatus === 'dijual' && phone.is_for_sale !== false) ||
+                        (selectedSaleStatus === 'compare_only' && phone.is_for_sale === false);
+      return matchSearch && matchBrand && matchTier && matchSale;
     });
-  }, [searchQuery, selectedBrand, selectedPriceTier]);
+  }, [searchQuery, selectedBrand, selectedPriceTier, selectedSaleStatus]);
 
   function handleStartBattle() {
     setBattleState('battling');
@@ -476,9 +480,15 @@ export default function AduHpDedicatedPage() {
                         </span>
                       )}
                     </div>
-                    <div className="slot-new-badge">
-                      100% BARU (BNIB)
-                    </div>
+                    {phone.is_for_sale === false ? (
+                      <div className="slot-new-badge" style={{ background: 'rgba(0, 229, 255, 0.15)', color: '#00E5FF', border: '1px solid rgba(0, 229, 255, 0.4)' }}>
+                        ⚖️ DATA PEMBANDING
+                      </div>
+                    ) : (
+                      <div className="slot-new-badge" style={{ background: 'rgba(198, 255, 0, 0.15)', color: 'var(--accent-lime)', border: '1px solid var(--border-lime)' }}>
+                        🟢 DIJUAL ADUHP
+                      </div>
+                    )}
                   </div>
 
                   {/* Phone Image Container */}
@@ -497,9 +507,20 @@ export default function AduHpDedicatedPage() {
 
                   {/* Price */}
                   <div className="slot-price-row">
-                    <span className="slot-price-current">{formatIDR(phone.price)}</span>
-                    {phone.original_price && (
-                      <span className="slot-price-old">{formatIDR(phone.original_price)}</span>
+                    {phone.is_for_sale === false ? (
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+                        <span className="slot-price-current" style={{ color: '#aaa', fontSize: '14px' }}>
+                          SRP: {formatIDR(phone.price)}
+                        </span>
+                        <span style={{ fontSize: '10px', color: '#777' }}>(Tidak Dijual)</span>
+                      </div>
+                    ) : (
+                      <>
+                        <span className="slot-price-current">{formatIDR(phone.price)}</span>
+                        {phone.original_price && (
+                          <span className="slot-price-old">{formatIDR(phone.original_price)}</span>
+                        )}
+                      </>
                     )}
                   </div>
 
@@ -602,15 +623,38 @@ export default function AduHpDedicatedPage() {
                       <span>Ganti HP</span>
                     </button>
 
-                    <a
-                      href={makeWhatsAppUrl(phone)}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="btn-slot-order"
-                    >
-                      <MessageCircle size={14} />
-                      <span>Beli Baru</span>
-                    </a>
+                    {phone.is_for_sale === false ? (
+                      <div
+                        style={{
+                          flex: 1,
+                          padding: '8px 10px',
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          background: 'rgba(255, 255, 255, 0.04)',
+                          border: '1px dashed rgba(255, 255, 255, 0.18)',
+                          color: '#888',
+                          borderRadius: '8px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          textAlign: 'center',
+                          cursor: 'default'
+                        }}
+                        title="aduHP tidak menjual tipe handphone ini. Unit ini adalah data pembanding spesifikasi di arena duel."
+                      >
+                        <span>⚖️ Hanya Pembanding</span>
+                      </div>
+                    ) : (
+                      <a
+                        href={makeWhatsAppUrl(phone)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="btn-slot-order"
+                      >
+                        <MessageCircle size={14} />
+                        <span>Beli di aduHP</span>
+                      </a>
+                    )}
                   </div>
                 </div>
               );
@@ -1446,6 +1490,33 @@ export default function AduHpDedicatedPage() {
                     </button>
                   ))}
                 </div>
+
+                {/* Sale Status Filter Pills */}
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', paddingTop: '4px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                  <span style={{ fontSize: '11px', color: '#666', alignSelf: 'center', fontWeight: 700 }}>STATUS:</span>
+                  {[
+                    { id: 'all', label: 'Semua Status' },
+                    { id: 'dijual', label: '🛍️ Dijual oleh aduHP' },
+                    { id: 'compare_only', label: '⚖️ Hanya Pembanding' },
+                  ].map(st => (
+                    <button
+                      key={st.id}
+                      onClick={() => setSelectedSaleStatus(st.id)}
+                      style={{
+                        padding: '4px 10px',
+                        borderRadius: '6px',
+                        fontSize: '11px',
+                        fontWeight: selectedSaleStatus === st.id ? 800 : 500,
+                        background: selectedSaleStatus === st.id ? (st.id === 'compare_only' ? 'rgba(0, 229, 255, 0.2)' : 'rgba(198, 255, 0, 0.2)') : 'rgba(255, 255, 255, 0.04)',
+                        color: selectedSaleStatus === st.id ? (st.id === 'compare_only' ? '#00E5FF' : 'var(--accent-lime)') : '#888',
+                        border: selectedSaleStatus === st.id ? `1px solid ${st.id === 'compare_only' ? '#00E5FF' : 'var(--accent-lime)'}` : '1px solid rgba(255, 255, 255, 0.08)',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {st.label}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* List of Catalog Phones */}
@@ -1492,16 +1563,31 @@ export default function AduHpDedicatedPage() {
                         <div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <span style={{ fontWeight: 800, color: '#fff', fontSize: '14.5px' }}>{phone.name}</span>
-                            <span style={{
-                              background: 'rgba(0, 229, 255, 0.1)',
-                              color: '#00E5FF',
-                              fontSize: '9.5px',
-                              fontWeight: 800,
-                              padding: '2px 6px',
-                              borderRadius: '4px'
-                            }}>
-                              {phone.badge}
-                            </span>
+                            {phone.is_for_sale === false ? (
+                              <span style={{
+                                background: 'rgba(0, 229, 255, 0.15)',
+                                color: '#00E5FF',
+                                border: '1px solid rgba(0, 229, 255, 0.35)',
+                                fontSize: '9.5px',
+                                fontWeight: 800,
+                                padding: '2px 6px',
+                                borderRadius: '4px'
+                              }}>
+                                ⚖️ Hanya Pembanding
+                              </span>
+                            ) : (
+                              <span style={{
+                                background: 'rgba(198, 255, 0, 0.15)',
+                                color: 'var(--accent-lime)',
+                                border: '1px solid var(--border-lime)',
+                                fontSize: '9.5px',
+                                fontWeight: 800,
+                                padding: '2px 6px',
+                                borderRadius: '4px'
+                              }}>
+                                🟢 Dijual aduHP
+                              </span>
+                            )}
                           </div>
 
                           <div style={{ fontSize: '12px', color: '#888', marginTop: '3px' }}>
@@ -1535,9 +1621,18 @@ export default function AduHpDedicatedPage() {
 
                         {/* Price & Select Button */}
                         <div style={{ textAlign: 'right', minWidth: '110px' }}>
-                          <div style={{ fontSize: '16px', fontWeight: 900, color: 'var(--accent-lime)', fontFamily: 'var(--font-mono)' }}>
-                            {formatIDR(phone.price)}
-                          </div>
+                          {phone.is_for_sale === false ? (
+                            <div>
+                              <div style={{ fontSize: '13.5px', fontWeight: 800, color: '#aaa', fontFamily: 'var(--font-mono)' }}>
+                                SRP: {formatIDR(phone.price)}
+                              </div>
+                              <div style={{ fontSize: '9.5px', color: '#777' }}>(Data Only)</div>
+                            </div>
+                          ) : (
+                            <div style={{ fontSize: '16px', fontWeight: 900, color: 'var(--accent-lime)', fontFamily: 'var(--font-mono)' }}>
+                              {formatIDR(phone.price)}
+                            </div>
+                          )}
                           <button
                             onClick={(e) => {
                               e.stopPropagation();

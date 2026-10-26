@@ -201,11 +201,13 @@ export default function LandingPage() {
           const json = await res.json();
           const list = json.data && json.data.length > 0 ? json.data : json;
           if (Array.isArray(list) && list.length > 0) {
-            const merged = [...ENTRY_LEVEL_PHONES];
+            const merged = [...ALL_PHONES];
             list.forEach(item => {
               if (item.condition === 'baru' && !merged.some(m => m.id === item.id)) {
                 merged.push({
                   ...item,
+                  is_for_sale: item.is_for_sale !== false,
+                  sale_status: item.sale_status || (item.is_for_sale === false ? 'compare_only' : 'dijual'),
                   antutu: item.antutu || { total: 285000, cpu: 88000, gpu: 45000, memory: 76000, ux: 76000, tier: 'Entry Value' }
                 });
               }
@@ -833,17 +835,34 @@ export default function LandingPage() {
                   <div className="phone-info-body">
                     <div className="phone-brand-condition">
                       <span className="phone-brand-tag">{phone?.brand}</span>
-                      <span className="phone-condition-badge badge-baru">
-                        {phone?.grade || 'Baru (BNIB Segel)'}
-                      </span>
+                      {phone?.is_for_sale === false ? (
+                        <span className="phone-condition-badge" style={{ background: 'rgba(0, 229, 255, 0.15)', color: '#00E5FF', border: '1px solid rgba(0, 229, 255, 0.4)' }}>
+                          ⚖️ Data Pembanding
+                        </span>
+                      ) : (
+                        <span className="phone-condition-badge badge-baru">
+                          🟢 {phone?.grade || 'Dijual aduHP'}
+                        </span>
+                      )}
                     </div>
 
                     <h3 className="phone-title">{phone?.name}</h3>
 
                     <div className="phone-price-row">
-                      <span className="price-main">{formatIDR(phone?.price)}</span>
-                      {phone?.original_price && (
-                        <span className="price-strike">{formatIDR(phone?.original_price)}</span>
+                      {phone?.is_for_sale === false ? (
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+                          <span className="price-main" style={{ color: '#aaa', fontSize: '13.5px' }}>
+                            SRP: {formatIDR(phone?.price)}
+                          </span>
+                          <span style={{ fontSize: '10px', color: '#777' }}>(Hanya Pembanding)</span>
+                        </div>
+                      ) : (
+                        <>
+                          <span className="price-main">{formatIDR(phone?.price)}</span>
+                          {phone?.original_price && (
+                            <span className="price-strike">{formatIDR(phone?.original_price)}</span>
+                          )}
+                        </>
                       )}
                     </div>
 
@@ -901,9 +920,9 @@ export default function LandingPage() {
                       </div>
 
                       <div className="spec-item">
-                        <span className="spec-key">Distributor Resmi</span>
-                        <span className="spec-val" style={{ color: 'var(--accent-lime)' }}>
-                          {phone?.official_distributor || 'Resmi Indonesia'}
+                        <span className="spec-key">Status / Garansi</span>
+                        <span className="spec-val" style={{ color: phone?.is_for_sale === false ? '#00E5FF' : 'var(--accent-lime)' }}>
+                          {phone?.is_for_sale === false ? 'Data Pembanding (Tidak Dijual)' : (phone?.official_distributor || 'Resmi Indonesia')}
                         </span>
                       </div>
                     </div>
@@ -937,15 +956,37 @@ export default function LandingPage() {
                         <ArrowRight size={12} />
                       </Link>
 
-                      <a
-                        href={makeWhatsAppUrl(phone?.name, phone?.price, phone?.condition)}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="btn-order-wa"
-                      >
-                        <MessageCircle size={14} />
-                        <span>Beli</span>
-                      </a>
+                      {phone?.is_for_sale === false ? (
+                        <div
+                          style={{
+                            padding: '8px 10px',
+                            fontSize: '11px',
+                            fontWeight: 700,
+                            background: 'rgba(255, 255, 255, 0.04)',
+                            border: '1px dashed rgba(255, 255, 255, 0.18)',
+                            color: '#888',
+                            borderRadius: '8px',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            textAlign: 'center',
+                            cursor: 'default'
+                          }}
+                          title="aduHP tidak menjual tipe handphone ini. Unit ini adalah data pembanding spesifikasi di arena duel."
+                        >
+                          <span>⚖️ Tidak Dijual</span>
+                        </div>
+                      ) : (
+                        <a
+                          href={makeWhatsAppUrl(phone?.name, phone?.price, phone?.condition)}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="btn-order-wa"
+                        >
+                          <MessageCircle size={14} />
+                          <span>Beli</span>
+                        </a>
+                      )}
                     </div>
                   </div>
                 </div>
