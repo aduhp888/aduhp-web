@@ -30,7 +30,11 @@ import {
   FileText,
   Package,
   Wifi,
-  HardDrive
+  HardDrive,
+  Plus,
+  Minus,
+  ArrowRight,
+  Lock
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { 
@@ -39,11 +43,17 @@ import {
   getProductVariants, 
   getProductColors 
 } from '../../lib/utils';
+import { useCart } from '../../context/CartContext';
+import { useAuth } from '../../context/AuthContext';
+import NavbarCartAndAuth from '../../components/NavbarCartAndAuth';
 
 export default function ProductDetailPage() {
   const router = useRouter();
   const routeParams = useParams();
   const productId = routeParams?.id;
+
+  const { addToCart } = useCart();
+  const { user } = useAuth();
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -53,9 +63,11 @@ export default function ProductDetailPage() {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(1);
 
-  // Variant Selection State
+  // Variant & Quantity Selection State
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [selectedColor, setSelectedColor] = useState(null);
+  const [quantity, setQuantity] = useState(1);
+  const [toastMessage, setToastMessage] = useState(null);
   const [activeTab, setActiveTab] = useState('specs'); // 'specs' | 'qc' | 'garansi'
 
   // Fetch product from Supabase or fallback
@@ -187,8 +199,20 @@ export default function ProductDetailPage() {
   // Check if current variant is out of stock
   const isOutOfStock = !selectedVariant || (selectedVariant.stock !== undefined && selectedVariant.stock <= 0);
 
-  // Checkout navigation
-  const handleProceedToCheckout = () => {
+  // Add to Cart
+  const handleAddToCart = () => {
+    if (!product) return;
+    if (isOutOfStock) {
+      alert(`Maaf, varian ${selectedVariant?.label || ''} saat ini sedang kosong/habis.`);
+      return;
+    }
+    addToCart(product, selectedVariant, selectedColor, quantity);
+    setToastMessage(`✓ ${product.name} (${selectedVariant?.label || ''}) berhasil masuk ke keranjang!`);
+    setTimeout(() => setToastMessage(null), 3500);
+  };
+
+  // Direct Buy / Checkout with Login Wall
+  const handleDirectBuy = () => {
     if (!product) return;
     if (isOutOfStock) {
       alert(`Maaf, varian ${selectedVariant?.label || ''} saat ini sedang kosong/habis.`);
@@ -206,10 +230,18 @@ export default function ProductDetailPage() {
       storage: storage.toString(),
       color: color,
       condition: product.condition || 'baru',
-      image: photoGallery[0]?.url || ''
+      image: photoGallery[0]?.url || '',
+      quantity: quantity.toString()
     }).toString();
 
-    router.push(`/checkout?${query}`);
+    const targetUrl = `/checkout?${query}`;
+
+    // Login Wall: Wajib Login sebelum Checkout ke Pembayaran
+    if (!user) {
+      router.push(`/login?redirect=${encodeURIComponent(targetUrl)}`);
+    } else {
+      router.push(targetUrl);
+    }
   };
 
   if (loading) {
@@ -282,9 +314,11 @@ export default function ProductDetailPage() {
                 color: 'var(--accent-lime)',
                 fontWeight: 700
               }}>
-                <Building2 size={14} />
-                <span>Pembayaran Sah ke Rekening PT</span>
+                <ShieldCheck size={14} />
+                <span>Garansi Resmi PT</span>
               </div>
+
+              <NavbarCartAndAuth />
             </div>
           </div>
         </div>
@@ -701,14 +735,87 @@ export default function ProductDetailPage() {
               </div>
             </div>
 
+            {/* QUANTITY SELECTOR */}
+            <div style={{ marginBottom: '26px', display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+              <label style={{ fontSize: '13px', fontWeight: 800, color: '#fff', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                Kuantitas:
+              </label>
+
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                background: '#16161c',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                borderRadius: '10px',
+                overflow: 'hidden'
+              }}>
+                <button
+                  type="button"
+                  onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
+                  style={{
+                    width: '38px',
+                    height: '38px',
+                    background: 'none',
+                    border: 'none',
+                    color: '#fff',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                  title="Kurangi jumlah"
+                >
+                  <Minus size={14} />
+                </button>
+                <span style={{
+                  minWidth: '44px',
+                  textAlign: 'center',
+                  fontWeight: 800,
+                  color: '#fff',
+                  fontSize: '15px',
+                  fontFamily: 'var(--font-mono)'
+                }}>
+                  {quantity}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setQuantity(prev => {
+                    const max = selectedVariant?.stock > 0 ? selectedVariant.stock : 10;
+                    return prev < max ? prev + 1 : prev;
+                  })}
+                  disabled={selectedVariant?.stock > 0 && quantity >= selectedVariant.stock}
+                  style={{
+                    width: '38px',
+                    height: '38px',
+                    background: 'none',
+                    border: 'none',
+                    color: (selectedVariant?.stock > 0 && quantity >= selectedVariant.stock) ? '#555' : '#fff',
+                    cursor: (selectedVariant?.stock > 0 && quantity >= selectedVariant.stock) ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                  title="Tambah jumlah"
+                >
+                  <Plus size={14} />
+                </button>
+              </div>
+
+              <span style={{ fontSize: '12px', color: '#888' }}>
+                {selectedVariant?.stock > 0 
+                  ? `Stok tersedia: ${selectedVariant.stock} unit`
+                  : (product?.stock > 0 ? `Stok tersedia: ${product.stock} unit` : 'Stok habis')}
+              </span>
+            </div>
+
             {/* ACTION CTA BUTTONS */}
-            <div style={{ display: 'flex', gap: '14px', marginBottom: '32px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '12px', marginBottom: '32px', flexWrap: 'wrap' }}>
               {isOutOfStock ? (
                 <button
                   type="button"
                   disabled
                   style={{
-                    flex: '2 1 240px',
+                    flex: '2 1 260px',
                     justifyContent: 'center',
                     padding: '16px 24px',
                     fontSize: '15px',
@@ -728,34 +835,75 @@ export default function ProductDetailPage() {
                   <span>Stok Varian Ini Habis (Pilih Varian Lain)</span>
                 </button>
               ) : (
-                <button
-                  onClick={handleProceedToCheckout}
-                  className="btn btn-primary"
-                  style={{
-                    flex: '2 1 240px',
-                    justifyContent: 'center',
-                    padding: '16px 24px',
-                    fontSize: '16px',
-                    fontWeight: 900,
-                    background: themeColor,
-                    color: '#000',
-                    boxShadow: `0 8px 24px rgba(198, 255, 0, 0.25)`
-                  }}
-                >
-                  <ShoppingBag size={20} />
-                  <span>Beli Sekarang (Lanjut Checkout)</span>
-                </button>
+                <>
+                  <button
+                    type="button"
+                    onClick={handleAddToCart}
+                    className="btn btn-secondary"
+                    style={{
+                      flex: '1 1 180px',
+                      justifyContent: 'center',
+                      padding: '16px 20px',
+                      fontSize: '15px',
+                      fontWeight: 800,
+                      background: 'rgba(198, 255, 0, 0.08)',
+                      border: '1.5px solid var(--accent-lime)',
+                      color: 'var(--accent-lime)',
+                      borderRadius: '12px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      transition: 'all 0.2s ease'
+                    }}
+                    title="Tambahkan ke Keranjang Belanja"
+                  >
+                    <ShoppingBag size={18} />
+                    <span>+ Keranjang</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleDirectBuy}
+                    className="btn btn-primary"
+                    style={{
+                      flex: '1.8 1 220px',
+                      justifyContent: 'center',
+                      padding: '16px 24px',
+                      fontSize: '15.5px',
+                      fontWeight: 900,
+                      background: themeColor,
+                      color: '#000',
+                      borderRadius: '12px',
+                      boxShadow: `0 8px 24px rgba(198, 255, 0, 0.25)`,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      transition: 'all 0.2s ease'
+                    }}
+                    title="Beli langsung dan lanjutkan ke pembayaran"
+                  >
+                    {!user && <Lock size={16} />}
+                    <span>{user ? 'Beli Sekarang' : 'Login & Beli Sekarang'}</span>
+                    <ArrowRight size={18} />
+                  </button>
+                </>
               )}
 
               <Link
                 href={`/adu-hp?slot1=${product.id}`}
                 className="btn btn-secondary"
                 style={{
-                  flex: '1 1 140px',
+                  flex: '1 1 130px',
                   justifyContent: 'center',
-                  padding: '16px 20px',
+                  padding: '16px 18px',
                   fontSize: '14px',
-                  fontWeight: 700
+                  fontWeight: 700,
+                  borderRadius: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
                 }}
                 title="Bandingkan spesifikasi di arena adu HP"
               >
@@ -1237,6 +1385,91 @@ export default function ProductDetailPage() {
           </div>
         </div>
       )}
+
+      {/* Toast Alert Feedback */}
+      {toastMessage && (
+        <div style={{
+          position: 'fixed',
+          top: '24px',
+          right: '24px',
+          zIndex: 100000,
+          background: 'rgba(18, 18, 23, 0.95)',
+          border: '1px solid var(--accent-lime)',
+          borderRadius: '10px',
+          padding: '12px 18px',
+          color: '#fff',
+          fontSize: '13px',
+          fontWeight: 700,
+          boxShadow: '0 8px 30px rgba(0,0,0,0.6)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px'
+        }}>
+          <CheckCircle2 size={18} color="var(--accent-lime)" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
+      {/* Mobile Floating Sticky Bottom Bar */}
+      <div style={{
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        zIndex: 900,
+        background: 'rgba(18, 18, 23, 0.96)',
+        backdropFilter: 'blur(12px)',
+        borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+        padding: '12px 16px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: '12px'
+      }}>
+        <div>
+          <div style={{ fontSize: '11px', color: '#888' }}>Total ({quantity} unit):</div>
+          <div style={{ fontSize: '16px', fontWeight: 900, color: themeColor, fontFamily: 'var(--font-mono)' }}>
+            {formatIDR(currentPrice * quantity)}
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button
+            type="button"
+            onClick={handleAddToCart}
+            disabled={isOutOfStock}
+            style={{
+              padding: '10px 14px',
+              background: 'rgba(255, 255, 255, 0.08)',
+              border: '1.5px solid var(--accent-lime)',
+              color: 'var(--accent-lime)',
+              borderRadius: '8px',
+              fontWeight: 800,
+              fontSize: '12.5px',
+              cursor: isOutOfStock ? 'not-allowed' : 'pointer'
+            }}
+          >
+            + Keranjang
+          </button>
+          <button
+            type="button"
+            onClick={handleDirectBuy}
+            disabled={isOutOfStock}
+            style={{
+              padding: '10px 18px',
+              background: themeColor,
+              color: '#000',
+              borderRadius: '8px',
+              fontWeight: 900,
+              fontSize: '13px',
+              border: 'none',
+              cursor: isOutOfStock ? 'not-allowed' : 'pointer'
+            }}
+          >
+            {user ? 'Beli Sekarang' : 'Login & Beli'}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

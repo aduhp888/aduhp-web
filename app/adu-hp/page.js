@@ -33,6 +33,7 @@ import {
 } from 'lucide-react';
 import { PRICE_TIERS, BRAND_OPTIONS } from '../data/entryPhones';
 import { supabase } from '../lib/supabase';
+import NavbarCartAndAuth from '../components/NavbarCartAndAuth';
 
 function formatIDR(amount) {
   if (!amount && amount !== 0) return 'Rp 0';
@@ -375,6 +376,8 @@ export default function AduHpDedicatedPage() {
                 <span>Ganti Model</span>
               </button>
             </nav>
+
+            <NavbarCartAndAuth />
           </div>
         </div>
       </header>

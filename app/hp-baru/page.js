@@ -31,6 +31,7 @@ import {
 import { PRICE_TIERS } from '../data/entryPhones';
 import { supabase } from '../lib/supabase';
 import { getProductVariants, getProductColors } from '../lib/utils';
+import NavbarCartAndAuth from '../components/NavbarCartAndAuth';
 
 // Brand-brand smartphone resmi di Indonesia beserta distributor resminya
 export const INDONESIA_BRANDS = [
@@ -232,6 +233,8 @@ export default function HpBaruPage() {
                 🔄 HP Second
               </Link>
             </nav>
+
+            <NavbarCartAndAuth />
           </div>
         </div>
       </header>

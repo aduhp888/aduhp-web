@@ -32,6 +32,7 @@ import { CERTIFIED_SECOND_PHONES } from '../data/secondPhones';
 import { PRICE_TIERS } from '../data/entryPhones';
 import { supabase } from '../lib/supabase';
 import { getProductVariants, getProductColors } from '../lib/utils';
+import NavbarCartAndAuth from '../components/NavbarCartAndAuth';
 
 function formatIDR(amount) {
   if (!amount && amount !== 0) return 'Rp 0';
@@ -216,6 +217,8 @@ export default function HpSecondPage() {
                 🔄 HP Second
               </Link>
             </nav>
+
+            <NavbarCartAndAuth />
           </div>
         </div>
       </header>

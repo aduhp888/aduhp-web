@@ -30,6 +30,7 @@ import {
 
 import { PRICE_TIERS } from './data/entryPhones';
 import { supabase } from './lib/supabase';
+import NavbarCartAndAuth from './components/NavbarCartAndAuth';
 
 const NEEDS_LIST = [
   {
@@ -408,76 +409,9 @@ export default function LandingPage() {
                 Katalog
               </button>
 
-              <button 
-                onClick={() => setModalOpen('cart')} 
-                className="nav-link"
-                style={{ position: 'relative' }}
-              >
-                <span>🛍️</span>
-                <span>Keranjang</span>
-                {cartItems.length > 0 && (
-                  <span style={{
-                    position: 'absolute',
-                    top: '2px',
-                    right: '2px',
-                    background: 'var(--accent-lime)',
-                    color: '#000',
-                    fontSize: '10px',
-                    fontWeight: 800,
-                    borderRadius: '50%',
-                    width: '17px',
-                    height: '17px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}>
-                    {cartItems.length}
-                  </span>
-                )}
-              </button>
-
-              {currentUser ? (
-                <button 
-                  onClick={() => setModalOpen('user-profile')} 
-                  className="nav-link"
-                  style={{
-                    background: 'rgba(198, 255, 0, 0.08)',
-                    border: '1px solid rgba(198, 255, 0, 0.35)',
-                    color: 'var(--accent-lime)',
-                    borderRadius: '8px',
-                    padding: '7px 14px',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '7px'
-                  }}
-                  title="Buka Profil Pengguna"
-                >
-                  <User size={15} />
-                  <span>{currentUser.name}</span>
-                </button>
-              ) : (
-                <button 
-                  onClick={() => {
-                    setLoginStep('input');
-                    setModalOpen('user-login');
-                  }} 
-                  className="nav-link"
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    border: '1px solid rgba(255, 255, 255, 0.14)',
-                    borderRadius: '8px',
-                    padding: '7px 14px',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '7px'
-                  }}
-                  title="Masuk Akun Pengguna"
-                >
-                  <User size={15} />
-                  <span>Masuk</span>
-                </button>
-              )}
             </nav>
+
+            <NavbarCartAndAuth />
           </div>
         </div>
       </header>

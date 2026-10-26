@@ -32,10 +32,14 @@ import {
   getShippingRate, 
   calculateGadgetInsurance 
 } from '../data/indonesiaShipping';
+import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 
 function CheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { user, loading: authLoading } = useAuth();
+  const { clearCart } = useCart();
 
   // Params from product detail
   const productId = searchParams.get('productId') || '';
@@ -46,6 +50,7 @@ function CheckoutContent() {
   const variantColor = searchParams.get('color') || 'Black';
   const condition = searchParams.get('condition') || 'baru';
   const productImage = searchParams.get('image') || 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&w=600&q=80';
+  const quantity = Math.max(1, Number(searchParams.get('quantity')) || 1);
 
   // Customer Form State
   const [customerName, setCustomerName] = useState('');
@@ -70,6 +75,29 @@ function CheckoutContent() {
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
+  // 1. Auth Guard: Wajib Login Sebelum Checkout
+  useEffect(() => {
+    if (!authLoading && !user) {
+      const currentUrl = typeof window !== 'undefined' ? (window.location.pathname + window.location.search) : '/checkout';
+      router.replace(`/login?redirect=${encodeURIComponent(currentUrl)}`);
+    }
+  }, [user, authLoading, router]);
+
+  // 2. Auto-fill data dari profil akun pembeli yang sedang login
+  useEffect(() => {
+    if (user) {
+      if (user.user_metadata?.full_name && !customerName) {
+        setCustomerName(user.user_metadata.full_name);
+      }
+      if (user.user_metadata?.phone && !customerPhone) {
+        setCustomerPhone(user.user_metadata.phone);
+      }
+      if (user.email && !customerEmail) {
+        setCustomerEmail(user.email);
+      }
+    }
+  }, [user]);
+
   // Update cities when province changes
   useEffect(() => {
     const availableCities = CITIES_BY_PROVINCE[selectedProvince] || [];
@@ -85,11 +113,11 @@ function CheckoutContent() {
 
   // Calculate insurance
   const insuranceCost = useMemo(() => {
-    return useInsurance ? calculateGadgetInsurance(initialPrice) : 0;
-  }, [initialPrice, useInsurance]);
+    return useInsurance ? calculateGadgetInsurance(initialPrice * quantity) : 0;
+  }, [initialPrice, quantity, useInsurance]);
 
   // Grand Total Calculation (Tanpa Kode Unik - Nominal Bulat & Rapi)
-  const subtotal = initialPrice;
+  const subtotal = initialPrice * quantity;
   const shippingCost = shippingCalculation.cost;
   const grandTotal = subtotal + shippingCost + insuranceCost;
 
@@ -97,6 +125,17 @@ function CheckoutContent() {
   const selectedBank = useMemo(() => {
     return CORPORATE_ACCOUNTS.banks.find(b => b.id === selectedBankId) || CORPORATE_ACCOUNTS.banks[0];
   }, [selectedBankId]);
+
+  if (authLoading || !user) {
+    return (
+      <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div className="spinner" style={{ width: '40px', height: '40px', margin: '0 auto 16px', border: '3px solid rgba(198,255,0,0.2)', borderTopColor: 'var(--accent-lime)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+          <p style={{ color: '#aaa', fontSize: '14px' }}>Memverifikasi status login & mengamankan faktur pesanan...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Submit Order to PT
   const handleCreateOrder = async (e) => {
@@ -128,11 +167,11 @@ function CheckoutContent() {
       variant_ram: Number(variantRam) || null,
       variant_storage: Number(variantStorage) || null,
       variant_color: variantColor,
-      unit_price: subtotal,
-      quantity: 1,
+      unit_price: initialPrice,
+      quantity: quantity,
       customer_name: customerName,
       customer_phone: customerPhone,
-      customer_email: customerEmail || null,
+      customer_email: customerEmail || user?.email || null,
       shipping_province: selectedProvince,
       shipping_city: selectedCity,
       shipping_district: district,
@@ -171,11 +210,15 @@ function CheckoutContent() {
         // Ignore quota errors
       }
 
+      // Bersihkan keranjang belanja setelah checkout sukses
+      clearCart();
+
       // 3. Redirect to invoice page
       router.push(`/invoice/${savedId}`);
     } catch (err) {
       console.warn('Fallback saving order:', err);
       // Fallback: save to localStorage and proceed
+      clearCart();
       localStorage.setItem(`aduhp_order_${orderNumber}`, JSON.stringify(orderData));
       router.push(`/invoice/${orderNumber}`);
     } finally {
@@ -737,10 +780,10 @@ function CheckoutContent() {
                       {productName}
                     </div>
                     <div style={{ fontSize: '12px', color: '#aaa', marginTop: '4px' }}>
-                      Varian: <strong>{variantRam}GB / {variantStorage}GB</strong> • {variantColor}
+                      Varian: <strong>{variantRam}GB / {variantStorage}GB</strong> • {variantColor} • Qty: <strong style={{ color: 'var(--accent-lime)' }}>{quantity}x</strong>
                     </div>
                     <div style={{ fontSize: '14px', fontWeight: 800, color: '#fff', marginTop: '6px', fontFamily: 'var(--font-mono)' }}>
-                      {formatIDR(subtotal)}
+                      {formatIDR(subtotal)} {quantity > 1 && <span style={{ fontSize: '11px', color: '#888', fontWeight: 400 }}>({formatIDR(initialPrice)} / unit)</span>}
                     </div>
                   </div>
                 </div>
@@ -748,7 +791,7 @@ function CheckoutContent() {
                 {/* Calculation Breakdown */}
                 <div style={{ display: 'grid', gap: '10px', fontSize: '13px', color: '#aaa', marginBottom: '20px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span>Subtotal Harga Unit ({variantRam}GB/{variantStorage}GB):</span>
+                    <span>Subtotal Produk ({quantity} unit):</span>
                     <span style={{ color: '#fff', fontWeight: 600, fontFamily: 'var(--font-mono)' }}>{formatIDR(subtotal)}</span>
                   </div>
 

@@ -1,4 +1,5 @@
 import './globals.css';
+import ClientProviders from './components/ClientProviders';
 
 export const metadata = {
   title: 'AduHP — Platform Adu Spek & Rekomendasi Gadget AI No. 1 Indonesia',
@@ -18,9 +19,11 @@ export default function RootLayout({ children }) {
   return (
     <html lang="id">
       <body>
-        <div className="page-wrapper">
-          {children}
-        </div>
+        <ClientProviders>
+          <div className="page-wrapper">
+            {children}
+          </div>
+        </ClientProviders>
       </body>
     </html>
   );

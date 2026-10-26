@@ -70,11 +70,14 @@ export default function InvoicePage({ params: paramsPromise }) {
     async function loadOrder() {
       setLoading(true);
       try {
-        const { data, error } = await supabase
-          .from('dapur_orders')
-          .select('*')
-          .or(`id.eq.${orderId},order_number.eq.${orderId}`)
-          .single();
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(orderId);
+        let query = supabase.from('dapur_orders').select('*');
+        if (isUuid) {
+          query = query.eq('id', orderId);
+        } else {
+          query = query.eq('order_number', orderId);
+        }
+        const { data, error } = await query.single();
 
         if (data) {
           setOrder(data);
