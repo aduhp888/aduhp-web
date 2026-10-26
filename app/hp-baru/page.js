@@ -636,9 +636,11 @@ export default function HpBaruPage() {
 
                     {/* Content Body */}
                     <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', flex: 1 }}>
-                      <h4 style={{ fontSize: '16px', fontWeight: 800, color: '#fff', lineHeight: 1.3, marginBottom: '6px' }}>
-                        {phone.name}
-                      </h4>
+                      <Link href={`/produk/${phone.id}`} style={{ textDecoration: 'none' }}>
+                        <h4 style={{ fontSize: '16px', fontWeight: 800, color: '#fff', lineHeight: 1.3, marginBottom: '6px', transition: 'color 0.15s ease' }} className="hover-lime">
+                          {phone.name}
+                        </h4>
+                      </Link>
 
                       {/* Distributor Guarantee */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#aaa', marginBottom: '12px' }}>
@@ -736,16 +738,14 @@ export default function HpBaruPage() {
                               <span>⚖️ Hanya Pembanding</span>
                             </div>
                           ) : (
-                            <a
-                              href={getWhatsAppBuyUrl(phone)}
-                              target="_blank"
-                              rel="noreferrer"
+                            <Link
+                              href={`/produk/${phone.id}`}
                               className="btn btn-primary btn-sm"
-                              style={{ flex: 1.2, justifyContent: 'center', fontSize: '12px', background: 'var(--accent-lime)', color: '#000', fontWeight: 800 }}
+                              style={{ flex: 1.2, justifyContent: 'center', fontSize: '12px', background: 'var(--accent-lime)', color: '#000', fontWeight: 800, textDecoration: 'none' }}
                             >
                               <ShoppingBag size={13} />
-                              <span>Beli BNIB</span>
-                            </a>
+                              <span>Lihat & Beli</span>
+                            </Link>
                           )}
                         </div>
                       </div>

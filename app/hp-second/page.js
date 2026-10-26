@@ -508,9 +508,11 @@ export default function HpSecondPage() {
 
                     {/* Content Details */}
                     <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', flex: 1 }}>
-                      <h4 style={{ fontSize: '16px', fontWeight: 800, color: '#fff', lineHeight: 1.3, marginBottom: '6px' }}>
-                        {phone.name}
-                      </h4>
+                      <Link href={`/produk/${phone.id}`} style={{ textDecoration: 'none' }}>
+                        <h4 style={{ fontSize: '16px', fontWeight: 800, color: '#fff', lineHeight: 1.3, marginBottom: '6px', transition: 'color 0.15s ease' }}>
+                          {phone.name}
+                        </h4>
+                      </Link>
 
                       {/* Grade & Garansi */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px', flexWrap: 'wrap' }}>
@@ -593,10 +595,8 @@ export default function HpSecondPage() {
                           >
                             <span>🔍 5 Foto QC</span>
                           </button>
-                          <a
-                            href={getWhatsAppSecondUrl(phone)}
-                            target="_blank"
-                            rel="noreferrer"
+                          <Link
+                            href={`/produk/${phone.id}`}
                             className="btn btn-primary btn-sm"
                             style={{
                               flex: 1.3,
@@ -604,12 +604,13 @@ export default function HpSecondPage() {
                               fontSize: '12px',
                               background: '#00E5FF',
                               color: '#000',
-                              fontWeight: 900
+                              fontWeight: 900,
+                              textDecoration: 'none'
                             }}
                           >
                             <ShoppingBag size={13} />
-                            <span>Beli Unit Ini</span>
-                          </a>
+                            <span>Lihat & Beli</span>
+                          </Link>
                         </div>
                       </div>
                     </div>
