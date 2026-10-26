@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 import { PRICE_TIERS } from '../data/entryPhones';
 import { supabase } from '../lib/supabase';
+import { getProductVariants, getProductColors } from '../lib/utils';
 
 // Brand-brand smartphone resmi di Indonesia beserta distributor resminya
 export const INDONESIA_BRANDS = [
@@ -55,6 +56,35 @@ function formatIDR(amount) {
     currency: 'IDR',
     maximumFractionDigits: 0,
   }).format(amount);
+}
+
+function getDirectCheckoutUrl(phone) {
+  if (!phone) return '/checkout';
+
+  const variants = getProductVariants(phone);
+  const defaultVar = variants.find(v => v.isDefault && v.stock > 0) || variants.find(v => v.stock > 0) || variants[0];
+  const colors = getProductColors(phone);
+  const defaultColor = colors.find(c => c.isDefault) || colors[0];
+
+  const ram = defaultVar?.ram || phone.ram_gb || 8;
+  const storage = defaultVar?.storage || phone.storage_gb || 256;
+  const price = defaultVar?.price || phone.price || 0;
+  const color = defaultColor?.name || phone.color || 'Standard';
+  const image = (Array.isArray(phone.images) && phone.images[0]) ? phone.images[0] : '';
+  const condition = phone.condition || 'baru';
+
+  const params = new URLSearchParams({
+    productId: phone.id || '',
+    name: phone.name || '',
+    price: price.toString(),
+    ram: ram.toString(),
+    storage: storage.toString(),
+    color: color,
+    condition: condition,
+    image: image
+  });
+
+  return `/checkout?${params.toString()}`;
 }
 
 export default function HpBaruPage() {
@@ -739,12 +769,13 @@ export default function HpBaruPage() {
                             </div>
                           ) : (
                             <Link
-                              href={`/produk/${phone.id}`}
+                              href={getDirectCheckoutUrl(phone)}
                               className="btn btn-primary btn-sm"
                               style={{ flex: 1.2, justifyContent: 'center', fontSize: '12px', background: 'var(--accent-lime)', color: '#000', fontWeight: 800, textDecoration: 'none' }}
+                              title="Beli langsung unit ini dan lanjut ke halaman Checkout"
                             >
                               <ShoppingBag size={13} />
-                              <span>Lihat & Beli</span>
+                              <span>Beli Langsung</span>
                             </Link>
                           )}
                         </div>

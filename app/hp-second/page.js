@@ -31,6 +31,7 @@ import {
 import { CERTIFIED_SECOND_PHONES } from '../data/secondPhones';
 import { PRICE_TIERS } from '../data/entryPhones';
 import { supabase } from '../lib/supabase';
+import { getProductVariants, getProductColors } from '../lib/utils';
 
 function formatIDR(amount) {
   if (!amount && amount !== 0) return 'Rp 0';
@@ -39,6 +40,35 @@ function formatIDR(amount) {
     currency: 'IDR',
     maximumFractionDigits: 0,
   }).format(amount);
+}
+
+function getDirectCheckoutUrl(phone) {
+  if (!phone) return '/checkout';
+
+  const variants = getProductVariants(phone);
+  const defaultVar = variants.find(v => v.isDefault && v.stock > 0) || variants.find(v => v.stock > 0) || variants[0];
+  const colors = getProductColors(phone);
+  const defaultColor = colors.find(c => c.isDefault) || colors[0];
+
+  const ram = defaultVar?.ram || phone.ram_gb || 8;
+  const storage = defaultVar?.storage || phone.storage_gb || 256;
+  const price = defaultVar?.price || phone.price || 0;
+  const color = defaultColor?.name || phone.color || 'Standard';
+  const image = (Array.isArray(phone.images) && phone.images[0]) ? phone.images[0] : '';
+  const condition = phone.condition || 'second';
+
+  const params = new URLSearchParams({
+    productId: phone.id || '',
+    name: phone.name || '',
+    price: price.toString(),
+    ram: ram.toString(),
+    storage: storage.toString(),
+    color: color,
+    condition: condition,
+    image: image
+  });
+
+  return `/checkout?${params.toString()}`;
 }
 
 export default function HpSecondPage() {
@@ -596,7 +626,7 @@ export default function HpSecondPage() {
                             <span>🔍 5 Foto QC</span>
                           </button>
                           <Link
-                            href={`/produk/${phone.id}`}
+                            href={getDirectCheckoutUrl(phone)}
                             className="btn btn-primary btn-sm"
                             style={{
                               flex: 1.3,
@@ -607,9 +637,10 @@ export default function HpSecondPage() {
                               fontWeight: 900,
                               textDecoration: 'none'
                             }}
+                            title="Beli langsung unit ini dan lanjut ke halaman Checkout"
                           >
                             <ShoppingBag size={13} />
-                            <span>Lihat & Beli</span>
+                            <span>Beli Langsung</span>
                           </Link>
                         </div>
                       </div>

@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect, useMemo, use } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { 
   ArrowLeft, 
   ShieldCheck, 
@@ -40,10 +40,10 @@ import {
   getProductColors 
 } from '../../lib/utils';
 
-export default function ProductDetailPage({ params: paramsPromise }) {
-  const params = use(paramsPromise);
-  const productId = params?.id;
+export default function ProductDetailPage() {
   const router = useRouter();
+  const routeParams = useParams();
+  const productId = routeParams?.id;
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -69,7 +69,7 @@ export default function ProductDetailPage({ params: paramsPromise }) {
         if (isUuid) {
           query = query.eq('id', productId);
         } else {
-          query = query.or(`slug.eq.${productId},id.eq.${productId}`);
+          query = query.eq('slug', productId);
         }
 
         const { data, error } = await query.single();
