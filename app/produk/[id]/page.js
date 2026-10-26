@@ -904,9 +904,9 @@ export default function ProductDetailPage({ params: paramsPromise }) {
                     Setiap unit smartphone yang Anda beli dari aduhp.com dijamin 100% legal dan terdaftar resmi di database Kemenperin / Bea Cukai Republik Indonesia. Invoice resmi berstempel PT akan diterbitkan bersama unit.
                   </p>
                   <ul style={{ fontSize: '12px', color: '#aaa', paddingLeft: '20px', lineHeight: 1.8 }}>
-                    <li>NIB Perusahaan: {CORPORATE_ACCOUNTS.nib}</li>
-                    <li>Keputusan Menkumham: {CORPORATE_ACCOUNTS.ahyuNumber}</li>
-                    <li>Garansi Sinyal IMEI Permanen Seumur Hidup (Anti-Begall).</li>
+                    <li>Badan Usaha Resmi Berbadan Hukum PT di Republik Indonesia.</li>
+                    <li>Dokumen Legalitas Perusahaan Tercantum Lengkap pada Surat Invoice Resmi.</li>
+                    <li>Garansi Sinyal IMEI Permanen Seumur Hidup (Anti-Begal).</li>
                   </ul>
                 </div>
               )}
