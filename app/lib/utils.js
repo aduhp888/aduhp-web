@@ -76,38 +76,33 @@ export const PHOTO_SLOT_DESCRIPTIONS = [
 ];
 
 export function getProductVariants(product) {
-  // Bila produk sudah mendefinisikan variants di JSON
+  // Bila produk sudah mendefinisikan variants di specs JSON (dari input Dapur aduHP)
   if (product?.specs?.variants && Array.isArray(product.specs.variants) && product.specs.variants.length > 0) {
-    return product.specs.variants;
+    return product.specs.variants.map((v, idx) => ({
+      ram: Number(v.ram) || 0,
+      storage: Number(v.storage) || 0,
+      label: v.label || `${v.ram || 0}GB / ${v.storage || 0}GB`,
+      price: Number(v.price) || Number(product.price) || 0,
+      stock: v.stock !== undefined && v.stock !== null ? Number(v.stock) : 0,
+      isDefault: v.isDefault ?? v.is_default ?? (idx === 0)
+    }));
   }
 
-  // Jika produk memiliki kolom ram_gb & storage_gb tunggal, bangun varian realistis
+  // Jika produk belum memiliki daftar varian di specs, gunakan data tunggal produk murni dari database (1 varian riil)
   const baseRam = Number(product?.ram_gb) || 8;
   const baseStorage = Number(product?.storage_gb) || 256;
-  const basePrice = Number(product?.price) || 3000000;
+  const basePrice = Number(product?.price) || 0;
+  const baseStock = product?.stock !== undefined && product?.stock !== null ? Number(product.stock) : 0;
 
-  // Jika HP Flagship
-  if (basePrice >= 8000000) {
-    return [
-      { ram: baseRam, storage: baseStorage, label: `${baseRam}GB / ${baseStorage}GB`, price: basePrice, isDefault: true, stock: 5 },
-      { ram: baseRam + 4, storage: baseStorage * 2, label: `${baseRam + 4}GB / ${baseStorage * 2}GB`, price: basePrice + 1500000, stock: 3 },
-      { ram: baseRam + 8, storage: 1024, label: `${baseRam + 8}GB / 1TB`, price: basePrice + 3500000, stock: 2 }
-    ];
-  }
-
-  // Jika HP Mid-Range (2 - 8 Juta)
-  if (basePrice >= 2500000) {
-    return [
-      { ram: baseRam, storage: Math.max(128, baseStorage === 256 ? 128 : baseStorage), label: `${baseRam}GB / ${Math.max(128, baseStorage === 256 ? 128 : baseStorage)}GB`, price: Math.max(2000000, basePrice - 400000), stock: 8 },
-      { ram: baseRam, storage: 256, label: `${baseRam}GB / 256GB`, price: basePrice, isDefault: true, stock: 12 },
-      { ram: baseRam + 4, storage: 512, label: `${baseRam + 4}GB / 512GB`, price: basePrice + 600000, stock: 4 }
-    ];
-  }
-
-  // Entry Level (1 - 2 Juta)
   return [
-    { ram: Math.max(4, baseRam - 2), storage: 128, label: `${Math.max(4, baseRam - 2)}GB / 128GB`, price: Math.max(1200000, basePrice - 250000), stock: 15 },
-    { ram: baseRam, storage: baseStorage, label: `${baseRam}GB / ${baseStorage}GB`, price: basePrice, isDefault: true, stock: 10 }
+    {
+      ram: baseRam,
+      storage: baseStorage,
+      label: `${baseRam}GB / ${baseStorage}GB`,
+      price: basePrice,
+      stock: baseStock,
+      isDefault: true
+    }
   ];
 }
 

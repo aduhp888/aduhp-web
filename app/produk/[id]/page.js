@@ -26,7 +26,8 @@ import {
   Building2, 
   Award,
   Sparkles,
-  Info
+  Info,
+  AlertCircle
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { 
@@ -72,8 +73,9 @@ export default function ProductDetailPage({ params: paramsPromise }) {
         const { data, error } = await query.single();
         if (data) {
           setProduct(data);
-          const variants = getProductVariants(data);
-          setSelectedVariant(variants[0]);
+          const variantsList = getProductVariants(data);
+          const defaultVar = variantsList.find(v => v.isDefault && v.stock > 0) || variantsList.find(v => v.stock > 0) || variantsList[0];
+          setSelectedVariant(defaultVar);
           const colors = getProductColors(data);
           setSelectedColor(colors[0]?.name || 'Black');
         } else {
@@ -179,9 +181,16 @@ export default function ProductDetailPage({ params: paramsPromise }) {
   const originalPrice = product?.original_price || (currentPrice > 0 ? Math.round(currentPrice * 1.1) : 0);
   const discountPercent = originalPrice > currentPrice ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100) : 0;
 
+  // Check if current variant is out of stock
+  const isOutOfStock = !selectedVariant || (selectedVariant.stock !== undefined && selectedVariant.stock <= 0);
+
   // Checkout navigation
   const handleProceedToCheckout = () => {
     if (!product) return;
+    if (isOutOfStock) {
+      alert(`Maaf, varian ${selectedVariant?.label || ''} saat ini sedang kosong/habis.`);
+      return;
+    }
     const ram = selectedVariant?.ram || product.ram_gb || 8;
     const storage = selectedVariant?.storage || product.storage_gb || 256;
     const color = selectedColor || product.color || 'Standard';
@@ -561,14 +570,16 @@ export default function ProductDetailPage({ params: paramsPromise }) {
                 <label style={{ fontSize: '13px', fontWeight: 800, color: '#fff', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                   💾 Pilih Varian Kapasitas (RAM & Storage):
                 </label>
-                <span style={{ fontSize: '12px', color: themeColor, fontWeight: 700 }}>
-                  Terpilih: {selectedVariant?.label}
+                <span style={{ fontSize: '12px', color: isOutOfStock ? '#FF453A' : themeColor, fontWeight: 700 }}>
+                  Terpilih: {selectedVariant?.label} {isOutOfStock ? '(Stok Habis)' : ''}
                 </span>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px' }}>
                 {variants.map((v, i) => {
                   const isSelected = selectedVariant?.label === v.label;
+                  const vOutOfStock = v.stock !== undefined && v.stock <= 0;
+
                   return (
                     <button
                       key={i}
@@ -577,26 +588,77 @@ export default function ProductDetailPage({ params: paramsPromise }) {
                       style={{
                         padding: '12px 14px',
                         borderRadius: '12px',
-                        background: isSelected ? 'rgba(198, 255, 0, 0.08)' : '#16161c',
-                        border: isSelected ? `2px solid ${themeColor}` : '1px solid rgba(255, 255, 255, 0.1)',
+                        background: isSelected 
+                          ? (vOutOfStock ? 'rgba(255, 69, 58, 0.1)' : 'rgba(198, 255, 0, 0.08)') 
+                          : '#16161c',
+                        border: isSelected 
+                          ? (vOutOfStock ? '2px solid #FF453A' : `2px solid ${themeColor}`) 
+                          : '1px solid rgba(255, 255, 255, 0.1)',
                         cursor: 'pointer',
                         textAlign: 'left',
-                        transition: 'all 0.15s ease'
+                        transition: 'all 0.15s ease',
+                        opacity: !isSelected && vOutOfStock ? 0.65 : 1
                       }}
                     >
-                      <div style={{ fontSize: '14px', fontWeight: 800, color: isSelected ? '#fff' : '#ccc' }}>
-                        {v.label}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: '14px', fontWeight: 800, color: isSelected ? '#fff' : '#ccc' }}>
+                          {v.label}
+                        </span>
+                        {vOutOfStock ? (
+                          <span style={{
+                            fontSize: '9px',
+                            background: 'rgba(255, 69, 58, 0.2)',
+                            color: '#FF6B6B',
+                            padding: '2px 6px',
+                            borderRadius: '4px',
+                            fontWeight: 800
+                          }}>
+                            Habis
+                          </span>
+                        ) : (
+                          <span style={{
+                            fontSize: '9px',
+                            background: 'rgba(52, 199, 89, 0.15)',
+                            color: '#34C759',
+                            padding: '2px 6px',
+                            borderRadius: '4px',
+                            fontWeight: 700
+                          }}>
+                            {v.stock} Unit
+                          </span>
+                        )}
                       </div>
-                      <div style={{ fontSize: '12px', color: isSelected ? themeColor : '#888', fontWeight: 700, marginTop: '2px', fontFamily: 'var(--font-mono)' }}>
+
+                      <div style={{ fontSize: '13px', color: isSelected ? (vOutOfStock ? '#FF6B6B' : themeColor) : '#aaa', fontWeight: 800, marginTop: '4px', fontFamily: 'var(--font-mono)' }}>
                         {formatIDR(v.price)}
                       </div>
+
                       {v.isDefault && (
-                        <div style={{ fontSize: '10px', color: '#999', marginTop: '2px' }}>Varian Standar</div>
+                        <div style={{ fontSize: '10px', color: '#888', marginTop: '3px' }}>Varian Standar</div>
                       )}
                     </button>
                   );
                 })}
               </div>
+
+              {/* Notice if selected variant is out of stock */}
+              {isOutOfStock && (
+                <div style={{
+                  marginTop: '12px',
+                  padding: '10px 14px',
+                  background: 'rgba(255, 69, 58, 0.08)',
+                  border: '1px solid rgba(255, 69, 58, 0.25)',
+                  borderRadius: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  fontSize: '12px',
+                  color: '#FF9E9E'
+                }}>
+                  <AlertCircle size={15} color="#FF453A" />
+                  <span>Varian <strong>{selectedVariant?.label}</strong> saat ini stoknya kosong. Harga di atas adalah harga referensi katalog.</span>
+                </div>
+              )}
             </div>
 
             {/* COLOR SELECTION */}
@@ -638,23 +700,49 @@ export default function ProductDetailPage({ params: paramsPromise }) {
 
             {/* ACTION CTA BUTTONS */}
             <div style={{ display: 'flex', gap: '14px', marginBottom: '32px', flexWrap: 'wrap' }}>
-              <button
-                onClick={handleProceedToCheckout}
-                className="btn btn-primary"
-                style={{
-                  flex: '2 1 240px',
-                  justifyContent: 'center',
-                  padding: '16px 24px',
-                  fontSize: '16px',
-                  fontWeight: 900,
-                  background: themeColor,
-                  color: '#000',
-                  boxShadow: `0 8px 24px rgba(198, 255, 0, 0.25)`
-                }}
-              >
-                <ShoppingBag size={20} />
-                <span>Beli Sekarang (Lanjut Checkout)</span>
-              </button>
+              {isOutOfStock ? (
+                <button
+                  type="button"
+                  disabled
+                  style={{
+                    flex: '2 1 240px',
+                    justifyContent: 'center',
+                    padding: '16px 24px',
+                    fontSize: '15px',
+                    fontWeight: 800,
+                    background: 'rgba(255, 255, 255, 0.06)',
+                    color: '#888',
+                    border: '1px solid rgba(255, 255, 255, 0.12)',
+                    borderRadius: '12px',
+                    cursor: 'not-allowed',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}
+                  title="Stok varian ini sedang habis"
+                >
+                  <AlertCircle size={18} color="#FF453A" />
+                  <span>Stok Varian Ini Habis (Pilih Varian Lain)</span>
+                </button>
+              ) : (
+                <button
+                  onClick={handleProceedToCheckout}
+                  className="btn btn-primary"
+                  style={{
+                    flex: '2 1 240px',
+                    justifyContent: 'center',
+                    padding: '16px 24px',
+                    fontSize: '16px',
+                    fontWeight: 900,
+                    background: themeColor,
+                    color: '#000',
+                    boxShadow: `0 8px 24px rgba(198, 255, 0, 0.25)`
+                  }}
+                >
+                  <ShoppingBag size={20} />
+                  <span>Beli Sekarang (Lanjut Checkout)</span>
+                </button>
+              )}
 
               <Link
                 href={`/adu-hp?slot1=${product.id}`}
