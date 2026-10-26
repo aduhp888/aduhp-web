@@ -107,16 +107,21 @@ export function getProductVariants(product) {
 }
 
 export function getProductColors(product) {
+  // Bila produk sudah mendefinisikan varian warna di specs JSON (dari input Dapur aduHP)
   if (product?.specs?.colors && Array.isArray(product.specs.colors) && product.specs.colors.length > 0) {
-    return product.specs.colors;
+    return product.specs.colors.map((c, idx) => ({
+      name: c.name || `Warna ${idx + 1}`,
+      hex: c.hex || '#333333',
+      isDefault: c.isDefault ?? c.is_default ?? (idx === 0)
+    }));
   }
-  const defaultColors = [
-    { name: 'Midnight Black', hex: '#1C1C1E' },
-    { name: 'Titanium Silver', hex: '#B0B0B5' },
-    { name: 'Ocean Blue', hex: '#204060' }
-  ];
+  
+  // Jika produk hanya memiliki 1 warna bodi di kolom color
   if (product?.color) {
-    return [{ name: product.color, hex: '#222222' }, ...defaultColors.slice(0, 2)];
+    return [{ name: product.color, hex: '#222222', isDefault: true }];
   }
-  return defaultColors;
+  
+  return [
+    { name: 'Standard', hex: '#1C1C1E', isDefault: true }
+  ];
 }

@@ -76,8 +76,9 @@ export default function ProductDetailPage({ params: paramsPromise }) {
           const variantsList = getProductVariants(data);
           const defaultVar = variantsList.find(v => v.isDefault && v.stock > 0) || variantsList.find(v => v.stock > 0) || variantsList[0];
           setSelectedVariant(defaultVar);
-          const colors = getProductColors(data);
-          setSelectedColor(colors[0]?.name || 'Black');
+          const colorsList = getProductColors(data);
+          const defaultColor = colorsList.find(c => c.isDefault) || colorsList[0];
+          setSelectedColor(defaultColor?.name || 'Black');
         } else {
           // Fallback mock product jika ID tidak ditemukan di DB
           setupFallbackProduct();
