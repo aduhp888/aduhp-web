@@ -339,5 +339,72 @@ export const CERTIFIED_SECOND_PHONES = [
     ],
     is_featured: true,
     is_active: true
+  },
+  {
+    id: 'second-oppo-reno10-pro-plus',
+    slug: 'oppo-reno-10-pro-plus-5g-second-grade-a',
+    name: 'OPPO Reno 10 Pro+ 5G 12/256GB Glossy Purple (Second Grade A+)',
+    brand: 'OPPO',
+    category: 'Portrait Flagship',
+    condition: 'second',
+    grade: 'Second Grade A+ (Mulus 99% No Dent)',
+    badge: 'Kamera Periskop 64MP • BH 96%',
+    battery_health: 96,
+    official_distributor: 'Eks Resmi OPPO Indonesia • Garansi Toko 30 Hari',
+    imei: '861928019283019',
+    imei_status: 'Resmi Kemenperin OPPO Indonesia Bebas Blokir Selamanya',
+    completeness: 'Fullset Dus Box Original + SuperVOOC 100W Charger',
+    price_tier: '4-8-jt',
+    price: 6499000,
+    original_price: 10999000,
+    stock: 2,
+    ram_gb: 12,
+    storage_gb: 256,
+    color: 'Glossy Purple',
+    description: 'Unit eks garansi resmi OPPO Indonesia. Kondisi istimewa 99% mulus terawat. Kamera Telephoto Periskop 64MP OIS portrait juara. Fast charging 100W SuperVOOC kilat 0-100% hanya 27 menit. Layar 3D Curved 120Hz bening tanpa gores.',
+    images: [
+      'https://images.unsplash.com/photo-1598327105666-5b89351aff97?q=80&w=1000&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?q=80&w=1000&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1580910051074-3eb694886505?q=80&w=1000&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1565849904461-04a58ad377e0?q=80&w=1000&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=1000&auto=format&fit=crop'
+    ],
+    photo_labels: [
+      'Foto 1: Layar 3D Curved AMOLED 120Hz Mulus Tanpa Baret',
+      'Foto 2: Tampak Belakang Glossy Purple & Kamera Periskop 64MP',
+      'Foto 3: Sisi Frame Tipis Mulus No Dent',
+      'Foto 4: Grill Speaker Stereo & Port Charger Bersih',
+      'Foto 5: Box Asli OPPO & Charger 100W SuperVOOC'
+    ],
+    specs: {
+      chipset: 'Snapdragon 8+ Gen 1 (4nm TSMC)',
+      display: '6.74" 3D Curved AMOLED 1.5K 120Hz ProXDR',
+      battery: '4700 mAh • 100W SuperVOOC (BH 96%)',
+      camera: 'Triple 50MP Sony IMX890 OIS + 64MP Periskop 3x + 8MP UW',
+      os: 'ColorOS 14 (Android 14)'
+    },
+    antutu: {
+      version: 'AnTuTu Benchmark v10',
+      total: 1380000,
+      cpu: 360000,
+      gpu: 490000,
+      memory: 260000,
+      ux: 270000,
+      tier: 'Flagship Killer Tier'
+    },
+    gaming_fps: {
+      mlbb: '120 FPS Ultra',
+      freefire: '60 FPS Max',
+      pubg: '90 FPS Extreme',
+      genshin: '56 FPS Highest'
+    },
+    qc_details: [
+      { name: 'Kamera Periskop 64MP', status: 'Passed', note: 'Zoom Optik 3x & Portrait Jernih Tajam' },
+      { name: '100W SuperVOOC', status: 'Passed', note: 'Pengisian Daya Kilat Berfungsi Normal' },
+      { name: 'Layar Curved 120Hz', status: 'Passed', note: 'Sentuhan Presisi Bebas Ghost Touch' },
+      { name: 'IMEI Resmi OPPO', status: 'Passed', note: 'Terdaftar Kemenperin Permanen' }
+    ],
+    is_featured: true,
+    is_active: true
   }
 ];

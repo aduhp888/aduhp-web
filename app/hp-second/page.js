@@ -87,7 +87,7 @@ export default function HpSecondPage() {
     fetchSecondProducts();
   }, []);
 
-  const BRANDS = ['all', 'Apple', 'Samsung', 'Xiaomi', 'POCO', 'Vivo', 'Realme', 'Infinix'];
+  const BRANDS = ['all', 'Apple', 'Samsung', 'OPPO', 'Xiaomi', 'POCO', 'Vivo', 'Realme', 'Infinix', 'iQOO', 'Tecno'];
   const GRADES = [
     { id: 'all', label: 'Semua Grade' },
     { id: 'Grade A+', label: 'Grade A+ (Mulus 99% Like New)' },
