@@ -67,9 +67,6 @@ function CheckoutContent() {
 
   // Corporate Payment Bank Selection
   const [selectedBankId, setSelectedBankId] = useState('bca');
-
-  // Random 3-digit unique code for fast bank mutation matching
-  const [uniqueCode] = useState(() => Math.floor(100 + Math.random() * 899));
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -91,10 +88,10 @@ function CheckoutContent() {
     return useInsurance ? calculateGadgetInsurance(initialPrice) : 0;
   }, [initialPrice, useInsurance]);
 
-  // Grand Total Calculation
+  // Grand Total Calculation (Tanpa Kode Unik - Nominal Bulat & Rapi)
   const subtotal = initialPrice;
   const shippingCost = shippingCalculation.cost;
-  const grandTotal = subtotal + shippingCost + insuranceCost + uniqueCode;
+  const grandTotal = subtotal + shippingCost + insuranceCost;
 
   // Selected Bank Object
   const selectedBank = useMemo(() => {
@@ -145,7 +142,7 @@ function CheckoutContent() {
       courier_service: serviceType.toUpperCase(),
       shipping_cost: shippingCost,
       insurance_cost: insuranceCost,
-      unique_code: uniqueCode,
+      unique_code: 0,
       total_amount: grandTotal,
       payment_method: 'bank_transfer_pt',
       bank_name: selectedBank.bankName,
@@ -766,14 +763,6 @@ function CheckoutContent() {
                       <span style={{ color: '#fff', fontWeight: 600, fontFamily: 'var(--font-mono)' }}>{formatIDR(insuranceCost)}</span>
                     </div>
                   )}
-
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <span>Kode Unik Transaksi:</span>
-                      <span title="Kode verifikasi otomatis 3 digit" style={{ color: '#777', cursor: 'help' }}>ℹ️</span>
-                    </span>
-                    <span style={{ color: 'var(--accent-lime)', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>+{uniqueCode}</span>
-                  </div>
                 </div>
 
                 {/* Total Payment Amount */}

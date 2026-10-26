@@ -40,8 +40,8 @@ export default function InvoicePage({ params: paramsPromise }) {
   const [uploading, setUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
 
-  // Countdown timer (24 hours default)
-  const [timeLeft, setTimeLeft] = useState(24 * 3600);
+  // Countdown timer: 30 menit sejak pemesanan (1800 detik)
+  const [timeLeft, setTimeLeft] = useState(30 * 60);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -50,11 +50,19 @@ export default function InvoicePage({ params: paramsPromise }) {
     return () => clearInterval(timer);
   }, []);
 
+  // Sinkronisasi timer 30 menit berdasarkan waktu created_at pesanan
+  useEffect(() => {
+    if (!order?.created_at) return;
+    const createdTime = new Date(order.created_at).getTime();
+    const expireTime = createdTime + 30 * 60 * 1000;
+    const remaining = Math.max(0, Math.floor((expireTime - Date.now()) / 1000));
+    setTimeLeft(remaining);
+  }, [order]);
+
   const formatCountdown = (seconds) => {
-    const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
-    const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
+    const m = Math.floor(seconds / 60).toString().padStart(2, '0');
     const s = (seconds % 60).toString().padStart(2, '0');
-    return `${h} jam : ${m} menit : ${s} detik`;
+    return `${m} menit : ${s} detik`;
   };
 
   // Fetch order data from Supabase or localStorage
@@ -93,7 +101,7 @@ export default function InvoicePage({ params: paramsPromise }) {
         }
       } catch (e) {}
 
-      // Fallback sample order for resilient display
+      // Fallback sample order (nominal bulat tanpa kode unik)
       setOrder({
         order_number: orderId || 'ADU-20261027-4821',
         product_name: 'POCO F6 5G (Flagship Killer)',
@@ -111,8 +119,8 @@ export default function InvoicePage({ params: paramsPromise }) {
         courier_service: 'YES',
         shipping_cost: 18000,
         insurance_cost: 16000,
-        unique_code: 312,
-        total_amount: 5533312,
+        unique_code: 0,
+        total_amount: 5533000,
         bank_name: 'BCA (Bank Central Asia)',
         bank_account_name: 'PT ADU HP INDONESIA',
         bank_account_number: '8830 9291 88',
@@ -188,16 +196,13 @@ export default function InvoicePage({ params: paramsPromise }) {
     );
   }
 
-  // Calculate Due Date for Official Invoice
+  // Calculate Due Date for Official Invoice (30 Menit Sejak Pemesanan)
   const orderDate = new Date(order.created_at || Date.now());
-  const dueDate = new Date(orderDate.getTime() + 24 * 3600 * 1000);
+  const dueDate = new Date(orderDate.getTime() + 30 * 60 * 1000);
   const formattedOrderDate = orderDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-  const formattedDueDate = dueDate.toLocaleDateString('id-ID', { 
-    day: 'numeric', 
-    month: 'long', 
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
+  const formattedDueDate = dueDate.toLocaleTimeString('id-ID', { 
+    hour: '2-digit', 
+    minute: '2-digit' 
   }) + ' WIB';
 
   return (
@@ -526,9 +531,9 @@ export default function InvoicePage({ params: paramsPromise }) {
               <div className="print-muted" style={{ fontSize: '11px', color: '#888', marginTop: '2px' }}>
                 Tanggal Terbit: <strong>{formattedOrderDate}</strong>
               </div>
-              {/* Tambahan Info Sisa Waktu / Jatuh Tempo Resmi */}
+              {/* Tambahan Info Sisa Waktu / Jatuh Tempo Resmi (30 Menit) */}
               <div className="print-muted" style={{ fontSize: '11px', color: 'var(--accent-lime)', marginTop: '2px', fontWeight: 700 }}>
-                ⏰ Batas Bayar: 24 Jam (Jatuh Tempo: {formattedDueDate})
+                ⏰ Batas Bayar: 30 Menit (Jatuh Tempo: {formattedDueDate})
               </div>
             </div>
           </div>
@@ -599,10 +604,10 @@ export default function InvoicePage({ params: paramsPromise }) {
                 </div>
               </div>
 
-              {/* Exact Nominal Box */}
+              {/* Exact Nominal Box (Nominal Bulat) */}
               <div>
                 <div className="print-muted" style={{ fontSize: '10px', color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                  Nominal Transfer Tepat (Include Kode Unik):
+                  Nominal Transfer Sesuai Tagihan:
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
                   <span className="print-total-amount" style={{ fontSize: '20px', fontWeight: 900, color: '#fff', fontFamily: 'var(--font-mono)' }}>
@@ -628,8 +633,8 @@ export default function InvoicePage({ params: paramsPromise }) {
                     <span>{copiedField === 'amount' ? 'Tersalin' : 'Salin'}</span>
                   </button>
                 </div>
-                <div style={{ fontSize: '10px', color: '#FFB300', marginTop: '3px', fontWeight: 600 }}>
-                  ⚠️ Transfer tepat hingga 3 digit terakhir (+{order.unique_code || 0}) agar terverifikasi otomatis.
+                <div style={{ fontSize: '10px', color: 'var(--accent-lime)', marginTop: '3px', fontWeight: 600 }}>
+                  ✓ Nominal bulat & rapi. Pastikan transfer sesuai nominal tagihan ke rekening PT.
                 </div>
               </div>
             </div>
@@ -736,10 +741,6 @@ export default function InvoicePage({ params: paramsPromise }) {
               <div className="print-summary-row" style={{ display: 'flex', justifyContent: 'space-between', color: '#aaa' }}>
                 <span>Packing Kayu & Bubble:</span>
                 <span style={{ color: 'var(--accent-lime)', fontWeight: 700 }}>GRATIS (PT)</span>
-              </div>
-              <div className="print-summary-row" style={{ display: 'flex', justifyContent: 'space-between', color: '#aaa' }}>
-                <span>Kode Unik Transaksi:</span>
-                <span style={{ color: 'var(--accent-lime)', fontFamily: 'var(--font-mono)' }}>+{order.unique_code || 0}</span>
               </div>
               <div className="print-grand-total" style={{
                 display: 'flex',
