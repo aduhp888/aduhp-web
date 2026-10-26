@@ -186,7 +186,7 @@ export default function HpSecondPage() {
                   fontWeight: 800,
                 }}
               >
-                🔄 HP Second (5 Foto)
+                🔄 HP Second
               </Link>
             </nav>
           </div>

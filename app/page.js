@@ -367,12 +367,11 @@ export default function LandingPage() {
                   fontWeight: 800,
                   textDecoration: 'none',
                   borderRadius: '100px',
-                  padding: '5px 12px'
+                  padding: '6px 14px'
                 }}
               >
                 <span>📱</span>
                 <span>HP Baru</span>
-                <span style={{ fontSize: '9px', background: 'var(--accent-lime)', color: '#000', padding: '1px 5px', borderRadius: '4px', fontWeight: 900 }}>MEREK</span>
               </Link>
 
               <Link 
@@ -388,12 +387,11 @@ export default function LandingPage() {
                   fontWeight: 800,
                   textDecoration: 'none',
                   borderRadius: '100px',
-                  padding: '5px 12px'
+                  padding: '6px 14px'
                 }}
               >
                 <span>🔄</span>
                 <span>HP Second</span>
-                <span style={{ fontSize: '9px', background: '#00E5FF', color: '#000', padding: '1px 5px', borderRadius: '4px', fontWeight: 900 }}>5 FOTO</span>
               </Link>
 
               <button 
@@ -494,7 +492,7 @@ export default function LandingPage() {
 
           {/* Subtext */}
           <p className="hero-desc">
-            Nggak ada HP yang 100% sempurna. Yang ada cuma HP yang <strong>pas buat kebutuhan dan dompet lu</strong>. Adu handphone baru garansi resmi entry level secara objektif, lengkap dengan benchmark AnTuTu v10!
+            Nggak ada HP yang 100% sempurna. Yang ada cuma HP yang <strong>pas buat kebutuhan dan dompet Anda</strong>. Adu handphone baru garansi resmi entry level secara objektif, lengkap dengan benchmark AnTuTu v10!
           </p>
 
           {/* 2 CTA Buttons */}
@@ -656,7 +654,6 @@ export default function LandingPage() {
                 }}>
                   MENU HP SECOND
                 </span>
-                <span style={{ fontSize: '12px', color: '#00E5FF', fontWeight: 700 }}>⚡ 5 Foto Fisik QC</span>
               </div>
 
               <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#fff', marginBottom: '8px' }}>
@@ -690,7 +687,7 @@ export default function LandingPage() {
                     textDecoration: 'none'
                   }}
                 >
-                  <span>Buka Menu HP Second (5 Foto)</span>
+                  <span>Buka Menu HP Second</span>
                   <ArrowRight size={15} />
                 </Link>
               </div>
@@ -706,7 +703,7 @@ export default function LandingPage() {
           <div className="langkah-header">
             <h2 className="langkah-title">
               <span className="langkah-tag">LANGKAH 1:</span>
-              Pilih Kebutuhan Utama HP Lu
+              Pilih Kebutuhan Utama HP Anda
             </h2>
             <div className="langkah-ai-hint">
               AI menyesuaikan bobot rumus skor
