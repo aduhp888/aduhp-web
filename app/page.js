@@ -1690,19 +1690,10 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+            <div>
               <div className="footer-copy">
                 © {new Date().getFullYear()} aduhp.com • Platform Adu Spek & Benchmark Smartphone Baru No. 1 Indonesia. All rights reserved.
               </div>
-              <a
-                href="https://dapur.aduhp.com"
-                target="_blank"
-                rel="noreferrer"
-                style={{ color: '#555', textDecoration: 'none', fontSize: '11.5px', transition: 'color 0.2s' }}
-                title="Buka Admin Panel dapur.aduhp.com"
-              >
-                dapur.aduhp.com ↗
-              </a>
             </div>
           </div>
         </div>

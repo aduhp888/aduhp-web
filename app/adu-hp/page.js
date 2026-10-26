@@ -1745,15 +1745,6 @@ export default function AduHpDedicatedPage() {
               <Link href="/adu-hp" style={{ color: 'var(--accent-lime)', textDecoration: 'none', fontSize: '12.5px', fontWeight: 700 }}>
                 ⚔️ Menu Adu HP
               </Link>
-              <a 
-                href="https://dapur.aduhp.com" 
-                target="_blank" 
-                rel="noreferrer" 
-                style={{ color: '#555', textDecoration: 'none', fontSize: '12px' }}
-                title="Buka Admin Panel dapur.aduhp.com"
-              >
-                dapur.aduhp.com ↗
-              </a>
             </div>
           </div>
         </div>
