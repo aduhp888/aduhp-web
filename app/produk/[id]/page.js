@@ -203,7 +203,8 @@ export default function ProductDetailPage() {
   const handleAddToCart = () => {
     if (!product) return;
     if (isOutOfStock) {
-      alert(`Maaf, varian ${selectedVariant?.label || ''} saat ini sedang kosong/habis.`);
+      setToastMessage(`⚠️ Stok varian ${selectedVariant?.label || ''} saat ini sedang habis.`);
+      setTimeout(() => setToastMessage(null), 3500);
       return;
     }
     addToCart(product, selectedVariant, selectedColor, quantity);
@@ -215,7 +216,8 @@ export default function ProductDetailPage() {
   const handleDirectBuy = () => {
     if (!product) return;
     if (isOutOfStock) {
-      alert(`Maaf, varian ${selectedVariant?.label || ''} saat ini sedang kosong/habis.`);
+      setToastMessage(`⚠️ Stok varian ${selectedVariant?.label || ''} saat ini sedang habis.`);
+      setTimeout(() => setToastMessage(null), 3500);
       return;
     }
     const ram = selectedVariant?.ram || product.ram_gb || 8;
@@ -810,86 +812,64 @@ export default function ProductDetailPage() {
 
             {/* ACTION CTA BUTTONS */}
             <div style={{ display: 'flex', gap: '12px', marginBottom: '32px', flexWrap: 'wrap' }}>
-              {isOutOfStock ? (
-                <button
-                  type="button"
-                  disabled
-                  style={{
-                    flex: '2 1 260px',
-                    justifyContent: 'center',
-                    padding: '16px 24px',
-                    fontSize: '15px',
-                    fontWeight: 800,
-                    background: 'rgba(255, 255, 255, 0.06)',
-                    color: '#888',
-                    border: '1px solid rgba(255, 255, 255, 0.12)',
-                    borderRadius: '12px',
-                    cursor: 'not-allowed',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}
-                  title="Stok varian ini sedang habis"
-                >
-                  <AlertCircle size={18} color="#FF453A" />
-                  <span>Stok Varian Ini Habis (Pilih Varian Lain)</span>
-                </button>
-              ) : (
-                <>
-                  <button
-                    type="button"
-                    onClick={handleAddToCart}
-                    className="btn btn-secondary"
-                    style={{
-                      flex: '1 1 180px',
-                      justifyContent: 'center',
-                      padding: '16px 20px',
-                      fontSize: '15px',
-                      fontWeight: 800,
-                      background: 'rgba(198, 255, 0, 0.08)',
-                      border: '1.5px solid var(--accent-lime)',
-                      color: 'var(--accent-lime)',
-                      borderRadius: '12px',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      transition: 'all 0.2s ease'
-                    }}
-                    title="Tambahkan ke Keranjang Belanja"
-                  >
-                    <ShoppingBag size={18} />
-                    <span>+ Keranjang</span>
-                  </button>
+              <button
+                type="button"
+                onClick={handleAddToCart}
+                className="btn btn-secondary"
+                style={{
+                  flex: '1.2 1 200px',
+                  justifyContent: 'center',
+                  padding: '16px 20px',
+                  fontSize: '15px',
+                  fontWeight: 800,
+                  background: isOutOfStock ? 'rgba(255, 255, 255, 0.05)' : 'rgba(198, 255, 0, 0.12)',
+                  border: isOutOfStock ? '1.5px solid rgba(255, 255, 255, 0.2)' : '1.5px solid var(--accent-lime)',
+                  color: isOutOfStock ? '#aaa' : 'var(--accent-lime)',
+                  borderRadius: '12px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  transition: 'all 0.2s ease',
+                  boxShadow: isOutOfStock ? 'none' : '0 4px 16px rgba(198, 255, 0, 0.15)'
+                }}
+                title={isOutOfStock ? "Stok varian ini habis" : "Tambahkan ke Keranjang Belanja"}
+              >
+                <ShoppingBag size={18} />
+                <span>{isOutOfStock ? '+ Keranjang (Stok Habis)' : '+ Tambah ke Keranjang'}</span>
+              </button>
 
-                  <button
-                    type="button"
-                    onClick={handleDirectBuy}
-                    className="btn btn-primary"
-                    style={{
-                      flex: '1.8 1 220px',
-                      justifyContent: 'center',
-                      padding: '16px 24px',
-                      fontSize: '15.5px',
-                      fontWeight: 900,
-                      background: themeColor,
-                      color: '#000',
-                      borderRadius: '12px',
-                      boxShadow: `0 8px 24px rgba(198, 255, 0, 0.25)`,
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      transition: 'all 0.2s ease'
-                    }}
-                    title="Beli langsung dan lanjutkan ke pembayaran"
-                  >
-                    {!user && <Lock size={16} />}
-                    <span>{user ? 'Beli Sekarang' : 'Login & Beli Sekarang'}</span>
-                    <ArrowRight size={18} />
-                  </button>
-                </>
-              )}
+              <button
+                type="button"
+                onClick={handleDirectBuy}
+                className="btn btn-primary"
+                style={{
+                  flex: '1.8 1 220px',
+                  justifyContent: 'center',
+                  padding: '16px 24px',
+                  fontSize: '15.5px',
+                  fontWeight: 900,
+                  background: isOutOfStock ? '#2a2a35' : themeColor,
+                  color: isOutOfStock ? '#888' : '#000',
+                  borderRadius: '12px',
+                  boxShadow: isOutOfStock ? 'none' : `0 8px 24px rgba(198, 255, 0, 0.25)`,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  transition: 'all 0.2s ease',
+                  border: 'none'
+                }}
+                title={isOutOfStock ? "Stok varian ini habis" : "Beli langsung dan lanjutkan ke pembayaran"}
+              >
+                {!user && !isOutOfStock && <Lock size={16} />}
+                <span>
+                  {isOutOfStock 
+                    ? 'Stok Habis' 
+                    : (user ? 'Beli Sekarang' : 'Login & Beli Sekarang')}
+                </span>
+                {!isOutOfStock && <ArrowRight size={18} />}
+              </button>
 
               <Link
                 href={`/adu-hp?slot1=${product.id}`}
@@ -1437,36 +1417,38 @@ export default function ProductDetailPage() {
           <button
             type="button"
             onClick={handleAddToCart}
-            disabled={isOutOfStock}
             style={{
               padding: '10px 14px',
-              background: 'rgba(255, 255, 255, 0.08)',
-              border: '1.5px solid var(--accent-lime)',
-              color: 'var(--accent-lime)',
+              background: isOutOfStock ? 'rgba(255, 255, 255, 0.05)' : 'rgba(198, 255, 0, 0.1)',
+              border: isOutOfStock ? '1px solid #555' : '1.5px solid var(--accent-lime)',
+              color: isOutOfStock ? '#888' : 'var(--accent-lime)',
               borderRadius: '8px',
               fontWeight: 800,
               fontSize: '12.5px',
-              cursor: isOutOfStock ? 'not-allowed' : 'pointer'
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
             }}
           >
-            + Keranjang
+            <ShoppingBag size={14} />
+            <span>+ Keranjang</span>
           </button>
           <button
             type="button"
             onClick={handleDirectBuy}
-            disabled={isOutOfStock}
             style={{
               padding: '10px 18px',
-              background: themeColor,
-              color: '#000',
+              background: isOutOfStock ? '#333' : themeColor,
+              color: isOutOfStock ? '#888' : '#000',
               borderRadius: '8px',
               fontWeight: 900,
               fontSize: '13px',
               border: 'none',
-              cursor: isOutOfStock ? 'not-allowed' : 'pointer'
+              cursor: 'pointer'
             }}
           >
-            {user ? 'Beli Sekarang' : 'Login & Beli'}
+            {isOutOfStock ? 'Stok Habis' : (user ? 'Beli Sekarang' : 'Login & Beli')}
           </button>
         </div>
       </div>

@@ -33,6 +33,7 @@ import { PRICE_TIERS } from '../data/entryPhones';
 import { supabase } from '../lib/supabase';
 import { getProductVariants, getProductColors } from '../lib/utils';
 import NavbarCartAndAuth from '../components/NavbarCartAndAuth';
+import { useCart } from '../context/CartContext';
 
 function formatIDR(amount) {
   if (!amount && amount !== 0) return 'Rp 0';
@@ -73,6 +74,7 @@ function getDirectCheckoutUrl(phone) {
 }
 
 export default function HpSecondPage() {
+  const { addToCart } = useCart();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedBrand, setSelectedBrand] = useState('all');
@@ -88,6 +90,16 @@ export default function HpSecondPage() {
 
   // Detail Modal for 35 QC Inspection Breakdown
   const [inspectionModalPhone, setInspectionModalPhone] = useState(null);
+
+  function handleQuickAddToCart(e, phone) {
+    e.preventDefault();
+    e.stopPropagation();
+    const variants = getProductVariants(phone);
+    const defaultVar = variants.find(v => v.isDefault && v.stock > 0) || variants.find(v => v.stock > 0) || variants[0];
+    const colors = getProductColors(phone);
+    const defaultColor = colors.find(c => c.isDefault) || colors[0];
+    addToCart(phone, defaultVar, defaultColor?.name || 'Standard', 1);
+  }
 
   // Fetch live second products from Supabase
   useEffect(() => {
@@ -620,29 +632,55 @@ export default function HpSecondPage() {
                         </div>
 
                         {/* CTA Buttons */}
-                        <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '0.9fr 1.15fr 1.15fr', gap: '6px', marginTop: '12px' }}>
                           <button
+                            type="button"
                             onClick={() => setLightboxData({ product: phone, activeIndex: 0 })}
                             className="btn btn-secondary btn-sm"
-                            style={{ flex: 1, justifyContent: 'center', fontSize: '12px' }}
+                            style={{ justifyContent: 'center', fontSize: '11px', padding: '7px 4px' }}
+                            title="Buka 5 Foto Pemeriksaan QC"
                           >
-                            <span>🔍 5 Foto QC</span>
+                            <span>🔍 5 Foto</span>
                           </button>
+
+                          <button
+                            type="button"
+                            onClick={(e) => handleQuickAddToCart(e, phone)}
+                            style={{
+                              background: 'rgba(0, 229, 255, 0.1)',
+                              border: '1px solid #00E5FF',
+                              color: '#00E5FF',
+                              borderRadius: '6px',
+                              fontSize: '11px',
+                              fontWeight: 800,
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '4px',
+                              padding: '7px 4px',
+                              transition: 'all 0.15s ease'
+                            }}
+                            title="Tambahkan ke Keranjang Belanja"
+                          >
+                            <ShoppingBag size={12} />
+                            <span>+ Keranjang</span>
+                          </button>
+
                           <Link
                             href={getDirectCheckoutUrl(phone)}
                             className="btn btn-primary btn-sm"
                             style={{
-                              flex: 1.3,
                               justifyContent: 'center',
-                              fontSize: '12px',
+                              fontSize: '11px',
                               background: '#00E5FF',
                               color: '#000',
                               fontWeight: 900,
-                              textDecoration: 'none'
+                              textDecoration: 'none',
+                              padding: '7px 4px'
                             }}
                             title="Beli langsung unit ini dan lanjut ke halaman Checkout"
                           >
-                            <ShoppingBag size={13} />
                             <span>Beli Langsung</span>
                           </Link>
                         </div>

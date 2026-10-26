@@ -32,6 +32,7 @@ import { PRICE_TIERS } from '../data/entryPhones';
 import { supabase } from '../lib/supabase';
 import { getProductVariants, getProductColors } from '../lib/utils';
 import NavbarCartAndAuth from '../components/NavbarCartAndAuth';
+import { useCart } from '../context/CartContext';
 
 // Brand-brand smartphone resmi di Indonesia beserta distributor resminya
 export const INDONESIA_BRANDS = [
@@ -89,6 +90,7 @@ function getDirectCheckoutUrl(phone) {
 }
 
 export default function HpBaruPage() {
+  const { addToCart } = useCart();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedBrand, setSelectedBrand] = useState('all');
@@ -105,6 +107,16 @@ export default function HpBaruPage() {
 
   function setActivePhotoIndex(phoneId, idx) {
     setActivePhotoMap(prev => ({ ...prev, [phoneId]: idx }));
+  }
+
+  function handleQuickAddToCart(e, phone) {
+    e.preventDefault();
+    e.stopPropagation();
+    const variants = getProductVariants(phone);
+    const defaultVar = variants.find(v => v.isDefault && v.stock > 0) || variants.find(v => v.stock > 0) || variants[0];
+    const colors = getProductColors(phone);
+    const defaultColor = colors.find(c => c.isDefault) || colors[0];
+    addToCart(phone, defaultVar, defaultColor?.name || 'Standard', 1);
   }
 
   // Fetch live products from Supabase
@@ -740,19 +752,18 @@ export default function HpBaruPage() {
                         </div>
 
                         {/* CTA Buttons */}
-                        <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: phone.is_for_sale === false ? '1fr 1fr' : '0.9fr 1.15fr 1.15fr', gap: '6px', marginTop: '12px' }}>
                           <Link
                             href={`/adu-hp?slot1=${phone.id}`}
                             className="btn btn-secondary btn-sm"
-                            style={{ flex: 1, justifyContent: 'center', fontSize: '12px' }}
+                            style={{ justifyContent: 'center', fontSize: '11px', padding: '7px 4px' }}
                             title="Adukan HP Ini di Arena Derby"
                           >
-                            <span>⚔️ Adukan</span>
+                            <span>⚔️ Adu</span>
                           </Link>
                           {phone.is_for_sale === false ? (
                             <div
                               style={{
-                                flex: 1.2,
                                 display: 'inline-flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
@@ -768,18 +779,51 @@ export default function HpBaruPage() {
                               }}
                               title="Tipe handphone ini adalah data spesifikasi pembanding di arena duel, tidak dijual oleh aduHP."
                             >
-                              <span>⚖️ Hanya Pembanding</span>
+                              <span>⚖️ Pembanding</span>
                             </div>
                           ) : (
-                            <Link
-                              href={getDirectCheckoutUrl(phone)}
-                              className="btn btn-primary btn-sm"
-                              style={{ flex: 1.2, justifyContent: 'center', fontSize: '12px', background: 'var(--accent-lime)', color: '#000', fontWeight: 800, textDecoration: 'none' }}
-                              title="Beli langsung unit ini dan lanjut ke halaman Checkout"
-                            >
-                              <ShoppingBag size={13} />
-                              <span>Beli Langsung</span>
-                            </Link>
+                            <>
+                              <button
+                                type="button"
+                                onClick={(e) => handleQuickAddToCart(e, phone)}
+                                style={{
+                                  background: 'rgba(198, 255, 0, 0.1)',
+                                  border: '1px solid var(--accent-lime)',
+                                  color: 'var(--accent-lime)',
+                                  borderRadius: '6px',
+                                  fontSize: '11px',
+                                  fontWeight: 800,
+                                  cursor: 'pointer',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  gap: '4px',
+                                  padding: '7px 4px',
+                                  transition: 'all 0.15s ease'
+                                }}
+                                title="Tambahkan ke Keranjang Belanja"
+                              >
+                                <ShoppingBag size={12} />
+                                <span>+ Keranjang</span>
+                              </button>
+
+                              <Link
+                                href={getDirectCheckoutUrl(phone)}
+                                className="btn btn-primary btn-sm"
+                                style={{
+                                  justifyContent: 'center',
+                                  fontSize: '11px',
+                                  background: 'var(--accent-lime)',
+                                  color: '#000',
+                                  fontWeight: 800,
+                                  textDecoration: 'none',
+                                  padding: '7px 4px'
+                                }}
+                                title="Beli langsung unit ini dan lanjut ke halaman Checkout"
+                              >
+                                <span>Beli Langsung</span>
+                              </Link>
+                            </>
                           )}
                         </div>
                       </div>
