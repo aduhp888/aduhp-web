@@ -17,7 +17,8 @@ import {
   AlertCircle,
   Truck,
   Smartphone,
-  ExternalLink
+  ExternalLink,
+  Award
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { formatIDR, CORPORATE_ACCOUNTS } from '../../lib/utils';
@@ -61,7 +62,6 @@ export default function InvoicePage({ params: paramsPromise }) {
     async function loadOrder() {
       setLoading(true);
       try {
-        // 1. Try Supabase
         const { data, error } = await supabase
           .from('dapur_orders')
           .select('*')
@@ -93,9 +93,9 @@ export default function InvoicePage({ params: paramsPromise }) {
         }
       } catch (e) {}
 
-      // Fallback dummy order for resilient display
+      // Fallback sample order for resilient display
       setOrder({
-        order_number: orderId || 'ADU-20261027-8891',
+        order_number: orderId || 'ADU-20261027-4821',
         product_name: 'POCO F6 5G (Flagship Killer)',
         variant_ram: 12,
         variant_storage: 512,
@@ -108,11 +108,11 @@ export default function InvoicePage({ params: paramsPromise }) {
         shipping_city: 'Jakarta Selatan',
         shipping_address: 'Jl. TB Simatupang No. 88, Cilandak',
         courier_code: 'jne',
-        courier_service: 'REG',
-        shipping_cost: 11000,
+        courier_service: 'YES',
+        shipping_cost: 18000,
         insurance_cost: 16000,
-        unique_code: 421,
-        total_amount: 5526421,
+        unique_code: 312,
+        total_amount: 5533312,
         bank_name: 'BCA (Bank Central Asia)',
         bank_account_name: 'PT ADU HP INDONESIA',
         bank_account_number: '8830 9291 88',
@@ -145,7 +145,6 @@ export default function InvoicePage({ params: paramsPromise }) {
     setUploading(true);
 
     try {
-      // Update order status in Supabase if exists
       if (order?.id) {
         await supabase
           .from('dapur_orders')
@@ -173,7 +172,7 @@ export default function InvoicePage({ params: paramsPromise }) {
   if (loading) {
     return (
       <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <p style={{ color: '#aaa' }}>Memuat surat invoice & tagihan resmi PT...</p>
+        <p style={{ color: '#aaa' }}>Memuat surat invoice resmi PT...</p>
       </div>
     );
   }
@@ -189,10 +188,194 @@ export default function InvoicePage({ params: paramsPromise }) {
     );
   }
 
+  // Calculate Due Date for Official Invoice
+  const orderDate = new Date(order.created_at || Date.now());
+  const dueDate = new Date(orderDate.getTime() + 24 * 3600 * 1000);
+  const formattedOrderDate = orderDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+  const formattedDueDate = dueDate.toLocaleDateString('id-ID', { 
+    day: 'numeric', 
+    month: 'long', 
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  }) + ' WIB';
+
   return (
     <div style={{ minHeight: '100vh', paddingBottom: '90px' }}>
-      {/* 1. Header Navigation Bar */}
-      <header className="site-header">
+      {/* 
+        ========================================================================
+        PRINT STYLES: STRICT 1-PAGE A4 ENFORCEMENT
+        Menjamin saat diunduh / dicetak PDF hanya 1 lembar persis sesuai kotak merah
+        ========================================================================
+      */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @media print {
+          /* Setup Kertas A4 Portrait */
+          @page {
+            size: A4 portrait;
+            margin: 8mm 10mm 8mm 10mm;
+          }
+
+          /* Sembunyikan elemen non-invoice */
+          .no-print,
+          .site-header,
+          .timer-banner,
+          .upload-action-box,
+          .copy-btn,
+          footer {
+            display: none !important;
+          }
+
+          html, body {
+            background: #ffffff !important;
+            color: #000000 !important;
+            font-size: 11pt !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            height: auto !important;
+            overflow: visible !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+
+          .page-wrapper {
+            padding: 0 !important;
+            margin: 0 !important;
+          }
+
+          .container {
+            max-width: 100% !important;
+            width: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
+          }
+
+          /* Card Invoice Resmi: 1 Lembar Bersih */
+          #invoice-printable-card {
+            background: #ffffff !important;
+            color: #111111 !important;
+            border: 1.5px solid #d1d5db !important;
+            border-radius: 8px !important;
+            padding: 20px 24px !important;
+            margin: 0 auto !important;
+            box-shadow: none !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+            page-break-after: avoid !important;
+          }
+
+          /* Warna Teks & Background Saat Cetak */
+          #invoice-printable-card * {
+            color: #111111 !important;
+            text-shadow: none !important;
+          }
+
+          /* Header Kop PT */
+          .print-company-name {
+            color: #0f172a !important;
+            font-size: 13pt !important;
+            font-weight: 900 !important;
+          }
+          .print-muted {
+            color: #475569 !important;
+            font-size: 8.5pt !important;
+          }
+          .print-title {
+            color: #0f172a !important;
+            font-size: 16pt !important;
+            font-weight: 900 !important;
+            letter-spacing: 0.5px !important;
+          }
+          .print-order-no {
+            color: #166534 !important;
+            font-size: 12pt !important;
+            font-weight: 900 !important;
+          }
+
+          /* Box Rekening Bank PT */
+          .print-bank-box {
+            background: #f8fafc !important;
+            border: 1.5px solid #22c55e !important;
+            border-radius: 8px !important;
+            padding: 12px 16px !important;
+            margin-bottom: 16px !important;
+          }
+          .print-acc-no {
+            color: #15803d !important;
+            font-size: 14pt !important;
+            font-weight: 900 !important;
+          }
+          .print-total-amount {
+            color: #0f172a !important;
+            font-size: 15pt !important;
+            font-weight: 900 !important;
+          }
+
+          /* Customer & Shipping Grid */
+          .print-info-grid {
+            margin-bottom: 16px !important;
+            gap: 12px !important;
+          }
+          .print-info-card {
+            background: #f8fafc !important;
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 6px !important;
+            padding: 10px 14px !important;
+          }
+
+          /* Tabel Produk */
+          .print-table {
+            margin-bottom: 14px !important;
+          }
+          .print-table th {
+            border-bottom: 2px solid #cbd5e1 !important;
+            color: #334155 !important;
+            padding: 6px 4px !important;
+            font-size: 8.5pt !important;
+          }
+          .print-table td {
+            border-bottom: 1px solid #e2e8f0 !important;
+            padding: 8px 4px !important;
+            font-size: 9pt !important;
+          }
+          .print-badge {
+            background: #e2e8f0 !important;
+            color: #0f172a !important;
+            border: 1px solid #94a3b8 !important;
+            padding: 2px 6px !important;
+            font-size: 7.5pt !important;
+          }
+
+          /* Ringkasan Biaya */
+          .print-summary-box {
+            margin-bottom: 16px !important;
+          }
+          .print-summary-row {
+            font-size: 8.5pt !important;
+          }
+          .print-grand-total {
+            border-top: 2px solid #0f172a !important;
+            padding-top: 6px !important;
+            font-size: 12pt !important;
+            font-weight: 900 !important;
+            color: #15803d !important;
+          }
+
+          /* Cap Basah Digital PT */
+          .print-stamp-box {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            padding-top: 12px !important;
+            border-top: 1px dashed #cbd5e1 !important;
+          }
+        }
+      `}} />
+
+      {/* 1. Header Navigation Bar (Hidden on Print) */}
+      <header className="site-header no-print">
         <div className="container">
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '64px' }}>
             <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fff', textDecoration: 'none', fontSize: '14px' }}>
@@ -203,55 +386,57 @@ export default function InvoicePage({ params: paramsPromise }) {
             <button
               onClick={() => window.print()}
               style={{
-                background: 'rgba(255, 255, 255, 0.08)',
-                border: '1px solid rgba(255, 255, 255, 0.15)',
-                color: '#fff',
-                padding: '8px 14px',
+                background: 'var(--accent-lime)',
+                border: 'none',
+                color: '#000',
+                padding: '10px 18px',
                 borderRadius: '8px',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
                 fontSize: '13px',
-                fontWeight: 600,
-                cursor: 'pointer'
+                fontWeight: 900,
+                cursor: 'pointer',
+                boxShadow: '0 4px 14px rgba(198, 255, 0, 0.3)'
               }}
             >
               <Printer size={16} />
-              <span>Cetak / Unduh PDF</span>
+              <span>Cetak / Unduh PDF (1 Lembar)</span>
             </button>
           </div>
         </div>
       </header>
 
       {/* 2. Main Invoice Container */}
-      <main className="container" style={{ maxWidth: '860px', marginTop: '28px' }}>
-        {/* Urgent Timer Alert */}
-        <div style={{
+      <main className="container" style={{ maxWidth: '860px', marginTop: '24px' }}>
+        
+        {/* Banner Sisa Waktu Pembayaran (Tampil di Layar Web, Otomatis Disembunyikan Saat Cetak PDF) */}
+        <div className="timer-banner no-print" style={{
           background: 'radial-gradient(ellipse at top, rgba(198, 255, 0, 0.1) 0%, rgba(20, 20, 24, 0.8) 100%)',
           border: '1px solid rgba(198, 255, 0, 0.3)',
           borderRadius: '16px',
-          padding: '20px',
-          marginBottom: '24px',
+          padding: '18px 22px',
+          marginBottom: '20px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           flexWrap: 'wrap',
-          gap: '16px'
+          gap: '14px'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{
-              width: '44px',
-              height: '44px',
+              width: '42px',
+              height: '42px',
               borderRadius: '50%',
               background: 'rgba(198, 255, 0, 0.15)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
             }}>
-              <Clock size={24} color="var(--accent-lime)" />
+              <Clock size={22} color="var(--accent-lime)" />
             </div>
             <div>
-              <div style={{ fontSize: '13px', color: '#aaa' }}>
+              <div style={{ fontSize: '12px', color: '#aaa' }}>
                 Batas Waktu Pembayaran (Stok Unit Dikunci):
               </div>
               <div style={{ fontSize: '18px', fontWeight: 900, color: '#fff', fontFamily: 'var(--font-mono)' }}>
@@ -279,13 +464,19 @@ export default function InvoicePage({ params: paramsPromise }) {
           </div>
         </div>
 
-        {/* The Invoice Document Paper Card */}
-        <div style={{
+        {/* 
+          ========================================================================
+          THE INVOICE DOCUMENT PAPER CARD (KOTAK MERAH RESMI)
+          Ini satu-satunya bagian yang dicetak menjadi PDF 1 Lembar Profesional
+          ========================================================================
+        */}
+        <div id="invoice-printable-card" style={{
           background: '#121216',
           border: '1px solid rgba(255, 255, 255, 0.1)',
-          borderRadius: '20px',
-          padding: 'clamp(20px, 4vw, 40px)',
-          boxShadow: '0 25px 50px rgba(0, 0, 0, 0.7)'
+          borderRadius: '18px',
+          padding: 'clamp(20px, 3.5vw, 36px)',
+          boxShadow: '0 25px 50px rgba(0, 0, 0, 0.7)',
+          position: 'relative'
         }}>
           {/* Header Kop Surat Perusahaan */}
           <div style={{
@@ -293,10 +484,10 @@ export default function InvoicePage({ params: paramsPromise }) {
             justifyContent: 'space-between',
             alignItems: 'flex-start',
             borderBottom: '2px solid rgba(255, 255, 255, 0.1)',
-            paddingBottom: '24px',
-            marginBottom: '28px',
+            paddingBottom: '20px',
+            marginBottom: '20px',
             flexWrap: 'wrap',
-            gap: '20px'
+            gap: '16px'
           }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -308,143 +499,155 @@ export default function InvoicePage({ params: paramsPromise }) {
                   color: 'var(--accent-lime)',
                   padding: '2px 8px',
                   borderRadius: '4px',
-                  fontSize: '11px',
-                  fontWeight: 800
+                  fontSize: '10px',
+                  fontWeight: 900,
+                  letterSpacing: '0.5px'
                 }}>
                   OFFICIAL STORE
                 </span>
               </div>
-              <h4 style={{ fontSize: '14px', fontWeight: 800, color: '#ddd', marginTop: '6px' }}>
+              <h4 className="print-company-name" style={{ fontSize: '14px', fontWeight: 900, color: '#fff', marginTop: '4px' }}>
                 {CORPORATE_ACCOUNTS.companyName}
               </h4>
-              <p style={{ fontSize: '11px', color: '#777', maxWidth: '380px', marginTop: '2px', lineHeight: 1.5 }}>
+              <p className="print-muted" style={{ fontSize: '11px', color: '#888', maxWidth: '420px', marginTop: '2px', lineHeight: 1.4 }}>
                 {CORPORATE_ACCOUNTS.address}
                 <br />
-                NIB: {CORPORATE_ACCOUNTS.nib} • Kemenkumham: {CORPORATE_ACCOUNTS.ahyuNumber}
+                NIB: {CORPORATE_ACCOUNTS.nib} • Keputusan Menkumham: {CORPORATE_ACCOUNTS.ahyuNumber}
               </p>
             </div>
 
             <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: '20px', fontWeight: 900, color: '#fff', letterSpacing: '1px' }}>
+              <div className="print-title" style={{ fontSize: '18px', fontWeight: 900, color: '#fff', letterSpacing: '0.5px' }}>
                 PROFORMA INVOICE
               </div>
-              <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--accent-lime)', fontFamily: 'var(--font-mono)', marginTop: '4px' }}>
+              <div className="print-order-no" style={{ fontSize: '14px', fontWeight: 900, color: 'var(--accent-lime)', fontFamily: 'var(--font-mono)', marginTop: '2px' }}>
                 {order.order_number}
               </div>
-              <div style={{ fontSize: '12px', color: '#777', marginTop: '2px' }}>
-                Tanggal: {new Date(order.created_at || Date.now()).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+              <div className="print-muted" style={{ fontSize: '11px', color: '#888', marginTop: '2px' }}>
+                Tanggal Terbit: <strong>{formattedOrderDate}</strong>
+              </div>
+              {/* Tambahan Info Sisa Waktu / Jatuh Tempo Resmi */}
+              <div className="print-muted" style={{ fontSize: '11px', color: 'var(--accent-lime)', marginTop: '2px', fontWeight: 700 }}>
+                ⏰ Batas Bayar: 24 Jam (Jatuh Tempo: {formattedDueDate})
               </div>
             </div>
           </div>
 
           {/* 3. Corporate Bank Account Instruction Box */}
-          <div style={{
+          <div className="print-bank-box" style={{
             background: 'linear-gradient(135deg, rgba(18, 30, 20, 0.9) 0%, rgba(14, 18, 14, 0.9) 100%)',
             border: '2px solid var(--accent-lime)',
-            borderRadius: '16px',
-            padding: '24px',
-            marginBottom: '32px'
+            borderRadius: '14px',
+            padding: '18px 20px',
+            marginBottom: '20px'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
-              <Building2 size={20} color="var(--accent-lime)" />
-              <h3 style={{ fontSize: '16px', fontWeight: 900, color: '#fff' }}>
-                Instruksi Transfer ke Rekening Resmi Perusahaan
-              </h3>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Building2 size={18} color="var(--accent-lime)" />
+                <h3 style={{ fontSize: '14px', fontWeight: 900, color: '#fff' }}>
+                  Instruksi Transfer ke Rekening Resmi Perusahaan
+                </h3>
+              </div>
+              <span style={{ fontSize: '10px', background: 'rgba(198, 255, 0, 0.15)', color: 'var(--accent-lime)', padding: '2px 8px', borderRadius: '100px', fontWeight: 800 }}>
+                REKENING GIRO PT
+              </span>
             </div>
 
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-              gap: '16px',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+              gap: '14px',
               background: '#0d100d',
-              padding: '18px',
-              borderRadius: '12px',
+              padding: '14px 16px',
+              borderRadius: '10px',
               border: '1px solid rgba(198, 255, 0, 0.2)'
             }}>
               {/* Account Number Box */}
               <div>
-                <div style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                <div className="print-muted" style={{ fontSize: '10px', color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                   Bank Tujuan & Nomor Rekening PT:
                 </div>
-                <div style={{ fontSize: '15px', fontWeight: 800, color: '#fff', marginTop: '2px' }}>
+                <div style={{ fontSize: '14px', fontWeight: 800, color: '#fff', marginTop: '2px' }}>
                   {order.bank_name || 'BCA (Bank Central Asia)'}
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px' }}>
-                  <span style={{ fontSize: '20px', fontWeight: 900, color: 'var(--accent-lime)', fontFamily: 'var(--font-mono)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                  <span className="print-acc-no" style={{ fontSize: '18px', fontWeight: 900, color: 'var(--accent-lime)', fontFamily: 'var(--font-mono)' }}>
                     {order.bank_account_number || '8830 9291 88'}
                   </span>
                   <button
                     onClick={() => copyToClipboard(order.bank_account_number || '8830929188', 'account')}
+                    className="copy-btn no-print"
                     style={{
                       background: 'rgba(255, 255, 255, 0.1)',
                       border: 'none',
                       color: '#fff',
-                      padding: '4px 8px',
-                      borderRadius: '6px',
+                      padding: '3px 6px',
+                      borderRadius: '4px',
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
                       gap: '4px',
-                      fontSize: '11px'
+                      fontSize: '10px'
                     }}
                   >
-                    {copiedField === 'account' ? <Check size={12} color="var(--accent-lime)" /> : <Copy size={12} />}
+                    {copiedField === 'account' ? <Check size={11} color="var(--accent-lime)" /> : <Copy size={11} />}
                     <span>{copiedField === 'account' ? 'Tersalin' : 'Salin'}</span>
                   </button>
                 </div>
-                <div style={{ fontSize: '12px', color: '#aaa', marginTop: '4px' }}>
+                <div className="print-muted" style={{ fontSize: '11px', color: '#aaa', marginTop: '3px' }}>
                   Atas Nama: <strong style={{ color: '#fff' }}>{CORPORATE_ACCOUNTS.companyName}</strong>
                 </div>
               </div>
 
               {/* Exact Nominal Box */}
               <div>
-                <div style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                <div className="print-muted" style={{ fontSize: '10px', color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                   Nominal Transfer Tepat (Include Kode Unik):
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px' }}>
-                  <span style={{ fontSize: '24px', fontWeight: 900, color: '#fff', fontFamily: 'var(--font-mono)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                  <span className="print-total-amount" style={{ fontSize: '20px', fontWeight: 900, color: '#fff', fontFamily: 'var(--font-mono)' }}>
                     {formatIDR(order.total_amount)}
                   </span>
                   <button
                     onClick={() => copyToClipboard(order.total_amount.toString(), 'amount')}
+                    className="copy-btn no-print"
                     style={{
                       background: 'rgba(255, 255, 255, 0.1)',
                       border: 'none',
                       color: '#fff',
-                      padding: '4px 8px',
-                      borderRadius: '6px',
+                      padding: '3px 6px',
+                      borderRadius: '4px',
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
                       gap: '4px',
-                      fontSize: '11px'
+                      fontSize: '10px'
                     }}
                   >
-                    {copiedField === 'amount' ? <Check size={12} color="var(--accent-lime)" /> : <Copy size={12} />}
+                    {copiedField === 'amount' ? <Check size={11} color="var(--accent-lime)" /> : <Copy size={11} />}
                     <span>{copiedField === 'amount' ? 'Tersalin' : 'Salin'}</span>
                   </button>
                 </div>
-                <div style={{ fontSize: '11px', color: '#FFB300', marginTop: '4px', fontWeight: 600 }}>
-                  ⚠️ Penting: Transfer tepat hingga 3 digit terakhir (+{order.unique_code || 0}) agar terverifikasi otomatis.
+                <div style={{ fontSize: '10px', color: '#FFB300', marginTop: '3px', fontWeight: 600 }}>
+                  ⚠️ Transfer tepat hingga 3 digit terakhir (+{order.unique_code || 0}) agar terverifikasi otomatis.
                 </div>
               </div>
             </div>
           </div>
 
           {/* Customer & Shipping Info Grid */}
-          <div style={{
+          <div className="print-info-grid" style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-            gap: '20px',
-            marginBottom: '28px',
-            fontSize: '13px'
+            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+            gap: '16px',
+            marginBottom: '20px',
+            fontSize: '12px'
           }}>
-            <div style={{ background: '#16161c', padding: '16px', borderRadius: '12px' }}>
-              <div style={{ fontSize: '11px', color: '#777', textTransform: 'uppercase', fontWeight: 700, marginBottom: '6px' }}>
+            <div className="print-info-card" style={{ background: '#16161c', padding: '12px 14px', borderRadius: '10px' }}>
+              <div className="print-muted" style={{ fontSize: '10px', color: '#777', textTransform: 'uppercase', fontWeight: 800, marginBottom: '4px' }}>
                 DITAGIHKAN KEPADA:
               </div>
-              <div style={{ fontSize: '15px', fontWeight: 800, color: '#fff' }}>
+              <div style={{ fontSize: '14px', fontWeight: 800, color: '#fff' }}>
                 {order.customer_name}
               </div>
               <div style={{ color: '#aaa', marginTop: '2px' }}>
@@ -455,59 +658,59 @@ export default function InvoicePage({ params: paramsPromise }) {
               )}
             </div>
 
-            <div style={{ background: '#16161c', padding: '16px', borderRadius: '12px' }}>
-              <div style={{ fontSize: '11px', color: '#777', textTransform: 'uppercase', fontWeight: 700, marginBottom: '6px' }}>
+            <div className="print-info-card" style={{ background: '#16161c', padding: '12px 14px', borderRadius: '10px' }}>
+              <div className="print-muted" style={{ fontSize: '10px', color: '#777', textTransform: 'uppercase', fontWeight: 800, marginBottom: '4px' }}>
                 ALAMAT PENGIRIMAN RESMI:
               </div>
-              <div style={{ color: '#fff', fontWeight: 600, lineHeight: 1.4 }}>
+              <div style={{ color: '#fff', fontWeight: 600, lineHeight: 1.3 }}>
                 {order.shipping_address}
               </div>
-              <div style={{ color: '#aaa', marginTop: '4px' }}>
+              <div style={{ color: '#aaa', marginTop: '2px' }}>
                 {order.shipping_city}, {order.shipping_province} {order.shipping_postal_code}
               </div>
-              <div style={{ color: 'var(--accent-lime)', fontSize: '12px', fontWeight: 700, marginTop: '6px' }}>
+              <div style={{ color: 'var(--accent-lime)', fontSize: '11px', fontWeight: 800, marginTop: '4px' }}>
                 Ekspedisi: {order.courier_code?.toUpperCase()} ({order.courier_service})
               </div>
             </div>
           </div>
 
           {/* Purchased Items Table */}
-          <div style={{ marginBottom: '28px', overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
+          <div className="print-table" style={{ marginBottom: '18px', overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '12px' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.1)', color: '#888' }}>
-                  <th style={{ padding: '10px 0', fontWeight: 700 }}>Deskripsi Unit HP & Varian</th>
-                  <th style={{ padding: '10px 12px', fontWeight: 700, textAlign: 'center' }}>Kondisi</th>
-                  <th style={{ padding: '10px 12px', fontWeight: 700, textAlign: 'center' }}>Jumlah</th>
-                  <th style={{ padding: '10px 0', fontWeight: 700, textAlign: 'right' }}>Subtotal</th>
+                  <th style={{ padding: '8px 0', fontWeight: 700 }}>Deskripsi Unit HP & Varian</th>
+                  <th style={{ padding: '8px 10px', fontWeight: 700, textAlign: 'center' }}>Kondisi</th>
+                  <th style={{ padding: '8px 10px', fontWeight: 700, textAlign: 'center' }}>Jumlah</th>
+                  <th style={{ padding: '8px 0', fontWeight: 700, textAlign: 'right' }}>Subtotal</th>
                 </tr>
               </thead>
               <tbody>
                 <tr style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.06)' }}>
-                  <td style={{ padding: '14px 0' }}>
-                    <div style={{ fontWeight: 800, color: '#fff', fontSize: '14px' }}>
+                  <td style={{ padding: '10px 0' }}>
+                    <div style={{ fontWeight: 800, color: '#fff', fontSize: '13px' }}>
                       {order.product_name}
                     </div>
-                    <div style={{ fontSize: '12px', color: 'var(--accent-lime)', marginTop: '2px' }}>
+                    <div style={{ fontSize: '11px', color: 'var(--accent-lime)', marginTop: '2px' }}>
                       Varian: <strong>{order.variant_ram || 8}GB RAM / {order.variant_storage || 256}GB ROM</strong> • {order.variant_color || 'Standard'}
                     </div>
                   </td>
-                  <td style={{ padding: '14px 12px', textAlign: 'center' }}>
-                    <span style={{
+                  <td style={{ padding: '10px 10px', textAlign: 'center' }}>
+                    <span className="print-badge" style={{
                       background: order.product_condition === 'second' ? 'rgba(0, 229, 255, 0.15)' : 'rgba(198, 255, 0, 0.15)',
                       color: order.product_condition === 'second' ? '#00E5FF' : 'var(--accent-lime)',
-                      padding: '3px 8px',
+                      padding: '2px 7px',
                       borderRadius: '4px',
-                      fontSize: '11px',
-                      fontWeight: 700
+                      fontSize: '10px',
+                      fontWeight: 800
                     }}>
                       {order.product_condition === 'second' ? 'Second QC' : 'BNIB Segel'}
                     </span>
                   </td>
-                  <td style={{ padding: '14px 12px', textAlign: 'center', color: '#fff', fontWeight: 600 }}>
+                  <td style={{ padding: '10px 10px', textAlign: 'center', color: '#fff', fontWeight: 600 }}>
                     1 Unit
                   </td>
-                  <td style={{ padding: '14px 0', textAlign: 'right', fontWeight: 800, color: '#fff', fontFamily: 'var(--font-mono)' }}>
+                  <td style={{ padding: '10px 0', textAlign: 'right', fontWeight: 800, color: '#fff', fontFamily: 'var(--font-mono)' }}>
                     {formatIDR(order.unit_price)}
                   </td>
                 </tr>
@@ -516,143 +719,181 @@ export default function InvoicePage({ params: paramsPromise }) {
           </div>
 
           {/* Cost Summary Breakdown */}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '32px' }}>
-            <div style={{ width: '100%', maxWidth: '340px', display: 'grid', gap: '8px', fontSize: '13px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', color: '#aaa' }}>
+          <div className="print-summary-box" style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px' }}>
+            <div style={{ width: '100%', maxWidth: '320px', display: 'grid', gap: '6px', fontSize: '12px' }}>
+              <div className="print-summary-row" style={{ display: 'flex', justifyContent: 'space-between', color: '#aaa' }}>
                 <span>Subtotal Unit HP:</span>
                 <span style={{ color: '#fff', fontFamily: 'var(--font-mono)' }}>{formatIDR(order.unit_price)}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', color: '#aaa' }}>
+              <div className="print-summary-row" style={{ display: 'flex', justifyContent: 'space-between', color: '#aaa' }}>
                 <span>Biaya Ongkos Kirim:</span>
                 <span style={{ color: '#fff', fontFamily: 'var(--font-mono)' }}>{formatIDR(order.shipping_cost || 0)}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', color: '#aaa' }}>
+              <div className="print-summary-row" style={{ display: 'flex', justifyContent: 'space-between', color: '#aaa' }}>
                 <span>Asuransi Pengiriman Gadget:</span>
                 <span style={{ color: '#fff', fontFamily: 'var(--font-mono)' }}>{formatIDR(order.insurance_cost || 0)}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', color: '#aaa' }}>
+              <div className="print-summary-row" style={{ display: 'flex', justifyContent: 'space-between', color: '#aaa' }}>
                 <span>Packing Kayu & Bubble:</span>
                 <span style={{ color: 'var(--accent-lime)', fontWeight: 700 }}>GRATIS (PT)</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', color: '#aaa' }}>
+              <div className="print-summary-row" style={{ display: 'flex', justifyContent: 'space-between', color: '#aaa' }}>
                 <span>Kode Unik Transaksi:</span>
                 <span style={{ color: 'var(--accent-lime)', fontFamily: 'var(--font-mono)' }}>+{order.unique_code || 0}</span>
               </div>
-              <div style={{
+              <div className="print-grand-total" style={{
                 display: 'flex',
                 justifyContent: 'space-between',
-                paddingTop: '12px',
+                paddingTop: '8px',
                 borderTop: '2px solid rgba(255, 255, 255, 0.1)',
-                fontSize: '16px',
+                fontSize: '15px',
                 fontWeight: 900
               }}>
                 <span style={{ color: '#fff' }}>Total Tagihan:</span>
-                <span style={{ color: 'var(--accent-lime)', fontFamily: 'var(--font-mono)', fontSize: '18px' }}>
+                <span style={{ color: 'var(--accent-lime)', fontFamily: 'var(--font-mono)', fontSize: '17px' }}>
                   {formatIDR(order.total_amount)}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* 4. Action Section: Upload Proof & Direct WhatsApp Confirmation */}
-          <div style={{
-            background: '#16161e',
-            borderRadius: '16px',
-            padding: '24px',
-            border: '1px solid rgba(255, 255, 255, 0.08)'
+          {/* Official Company Stamp & Signature Footer for Single-Page Document */}
+          <div className="print-stamp-box" style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            paddingTop: '16px',
+            borderTop: '1px dashed rgba(255, 255, 255, 0.1)',
+            fontSize: '11px',
+            color: '#888'
           }}>
-            <h4 style={{ fontSize: '15px', fontWeight: 800, color: '#fff', marginBottom: '8px' }}>
-              Sudah Melakukan Transfer ke Rekening PT?
-            </h4>
-            <p style={{ fontSize: '12px', color: '#aaa', marginBottom: '16px', lineHeight: 1.5 }}>
-              Unggah bukti struk transfer Anda di bawah atau langsung kirimkan konfirmasi via WhatsApp ke tim Finance resmi PT ADU HP INDONESIA.
-            </p>
+            <div style={{ maxWidth: '420px', lineHeight: 1.4 }}>
+              <strong>Jaminan Transaksi Sah PT:</strong>
+              <br />
+              Dokumen ini merupakan proforma invoice elektronik sah yang diterbitkan oleh sistem keuangan {CORPORATE_ACCOUNTS.companyName}.
+            </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
-              {/* Upload Proof Box */}
-              <div>
-                <input
-                  type="file"
-                  id="proof-upload"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  style={{ display: 'none' }}
-                />
-                <label
-                  htmlFor="proof-upload"
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: '20px',
-                    borderRadius: '12px',
-                    border: '2px dashed rgba(255, 255, 255, 0.2)',
-                    background: 'rgba(255, 255, 255, 0.02)',
-                    cursor: 'pointer',
-                    textAlign: 'center'
-                  }}
-                >
-                  <UploadCloud size={24} color="var(--accent-lime)" />
-                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#fff', marginTop: '6px' }}>
-                    {proofFile ? proofFile.name : 'Pilih Foto Struk / Bukti M-Banking'}
-                  </span>
-                  <span style={{ fontSize: '11px', color: '#777', marginTop: '2px' }}>
-                    Format JPG, PNG, atau screenshot
-                  </span>
-                </label>
-
-                {proofFile && (
-                  <button
-                    onClick={handleUploadProof}
-                    disabled={uploading}
-                    className="btn btn-primary btn-sm"
-                    style={{
-                      width: '100%',
-                      marginTop: '10px',
-                      justifyContent: 'center',
-                      background: 'var(--accent-lime)',
-                      color: '#000',
-                      fontWeight: 800
-                    }}
-                  >
-                    {uploading ? 'Mengunggah...' : 'Kirim Bukti Pembayaran'}
-                  </button>
-                )}
-
-                {uploadSuccess && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#34C759', fontSize: '12px', marginTop: '8px', fontWeight: 600 }}>
-                    <CheckCircle2 size={16} />
-                    <span>Bukti transfer tercatat! Tim finance sedang memverifikasi mutasi bank.</span>
-                  </div>
-                )}
+            <div style={{
+              border: '2px dashed var(--accent-lime)',
+              borderRadius: '8px',
+              padding: '6px 14px',
+              textAlign: 'center',
+              background: 'rgba(198, 255, 0, 0.04)'
+            }}>
+              <div style={{ fontSize: '9px', fontWeight: 900, color: 'var(--accent-lime)', letterSpacing: '0.5px' }}>
+                PT ADU HP INDONESIA
               </div>
+              <div style={{ fontSize: '8px', color: '#aaa', marginTop: '2px' }}>
+                FINANCE & BILLING VERIFIED
+              </div>
+            </div>
+          </div>
+        </div>
 
-              {/* Direct WhatsApp Confirmation Button */}
-              <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                <a
-                  href={getWhatsAppConfirmationUrl()}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="btn btn-primary"
-                  style={{
-                    padding: '16px',
-                    justifyContent: 'center',
-                    background: '#25D366',
-                    color: '#fff',
-                    fontWeight: 800,
-                    fontSize: '14px',
-                    textDecoration: 'none',
-                    boxShadow: '0 8px 20px rgba(37, 211, 102, 0.25)'
-                  }}
-                >
-                  <MessageCircle size={18} />
-                  <span>Konfirmasi ke Finance PT via WhatsApp</span>
-                </a>
-                <span style={{ fontSize: '11px', color: '#888', marginTop: '8px', textAlign: 'center' }}>
-                  Format pesan konfirmasi beserta nomor invoice dan data unit otomatis terisi.
+        {/* 
+          ========================================================================
+          ACTION SECTION (UPLOAD BUKTI & WA)
+          Berada DI LUAR kartu invoice dan disembunyikan saat cetak PDF (no-print)
+          ========================================================================
+        */}
+        <div className="upload-action-box no-print" style={{
+          marginTop: '20px',
+          background: '#16161e',
+          borderRadius: '16px',
+          padding: '24px',
+          border: '1px solid rgba(255, 255, 255, 0.08)'
+        }}>
+          <h4 style={{ fontSize: '15px', fontWeight: 800, color: '#fff', marginBottom: '6px' }}>
+            Sudah Melakukan Transfer ke Rekening PT?
+          </h4>
+          <p style={{ fontSize: '12px', color: '#aaa', marginBottom: '16px', lineHeight: 1.5 }}>
+            Unggah bukti struk transfer Anda di bawah atau langsung kirimkan konfirmasi via WhatsApp ke tim Finance resmi PT ADU HP INDONESIA.
+          </p>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+            {/* Upload Proof Box */}
+            <div>
+              <input
+                type="file"
+                id="proof-upload"
+                accept="image/*"
+                onChange={handleFileChange}
+                style={{ display: 'none' }}
+              />
+              <label
+                htmlFor="proof-upload"
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '18px',
+                  borderRadius: '12px',
+                  border: '2px dashed rgba(255, 255, 255, 0.2)',
+                  background: 'rgba(255, 255, 255, 0.02)',
+                  cursor: 'pointer',
+                  textAlign: 'center'
+                }}
+              >
+                <UploadCloud size={24} color="var(--accent-lime)" />
+                <span style={{ fontSize: '13px', fontWeight: 700, color: '#fff', marginTop: '6px' }}>
+                  {proofFile ? proofFile.name : 'Pilih Foto Struk / Bukti M-Banking'}
                 </span>
-              </div>
+                <span style={{ fontSize: '11px', color: '#777', marginTop: '2px' }}>
+                  Format JPG, PNG, atau screenshot
+                </span>
+              </label>
+
+              {proofFile && (
+                <button
+                  onClick={handleUploadProof}
+                  disabled={uploading}
+                  className="btn btn-primary btn-sm"
+                  style={{
+                    width: '100%',
+                    marginTop: '10px',
+                    justifyContent: 'center',
+                    background: 'var(--accent-lime)',
+                    color: '#000',
+                    fontWeight: 800
+                  }}
+                >
+                  {uploading ? 'Mengunggah...' : 'Kirim Bukti Pembayaran'}
+                </button>
+              )}
+
+              {uploadSuccess && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#34C759', fontSize: '12px', marginTop: '8px', fontWeight: 600 }}>
+                  <CheckCircle2 size={16} />
+                  <span>Bukti transfer tercatat! Tim finance sedang memverifikasi mutasi bank.</span>
+                </div>
+              )}
+            </div>
+
+            {/* Direct WhatsApp Confirmation Button */}
+            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <a
+                href={getWhatsAppConfirmationUrl()}
+                target="_blank"
+                rel="noreferrer"
+                className="btn btn-primary"
+                style={{
+                  padding: '16px',
+                  justifyContent: 'center',
+                  background: '#25D366',
+                  color: '#fff',
+                  fontWeight: 800,
+                  fontSize: '14px',
+                  textDecoration: 'none',
+                  boxShadow: '0 8px 20px rgba(37, 211, 102, 0.25)'
+                }}
+              >
+                <MessageCircle size={18} />
+                <span>Konfirmasi ke Finance PT via WhatsApp</span>
+              </a>
+              <span style={{ fontSize: '11px', color: '#888', marginTop: '8px', textAlign: 'center' }}>
+                Format pesan konfirmasi beserta nomor invoice dan data unit otomatis terisi.
+              </span>
             </div>
           </div>
         </div>
