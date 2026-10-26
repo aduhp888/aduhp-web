@@ -23,7 +23,10 @@ import {
   Zap, 
   Layers, 
   Activity,
-  ArrowRight
+  ArrowRight,
+  Maximize2,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { ALL_PHONES, PRICE_TIERS } from '../data/entryPhones';
 import { supabase } from '../lib/supabase';
@@ -61,6 +64,16 @@ export default function HpBaruPage() {
   const [selectedTier, setSelectedTier] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSpecModal, setSelectedSpecModal] = useState(null);
+  const [activePhotoMap, setActivePhotoMap] = useState({});
+  const [lightboxData, setLightboxData] = useState(null);
+
+  function getActivePhotoIndex(phoneId) {
+    return activePhotoMap[phoneId] || 0;
+  }
+
+  function setActivePhotoIndex(phoneId, idx) {
+    setActivePhotoMap(prev => ({ ...prev, [phoneId]: idx }));
+  }
 
   // Fetch live products from Supabase (or Dapur API)
   useEffect(() => {
@@ -421,7 +434,12 @@ export default function HpBaruPage() {
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
               {filteredProducts.map(phone => {
-                const imageSrc = (phone.images && phone.images[0]) || 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?q=80&w=600';
+                const imagesList = Array.isArray(phone.images) && phone.images.length > 0 
+                  ? phone.images 
+                  : [(phone.images && phone.images[0]) || phone.image_url || 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?q=80&w=600'];
+                
+                const activePhotoIdx = getActivePhotoIndex(phone.id);
+                const currentPhoto = imagesList[activePhotoIdx] || imagesList[0];
                 const hasDiscount = phone.original_price && phone.original_price > phone.price;
                 const discountPercent = hasDiscount 
                   ? Math.round(((phone.original_price - phone.price) / phone.original_price) * 100) 
@@ -450,9 +468,9 @@ export default function HpBaruPage() {
                     }}
                   >
                     {/* Image Area */}
-                    <div style={{ position: 'relative', height: '200px', background: 'radial-gradient(circle, #222 0%, #0d0d10 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
+                    <div style={{ position: 'relative', height: '210px', background: 'radial-gradient(circle, #222 0%, #0d0d10 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '14px' }}>
                       {/* Badge Brand & BNIB */}
-                      <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', gap: '6px' }}>
+                      <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', gap: '6px', zIndex: 2 }}>
                         <span style={{
                           background: 'rgba(0, 0, 0, 0.7)',
                           backdropFilter: 'blur(4px)',
@@ -477,22 +495,84 @@ export default function HpBaruPage() {
                         </span>
                       </div>
 
+                      {/* Zoom Trigger Button if multi-photos */}
+                      <button
+                        onClick={() => setLightboxData({ product: phone, activeIndex: activePhotoIdx })}
+                        style={{
+                          position: 'absolute',
+                          top: '12px',
+                          right: '12px',
+                          background: 'rgba(0, 0, 0, 0.7)',
+                          backdropFilter: 'blur(4px)',
+                          border: '1px solid rgba(255, 255, 255, 0.2)',
+                          color: '#fff',
+                          padding: '4px 8px',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          fontSize: '10px',
+                          fontWeight: 700,
+                          zIndex: 2
+                        }}
+                        title="Buka 5 Foto Fullscreen"
+                      >
+                        <Maximize2 size={11} />
+                        <span>{imagesList.length} Foto</span>
+                      </button>
+
                       {hasDiscount && (
-                        <div style={{ position: 'absolute', top: '12px', right: '12px', background: '#f43f5e', color: '#fff', padding: '3px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 900 }}>
+                        <div style={{ position: 'absolute', bottom: '12px', right: '12px', background: '#f43f5e', color: '#fff', padding: '2px 7px', borderRadius: '4px', fontSize: '10px', fontWeight: 900, zIndex: 2 }}>
                           HEMAT {discountPercent}%
                         </div>
                       )}
 
+                      {/* Main Display Image */}
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
-                        src={imageSrc}
-                        alt={phone.name}
+                        src={currentPhoto}
+                        alt={`${phone.name} foto ${activePhotoIdx + 1}`}
                         style={{ maxHeight: '165px', maxWidth: '85%', objectFit: 'contain' }}
                         onError={(e) => {
                           e.target.src = 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?q=80&w=600';
                         }}
                       />
                     </div>
+
+                    {/* 5 Thumbnails Strip (if multiple photos) */}
+                    {imagesList.length > 1 && (
+                      <div style={{
+                        display: 'flex',
+                        gap: '6px',
+                        padding: '6px 12px',
+                        background: '#0e0e12',
+                        borderBottom: '1px solid rgba(255, 255, 255, 0.06)'
+                      }}>
+                        {imagesList.slice(0, 5).map((img, i) => (
+                          <button
+                            key={i}
+                            onClick={() => setActivePhotoIndex(phone.id, i)}
+                            style={{
+                              flex: 1,
+                              height: '36px',
+                              borderRadius: '6px',
+                              border: activePhotoIdx === i ? '2px solid var(--accent-lime)' : '1px solid rgba(255, 255, 255, 0.1)',
+                              overflow: 'hidden',
+                              padding: 0,
+                              background: '#000',
+                              cursor: 'pointer',
+                              opacity: activePhotoIdx === i ? 1 : 0.6,
+                              transition: 'all 0.15s ease'
+                            }}
+                            title={`Foto ${i + 1}`}
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={img} alt={`Thumb ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                          </button>
+                        ))}
+                      </div>
+                    )}
 
                     {/* Content Body */}
                     <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', flex: 1 }}>
@@ -583,6 +663,154 @@ export default function HpBaruPage() {
           )}
         </div>
       </section>
+
+      {/* Lightbox Zoom Modal for 5 Photos */}
+      {lightboxData && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0, 0, 0, 0.92)',
+            backdropFilter: 'blur(10px)',
+            zIndex: 9999,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px'
+          }}
+        >
+          {/* Top Modal Bar */}
+          <div style={{
+            position: 'absolute',
+            top: '20px',
+            left: '20px',
+            right: '20px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            zIndex: 10
+          }}>
+            <div>
+              <h3 style={{ fontSize: '17px', fontWeight: 800, color: '#fff' }}>
+                {lightboxData.product.name}
+              </h3>
+              <span style={{ fontSize: '12px', color: 'var(--accent-lime)' }}>
+                100% Baru BNIB Segel Resmi • Foto #{lightboxData.activeIndex + 1} dari {lightboxData.product.images?.length || 1}
+              </span>
+            </div>
+            <button
+              onClick={() => setLightboxData(null)}
+              style={{
+                background: 'rgba(255, 255, 255, 0.1)',
+                border: 'none',
+                color: '#fff',
+                padding: '8px 14px',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontWeight: 700
+              }}
+            >
+              ✕ Tutup
+            </button>
+          </div>
+
+          {/* Large Image with Next / Prev Navigation */}
+          <div style={{ position: 'relative', maxWidth: '90vw', maxHeight: '75vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {lightboxData.product.images?.length > 1 && (
+              <button
+                onClick={() => {
+                  const total = lightboxData.product.images.length;
+                  const prevIdx = (lightboxData.activeIndex - 1 + total) % total;
+                  setLightboxData(prev => ({ ...prev, activeIndex: prevIdx }));
+                }}
+                style={{
+                  position: 'absolute',
+                  left: '-48px',
+                  background: 'rgba(0,0,0,0.6)',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  color: '#fff',
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer'
+                }}
+              >
+                <ChevronLeft size={24} />
+              </button>
+            )}
+
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={lightboxData.product.images?.[lightboxData.activeIndex] || lightboxData.product.image_url}
+              alt="Zoom Unit"
+              style={{
+                maxWidth: '85vw',
+                maxHeight: '70vh',
+                objectFit: 'contain',
+                borderRadius: '12px',
+                boxShadow: '0 20px 50px rgba(0,0,0,0.9)',
+                border: '1px solid rgba(255, 255, 255, 0.15)'
+              }}
+            />
+
+            {lightboxData.product.images?.length > 1 && (
+              <button
+                onClick={() => {
+                  const total = lightboxData.product.images.length;
+                  const nextIdx = (lightboxData.activeIndex + 1) % total;
+                  setLightboxData(prev => ({ ...prev, activeIndex: nextIdx }));
+                }}
+                style={{
+                  position: 'absolute',
+                  right: '-48px',
+                  background: 'rgba(0,0,0,0.6)',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  color: '#fff',
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer'
+                }}
+              >
+                <ChevronRight size={24} />
+              </button>
+            )}
+          </div>
+
+          {/* Thumbnail Strip at Bottom */}
+          {lightboxData.product.images?.length > 1 && (
+            <div style={{ display: 'flex', gap: '8px', marginTop: '20px' }}>
+              {lightboxData.product.images.map((img, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setLightboxData(prev => ({ ...prev, activeIndex: idx }))}
+                  style={{
+                    width: '54px',
+                    height: '54px',
+                    borderRadius: '8px',
+                    border: lightboxData.activeIndex === idx ? '2px solid var(--accent-lime)' : '1px solid rgba(255,255,255,0.2)',
+                    overflow: 'hidden',
+                    padding: 0,
+                    background: '#000',
+                    cursor: 'pointer',
+                    opacity: lightboxData.activeIndex === idx ? 1 : 0.5
+                  }}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={img} alt={`Thumb ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
