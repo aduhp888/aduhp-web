@@ -482,15 +482,21 @@ export default function HpSecondPage() {
                       </button>
 
                       {/* Main Displayed Photo */}
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={currentPhoto}
-                        alt={`${phone.name} foto ${activePhotoIdx + 1}`}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                        onError={(e) => {
-                          e.target.src = 'https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?q=80&w=800';
-                        }}
-                      />
+                      <Link
+                        href={`/produk/${phone.id}`}
+                        style={{ display: 'block', width: '100%', height: '100%' }}
+                        title="Klik untuk lihat detail pemeriksaan QC, skor, dan unit spesifik ini"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={currentPhoto}
+                          alt={`${phone.name} foto ${activePhotoIdx + 1}`}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover', cursor: 'pointer' }}
+                          onError={(e) => {
+                            e.target.src = 'https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?q=80&w=800';
+                          }}
+                        />
+                      </Link>
 
                       {/* Photo Label Bar Overlay */}
                       <div style={{
@@ -630,6 +636,33 @@ export default function HpSecondPage() {
                             </span>
                           )}
                         </div>
+
+                        {/* Link / Button Detail & QC Unit */}
+                        <Link
+                          href={`/produk/${phone.id}`}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            background: 'rgba(255, 255, 255, 0.04)',
+                            border: '1px solid rgba(255, 255, 255, 0.08)',
+                            borderRadius: '8px',
+                            padding: '6px 10px',
+                            marginTop: '10px',
+                            textDecoration: 'none',
+                            color: '#ccc',
+                            fontSize: '11px',
+                            transition: 'all 0.15s ease'
+                          }}
+                        >
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                            <span>💾</span>
+                            <span>Lihat QC, RAM & Detail:</span>
+                          </span>
+                          <span style={{ color: '#00E5FF', fontWeight: 800 }}>
+                            Buka Halaman →
+                          </span>
+                        </Link>
 
                         {/* CTA Buttons */}
                         <div style={{ display: 'grid', gridTemplateColumns: '0.9fr 1.15fr 1.15fr', gap: '6px', marginTop: '12px' }}>

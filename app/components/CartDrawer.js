@@ -222,34 +222,50 @@ export default function CartDrawer() {
                 }}
               >
                 {/* Product Thumbnail */}
-                <img 
-                  src={item.image || 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&w=300&q=80'} 
-                  alt={item.name} 
-                  style={{
-                    width: '64px',
-                    height: '64px',
-                    objectFit: 'contain',
-                    background: '#0a0a0f',
-                    borderRadius: '8px',
-                    padding: '4px',
-                    border: '1px solid rgba(255, 255, 255, 0.05)'
-                  }}
-                />
+                <Link
+                  href={`/produk/${item.productId || item.id.split('_')[0]}`}
+                  onClick={closeCart}
+                  style={{ display: 'block', flexShrink: 0 }}
+                  title="Klik untuk lihat detail produk dan ubah varian"
+                >
+                  <img 
+                    src={item.image || 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&w=300&q=80'} 
+                    alt={item.name} 
+                    style={{
+                      width: '64px',
+                      height: '64px',
+                      objectFit: 'contain',
+                      background: '#0a0a0f',
+                      borderRadius: '8px',
+                      padding: '4px',
+                      border: '1px solid rgba(255, 255, 255, 0.05)',
+                      cursor: 'pointer'
+                    }}
+                  />
+                </Link>
 
                 {/* Details */}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px' }}>
-                    <h4 style={{
-                      fontSize: '13px',
-                      fontWeight: 700,
-                      color: '#fff',
-                      margin: 0,
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis'
-                    }}>
-                      {item.name}
-                    </h4>
+                    <Link
+                      href={`/produk/${item.productId || item.id.split('_')[0]}`}
+                      onClick={closeCart}
+                      style={{ textDecoration: 'none', minWidth: 0, flex: 1 }}
+                      title="Lihat detail lengkap produk ini"
+                    >
+                      <h4 style={{
+                        fontSize: '13px',
+                        fontWeight: 700,
+                        color: '#fff',
+                        margin: 0,
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        cursor: 'pointer'
+                      }}>
+                        {item.name}
+                      </h4>
+                    </Link>
                     <button
                       onClick={() => removeFromCart(item.id)}
                       style={{
@@ -295,6 +311,25 @@ export default function CartDrawer() {
                     }}>
                       {item.condition === 'second' ? 'Second QC' : '100% Baru'}
                     </span>
+                  </div>
+
+                  {/* Shortcut Ubah Varian RAM & Warna */}
+                  <div style={{ marginTop: '4px' }}>
+                    <Link
+                      href={`/produk/${item.productId || item.id.split('_')[0]}`}
+                      onClick={closeCart}
+                      style={{
+                        fontSize: '11px',
+                        color: 'var(--accent-lime)',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        textDecoration: 'none',
+                        fontWeight: 700
+                      }}
+                    >
+                      <span>⚙️ Pilih / Ubah Varian RAM & Warna →</span>
+                    </Link>
                   </div>
 
                   {/* Price & Quantity Controls */}

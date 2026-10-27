@@ -634,15 +634,21 @@ export default function HpBaruPage() {
                       )}
 
                       {/* Main Display Image */}
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={currentPhoto}
-                        alt={`${phone.name} foto ${activePhotoIdx + 1}`}
-                        style={{ maxHeight: '165px', maxWidth: '85%', objectFit: 'contain' }}
-                        onError={(e) => {
-                          e.target.src = 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?q=80&w=600';
-                        }}
-                      />
+                      <Link 
+                        href={`/produk/${phone.id}`} 
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' }}
+                        title="Klik untuk lihat detail produk, spesifikasi lengkap, serta pilih varian RAM dan warna"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={currentPhoto}
+                          alt={`${phone.name} foto ${activePhotoIdx + 1}`}
+                          style={{ maxHeight: '165px', maxWidth: '85%', objectFit: 'contain', cursor: 'pointer' }}
+                          onError={(e) => {
+                            e.target.src = 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?q=80&w=600';
+                          }}
+                        />
+                      </Link>
                     </div>
 
                     {/* 5 Thumbnails Strip (if multiple photos) */}
@@ -681,7 +687,7 @@ export default function HpBaruPage() {
 
                     {/* Content Body */}
                     <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', flex: 1 }}>
-                      <Link href={`/produk/${phone.id}`} style={{ textDecoration: 'none' }}>
+                      <Link href={`/produk/${phone.id}`} style={{ textDecoration: 'none' }} title="Buka Halaman Detail Produk & Varian">
                         <h4 style={{ fontSize: '16px', fontWeight: 800, color: '#fff', lineHeight: 1.3, marginBottom: '6px', transition: 'color 0.15s ease' }} className="hover-lime">
                           {phone.name}
                         </h4>
@@ -750,6 +756,33 @@ export default function HpBaruPage() {
                             </>
                           )}
                         </div>
+
+                        {/* Link / Button Pilih Varian & Detail */}
+                        <Link
+                          href={`/produk/${phone.id}`}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            background: 'rgba(255, 255, 255, 0.04)',
+                            border: '1px solid rgba(255, 255, 255, 0.08)',
+                            borderRadius: '8px',
+                            padding: '6px 10px',
+                            marginTop: '10px',
+                            textDecoration: 'none',
+                            color: '#ccc',
+                            fontSize: '11px',
+                            transition: 'all 0.15s ease'
+                          }}
+                        >
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                            <span>💾</span>
+                            <span>Pilih RAM & Warna:</span>
+                          </span>
+                          <span style={{ color: 'var(--accent-lime)', fontWeight: 800 }}>
+                            Lihat Detail →
+                          </span>
+                        </Link>
 
                         {/* CTA Buttons */}
                         <div style={{ display: 'grid', gridTemplateColumns: phone.is_for_sale === false ? '1fr 1fr' : '0.9fr 1.15fr 1.15fr', gap: '6px', marginTop: '12px' }}>

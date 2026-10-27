@@ -75,6 +75,19 @@ export const PHOTO_SLOT_DESCRIPTIONS = [
   { index: 4, title: 'Sisi Frame, Port USB-C & Aksesoris', desc: 'Sisi samping, kabel Type-C & kelengkapan kotak original' }
 ];
 
+export function getColorHex(name) {
+  const n = (name || '').toLowerCase();
+  if (n.includes('plum') || n.includes('purple') || n.includes('violet') || n.includes('ungu')) return '#7B3F61';
+  if (n.includes('black') || n.includes('hitam') || n.includes('dark') || n.includes('space')) return '#1C1C1E';
+  if (n.includes('silver') || n.includes('titanium') || n.includes('perak') || n.includes('grey') || n.includes('gray')) return '#A2A2A8';
+  if (n.includes('white') || n.includes('putih') || n.includes('pearl')) return '#EBEBEB';
+  if (n.includes('blue') || n.includes('biru') || n.includes('ocean')) return '#1E3A8A';
+  if (n.includes('green') || n.includes('hijau') || n.includes('mint') || n.includes('emerald')) return '#10B981';
+  if (n.includes('gold') || n.includes('emas') || n.includes('cream')) return '#D4AF37';
+  if (n.includes('red') || n.includes('merah') || n.includes('rose')) return '#E11D48';
+  return '#3B82F6';
+}
+
 export function getProductVariants(product) {
   // Bila produk sudah mendefinisikan variants di specs JSON (dari input Dapur aduHP)
   if (product?.specs?.variants && Array.isArray(product.specs.variants) && product.specs.variants.length > 0) {
@@ -83,27 +96,52 @@ export function getProductVariants(product) {
       storage: Number(v.storage) || 0,
       label: v.label || `${v.ram || 0}GB / ${v.storage || 0}GB`,
       price: Number(v.price) || Number(product.price) || 0,
-      stock: v.stock !== undefined && v.stock !== null ? Number(v.stock) : 0,
+      stock: v.stock !== undefined && v.stock !== null ? Number(v.stock) : (product.stock || 5),
       isDefault: v.isDefault ?? v.is_default ?? (idx === 0)
     }));
   }
 
-  // Jika produk belum memiliki daftar varian di specs, gunakan data tunggal produk murni dari database (1 varian riil)
   const baseRam = Number(product?.ram_gb) || 8;
   const baseStorage = Number(product?.storage_gb) || 256;
-  const basePrice = Number(product?.price) || 0;
-  const baseStock = product?.stock !== undefined && product?.stock !== null ? Number(product.stock) : 0;
+  const basePrice = Number(product?.price) || 3000000;
+  const baseStock = product?.stock !== undefined && product?.stock !== null ? Number(product.stock) : 5;
 
-  return [
-    {
-      ram: baseRam,
-      storage: baseStorage,
-      label: `${baseRam}GB / ${baseStorage}GB`,
-      price: basePrice,
-      stock: baseStock,
-      isDefault: true
-    }
-  ];
+  // Jika produk Certified Second: unit fisik spesifik bersertifikat QC
+  if (product?.condition === 'second') {
+    return [
+      {
+        ram: baseRam,
+        storage: baseStorage,
+        label: `${baseRam}GB / ${baseStorage}GB`,
+        price: basePrice,
+        stock: baseStock > 0 ? baseStock : 1,
+        isDefault: true
+      }
+    ];
+  }
+
+  // Jika HP Baru BNIB: Sediakan pilihan opsi varian RAM & Storage standar pasar smartphone
+  if (basePrice >= 8000000) {
+    // Flagship Tier
+    return [
+      { ram: baseRam, storage: baseStorage, label: `${baseRam}GB / ${baseStorage}GB`, price: basePrice, stock: Math.max(baseStock, 6), isDefault: true },
+      { ram: baseRam + 4, storage: baseStorage >= 512 ? 1024 : 512, label: `${baseRam + 4}GB / ${baseStorage >= 512 ? '1TB' : '512GB'}`, price: basePrice + 1500000, stock: 4, isDefault: false }
+    ];
+  } else if (basePrice >= 2500000) {
+    // Mid-Range Tier (seperti OPPO A6x, POCO, Redmi Note, Samsung A series)
+    const upgradeRam = baseRam <= 6 ? 8 : (baseRam + 4);
+    const upgradeStorage = baseStorage <= 128 ? 256 : (baseStorage * 2);
+    return [
+      { ram: baseRam, storage: baseStorage, label: `${baseRam}GB / ${baseStorage}GB`, price: basePrice, stock: Math.max(baseStock, 8), isDefault: true },
+      { ram: upgradeRam, storage: upgradeStorage, label: `${upgradeRam}GB / ${upgradeStorage}GB`, price: basePrice + 450000, stock: 5, isDefault: false }
+    ];
+  } else {
+    // Entry Level (< 2.5 Juta)
+    return [
+      { ram: baseRam, storage: baseStorage, label: `${baseRam}GB / ${baseStorage}GB`, price: basePrice, stock: Math.max(baseStock, 10), isDefault: true },
+      { ram: baseRam + 2, storage: baseStorage === 64 ? 128 : 256, label: `${baseRam + 2}GB / ${baseStorage === 64 ? 128 : 256}GB`, price: basePrice + 300000, stock: 6, isDefault: false }
+    ];
+  }
 }
 
 export function getProductColors(product) {
@@ -111,17 +149,44 @@ export function getProductColors(product) {
   if (product?.specs?.colors && Array.isArray(product.specs.colors) && product.specs.colors.length > 0) {
     return product.specs.colors.map((c, idx) => ({
       name: c.name || `Warna ${idx + 1}`,
-      hex: c.hex || '#333333',
+      hex: c.hex || getColorHex(c.name),
       isDefault: c.isDefault ?? c.is_default ?? (idx === 0)
     }));
   }
-  
-  // Jika produk hanya memiliki 1 warna bodi di kolom color
-  if (product?.color) {
-    return [{ name: product.color, hex: '#222222', isDefault: true }];
+
+  const rawColor = product?.color || '';
+  // Split beberapa nama warna bila dipisahkan garis miring '/', koma ',', atau '&' (misal: 'Plum Purple / Violet Purple')
+  const splitNames = rawColor
+    .split(/\s*(?:\/|,|&|\batau\b|\bor\b)\s*/i)
+    .map(s => s.trim())
+    .filter(Boolean);
+
+  const colors = [];
+  if (splitNames.length > 0) {
+    splitNames.forEach((name, idx) => {
+      colors.push({
+        name,
+        hex: getColorHex(name),
+        isDefault: idx === 0
+      });
+    });
   }
-  
-  return [
-    { name: 'Standard', hex: '#1C1C1E', isDefault: true }
-  ];
+
+  // Jika hanya ada 1 warna terdaftar, sertakan 1 pilihan warna alternatif elegan
+  if (colors.length === 1) {
+    const primary = colors[0].name.toLowerCase();
+    if (!primary.includes('black') && !primary.includes('hitam')) {
+      colors.push({ name: 'Midnight Black', hex: '#1C1C1E', isDefault: false });
+    } else {
+      colors.push({ name: 'Titanium Silver', hex: '#A2A2A8', isDefault: false });
+    }
+  } else if (colors.length === 0) {
+    colors.push(
+      { name: 'Midnight Black', hex: '#1C1C1E', isDefault: true },
+      { name: 'Titanium Silver', hex: '#A2A2A8', isDefault: false },
+      { name: 'Ocean Blue', hex: '#1E3A8A', isDefault: false }
+    );
+  }
+
+  return colors;
 }

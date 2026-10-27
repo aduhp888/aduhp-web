@@ -32,7 +32,8 @@ export default function KeranjangPage() {
   const handleProceedCheckout = (item) => {
     if (!item) return;
 
-    const checkoutUrl = `/checkout?productId=${item.id}&name=${encodeURIComponent(item.name)}&price=${item.price}&ram=${item.ram}&storage=${item.storage}&color=${encodeURIComponent(item.color)}&condition=${item.condition}&image=${encodeURIComponent(item.image)}&quantity=${item.quantity}`;
+    const prodId = item.productId || item.id.split('_')[0];
+    const checkoutUrl = `/checkout?productId=${prodId}&name=${encodeURIComponent(item.name)}&price=${item.price}&ram=${item.ram}&storage=${item.storage}&color=${encodeURIComponent(item.color)}&condition=${item.condition}&image=${encodeURIComponent(item.image)}&quantity=${item.quantity}`;
 
     if (!user) {
       // Login Wall: Redirect ke Login dengan menyimpan tujuan checkout
@@ -187,7 +188,7 @@ export default function KeranjangPage() {
                       }}
                     >
                       {/* Thumbnail */}
-                      <Link href={`/produk/${item.id}`}>
+                      <Link href={`/produk/${item.productId || item.id.split('_')[0]}`}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={item.image}
@@ -218,7 +219,7 @@ export default function KeranjangPage() {
                         </div>
 
                         <Link
-                          href={`/produk/${item.id}`}
+                          href={`/produk/${item.productId || item.id.split('_')[0]}`}
                           style={{ fontSize: '15px', fontWeight: 800, color: '#fff', textDecoration: 'none', display: 'block' }}
                         >
                           {item.name}
@@ -226,6 +227,23 @@ export default function KeranjangPage() {
 
                         <div style={{ fontSize: '12px', color: '#aaa', marginTop: '2px' }}>
                           {item.ram}GB / {item.storage}GB • {item.color}
+                        </div>
+
+                        <div style={{ marginTop: '4px' }}>
+                          <Link
+                            href={`/produk/${item.productId || item.id.split('_')[0]}`}
+                            style={{
+                              fontSize: '11px',
+                              color: 'var(--accent-lime)',
+                              fontWeight: 700,
+                              textDecoration: 'none',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}
+                          >
+                            <span>⚙️ Ubah Varian RAM & Warna →</span>
+                          </Link>
                         </div>
 
                         <div style={{ fontSize: '15px', fontWeight: 900, color: 'var(--accent-lime)', fontFamily: 'var(--font-mono)', marginTop: '8px' }}>
