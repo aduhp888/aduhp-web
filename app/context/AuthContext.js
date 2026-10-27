@@ -15,7 +15,8 @@ const AuthContext = createContext({
   signInAsGuest: async () => {},
   signOut: async () => {},
   updateProfile: async () => {},
-  refreshProfile: async () => {}
+  refreshProfile: async () => {},
+  setWaSession: () => {}
 });
 
 export function AuthProvider({ children }) {
@@ -23,6 +24,25 @@ export function AuthProvider({ children }) {
   const [profile, setProfile] = useState(null);
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // Set sesi user WhatsApp (disimpan ke state & localStorage agar terdeteksi di seluruh web)
+  const setWaSession = (waUser, waProfile = null) => {
+    setUser(waUser);
+    if (waProfile) {
+      setProfile(waProfile);
+    }
+    if (typeof window !== 'undefined') {
+      if (waUser) {
+        localStorage.setItem('aduhp_auth_user', JSON.stringify(waUser));
+        if (waProfile) {
+          localStorage.setItem('aduhp_auth_profile', JSON.stringify(waProfile));
+        }
+      } else {
+        localStorage.removeItem('aduhp_auth_user');
+        localStorage.removeItem('aduhp_auth_profile');
+      }
+    }
+  };
 
   // Fetch profil dari tabel public.users
   const fetchProfile = async (userId) => {
@@ -52,9 +72,30 @@ export function AuthProvider({ children }) {
         const { data: { session: currentSession } } = await supabase.auth.getSession();
         setSession(currentSession);
         const currentUser = currentSession?.user ?? null;
-        setUser(currentUser);
-        if (currentUser?.id) {
-          await fetchProfile(currentUser.id);
+        if (currentUser) {
+          setUser(currentUser);
+          if (currentUser?.id) {
+            await fetchProfile(currentUser.id);
+          }
+        } else {
+          // Cek fallback sesi WhatsApp di localStorage jika login via OTP WhatsApp
+          if (typeof window !== 'undefined') {
+            const savedWaUser = localStorage.getItem('aduhp_auth_user');
+            const savedWaProfile = localStorage.getItem('aduhp_auth_profile');
+            if (savedWaUser) {
+              try {
+                const parsedUser = JSON.parse(savedWaUser);
+                setUser(parsedUser);
+                if (savedWaProfile) {
+                  setProfile(JSON.parse(savedWaProfile));
+                } else if (parsedUser?.id) {
+                  await fetchProfile(parsedUser.id);
+                }
+              } catch (e) {
+                console.warn('Error parsing saved WA user session:', e);
+              }
+            }
+          }
         }
       } catch (err) {
         console.warn('Error fetching initial Supabase session:', err);
@@ -69,11 +110,18 @@ export function AuthProvider({ children }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
       setSession(newSession);
       const currentUser = newSession?.user ?? null;
-      setUser(currentUser);
-      if (currentUser?.id) {
-        await fetchProfile(currentUser.id);
+      if (currentUser) {
+        setUser(currentUser);
+        if (currentUser?.id) {
+          await fetchProfile(currentUser.id);
+        }
       } else {
-        setProfile(null);
+        // Jangan hapus user jika sesi WhatsApp sedang aktif di localStorage
+        const hasWaUser = typeof window !== 'undefined' ? localStorage.getItem('aduhp_auth_user') : null;
+        if (!hasWaUser) {
+          setUser(null);
+          setProfile(null);
+        }
       }
       setLoading(false);
     });
@@ -325,11 +373,18 @@ export function AuthProvider({ children }) {
 
   // 8. Keluar / Logout
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch (e) {
+      console.warn('Supabase signOut warning:', e);
+    }
     setUser(null);
     setProfile(null);
     setSession(null);
-    if (error) throw error;
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('aduhp_auth_user');
+      localStorage.removeItem('aduhp_auth_profile');
+    }
   };
 
   // 9. Update profil & metadata
@@ -378,7 +433,8 @@ export function AuthProvider({ children }) {
       signInAsGuest,
       signOut,
       updateProfile,
-      refreshProfile
+      refreshProfile,
+      setWaSession
     }}>
       {children}
     </AuthContext.Provider>

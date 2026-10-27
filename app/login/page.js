@@ -28,7 +28,7 @@ function LoginContent() {
   const searchParams = useSearchParams();
   const redirectUrl = searchParams.get('redirect') || '/';
 
-  const { signIn, signUp, signInAsGuest, user } = useAuth();
+  const { signIn, signUp, signInAsGuest, user, setWaSession } = useAuth();
 
   // If already logged in, redirect immediately
   useEffect(() => {
@@ -202,8 +202,25 @@ function LoginContent() {
           const efRes = await supabase.functions.invoke('verify-wa-otp', {
             body: { phone: targetPhone, token: token, display_name: nama || undefined }
           });
+          
+          if (efRes.error) {
+            throw new Error(efRes.error.message || 'Kode OTP WhatsApp salah atau sudah kadaluarsa.');
+          }
+
           if (efRes.data?.user) {
             authUser = efRes.data.user;
+
+            // Jika Edge Function mengirimkan token_hash atau magiclink, aktifkan native session Supabase
+            if (efRes.data?.token_hash) {
+              try {
+                await supabase.auth.verifyOtp({
+                  token_hash: efRes.data.token_hash,
+                  type: 'magiclink'
+                });
+              } catch (thErr) {
+                console.warn('Native token_hash verify warning:', thErr);
+              }
+            }
           } else {
             const { data, error } = await supabase.auth.verifyOtp({
               phone: '+' + targetPhone,
@@ -214,6 +231,7 @@ function LoginContent() {
             authUser = data?.user;
           }
         } catch (efErr) {
+          console.warn('verify-wa-otp warning, trying phone auth fallback:', efErr);
           const { data, error } = await supabase.auth.verifyOtp({
             phone: '+' + targetPhone,
             token: token,
@@ -251,7 +269,16 @@ function LoginContent() {
           updatePayload.whatsapp_number = raw.startsWith('0') ? '62' + raw.slice(1) : (raw.startsWith('62') ? raw : '62' + raw);
         }
 
-        await supabase.from('users').upsert(updatePayload, { onConflict: 'id' });
+        try {
+          await supabase.from('users').upsert(updatePayload, { onConflict: 'id' });
+        } catch (upsertErr) {
+          console.warn('public.users upsert warning:', upsertErr);
+        }
+
+        // Set sesi autentikasi ke AuthContext & localStorage agar seluruh web (header, checkout, cart) langsung mengenali user yang sedang login!
+        if (setWaSession) {
+          setWaSession(authUser, updatePayload);
+        }
       }
 
       setSuccessMsg('✓ Verifikasi OTP berhasil! Anda sedang dialihkan...');
