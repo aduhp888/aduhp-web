@@ -533,6 +533,24 @@ export default function PesananPage() {
                           </button>
                         </div>
                       )}
+
+                      {/* Cancelled notes if cancelled */}
+                      {order.payment_status === 'dibatalkan' && order.notes && (
+                        <div style={{
+                          marginTop: '10px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          background: 'rgba(255, 69, 58, 0.08)',
+                          border: '1px solid rgba(255, 69, 58, 0.25)',
+                          padding: '6px 12px',
+                          borderRadius: '8px',
+                          fontSize: '11.5px',
+                          color: '#FF6B6B'
+                        }}>
+                          <span>Keterangan: {order.notes}</span>
+                        </div>
+                      )}
                     </div>
 
                     {/* Price Breakdown Preview */}
