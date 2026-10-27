@@ -348,14 +348,19 @@ export default function LandingPage() {
             <nav className="nav-menu">
               <Link 
                 href="/adu-hp" 
-                className="nav-link"
+                className="nav-link nav-pill-adu"
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '6px',
-                  color: '#fff',
-                  fontWeight: 700,
-                  textDecoration: 'none'
+                  background: 'rgba(255, 75, 75, 0.12)',
+                  border: '1px solid rgba(255, 75, 75, 0.45)',
+                  color: '#FF6B6B',
+                  fontWeight: 800,
+                  textDecoration: 'none',
+                  borderRadius: '100px',
+                  padding: '6px 14px',
+                  boxShadow: '0 0 14px rgba(255, 75, 75, 0.12)'
                 }}
               >
                 <span>⚔️</span>

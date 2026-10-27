@@ -34,7 +34,8 @@ import {
   Plus,
   Minus,
   ArrowRight,
-  Lock
+  Lock,
+  Swords
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { 
@@ -929,55 +930,62 @@ export default function ProductDetailPage() {
               </span>
             </div>
 
-            {/* ACTION CTA BUTTONS */}
-            <div style={{ display: 'flex', gap: '12px', marginBottom: '32px', flexWrap: 'wrap' }}>
+            {/* ACTION CTA BUTTONS GRID */}
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', 
+              gap: '12px', 
+              marginBottom: '32px' 
+            }}>
               <button
                 type="button"
                 onClick={handleAddToCart}
-                className="btn btn-secondary"
+                className="btn"
                 style={{
-                  flex: '1.2 1 200px',
+                  minHeight: '54px',
                   justifyContent: 'center',
-                  padding: '16px 20px',
-                  fontSize: '15px',
+                  padding: '14px 18px',
+                  fontSize: '14.5px',
                   fontWeight: 800,
-                  background: isOutOfStock ? 'rgba(255, 255, 255, 0.05)' : 'rgba(198, 255, 0, 0.12)',
-                  border: isOutOfStock ? '1.5px solid rgba(255, 255, 255, 0.2)' : '1.5px solid var(--accent-lime)',
-                  color: isOutOfStock ? '#aaa' : 'var(--accent-lime)',
+                  background: isOutOfStock ? 'rgba(255, 255, 255, 0.05)' : (isConditionSecond ? 'rgba(0, 229, 255, 0.12)' : 'rgba(198, 255, 0, 0.12)'),
+                  border: isOutOfStock ? '1.5px solid rgba(255, 255, 255, 0.2)' : `1.5px solid ${themeColor}`,
+                  color: isOutOfStock ? '#aaa' : themeColor,
                   borderRadius: '12px',
-                  cursor: 'pointer',
+                  cursor: isOutOfStock ? 'not-allowed' : 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px',
                   transition: 'all 0.2s ease',
-                  boxShadow: isOutOfStock ? 'none' : '0 4px 16px rgba(198, 255, 0, 0.15)'
+                  boxShadow: isOutOfStock ? 'none' : (isConditionSecond ? '0 4px 16px rgba(0, 229, 255, 0.15)' : '0 4px 16px rgba(198, 255, 0, 0.15)'),
+                  whiteSpace: 'nowrap'
                 }}
                 title={isOutOfStock ? "Stok varian ini habis" : "Tambahkan ke Keranjang Belanja"}
               >
                 <ShoppingBag size={18} />
-                <span>{isOutOfStock ? '+ Keranjang (Stok Habis)' : '+ Tambah ke Keranjang'}</span>
+                <span>{isOutOfStock ? '+ Keranjang (Habis)' : '+ Tambah ke Keranjang'}</span>
               </button>
 
               <button
                 type="button"
                 onClick={handleDirectBuy}
-                className="btn btn-primary"
+                className="btn"
                 style={{
-                  flex: '1.8 1 220px',
+                  minHeight: '54px',
                   justifyContent: 'center',
-                  padding: '16px 24px',
-                  fontSize: '15.5px',
+                  padding: '14px 20px',
+                  fontSize: '15px',
                   fontWeight: 900,
                   background: isOutOfStock ? '#2a2a35' : themeColor,
                   color: isOutOfStock ? '#888' : '#000',
                   borderRadius: '12px',
-                  boxShadow: isOutOfStock ? 'none' : `0 8px 24px rgba(198, 255, 0, 0.25)`,
-                  cursor: 'pointer',
+                  boxShadow: isOutOfStock ? 'none' : (isConditionSecond ? '0 8px 24px rgba(0, 229, 255, 0.25)' : '0 8px 24px rgba(198, 255, 0, 0.25)'),
+                  cursor: isOutOfStock ? 'not-allowed' : 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px',
                   transition: 'all 0.2s ease',
-                  border: 'none'
+                  border: 'none',
+                  whiteSpace: 'nowrap'
                 }}
                 title={isOutOfStock ? "Stok varian ini habis" : "Beli langsung dan lanjutkan ke pembayaran"}
               >
@@ -992,21 +1000,30 @@ export default function ProductDetailPage() {
 
               <Link
                 href={`/adu-hp?slot1=${product.id}`}
-                className="btn btn-secondary"
+                className="btn btn-adukan-cta"
                 style={{
-                  flex: '1 1 130px',
+                  minHeight: '54px',
                   justifyContent: 'center',
-                  padding: '16px 18px',
-                  fontSize: '14px',
-                  fontWeight: 700,
+                  padding: '14px 18px',
+                  fontSize: '14.5px',
+                  fontWeight: 800,
                   borderRadius: '12px',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '6px'
+                  gap: '8px',
+                  background: 'rgba(255, 75, 75, 0.12)',
+                  border: '1.5px solid rgba(255, 75, 75, 0.5)',
+                  color: '#FF6B6B',
+                  textDecoration: 'none',
+                  boxShadow: '0 4px 16px rgba(255, 75, 75, 0.18)',
+                  transition: 'all 0.2s ease',
+                  whiteSpace: 'nowrap',
+                  cursor: 'pointer'
                 }}
                 title="Bandingkan spesifikasi di arena adu HP"
               >
-                <span>⚔️ Adukan HP</span>
+                <Swords size={18} />
+                <span>Adukan HP</span>
               </Link>
             </div>
 

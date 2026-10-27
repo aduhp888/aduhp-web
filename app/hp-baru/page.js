@@ -220,29 +220,62 @@ export default function HpBaruPage() {
               <Link href="/" className="nav-link">
                 Home
               </Link>
-              <Link href="/adu-hp" className="nav-link">
-                ⚔️ Adu HP
+              <Link 
+                href="/adu-hp" 
+                className="nav-link nav-pill-adu"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: 'rgba(255, 75, 75, 0.12)',
+                  border: '1px solid rgba(255, 75, 75, 0.45)',
+                  color: '#FF6B6B',
+                  fontWeight: 800,
+                  textDecoration: 'none',
+                  borderRadius: '100px',
+                  padding: '6px 14px'
+                }}
+              >
+                <span>⚔️</span>
+                <span>Adu HP</span>
               </Link>
               <Link 
                 href="/hp-baru" 
-                className="nav-link"
+                className="nav-link nav-pill-baru"
                 style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
                   background: 'rgba(198, 255, 0, 0.12)',
                   border: '1px solid var(--border-lime)',
                   color: 'var(--accent-lime)',
                   fontWeight: 800,
+                  textDecoration: 'none',
+                  borderRadius: '100px',
+                  padding: '6px 14px'
                 }}
               >
-                📱 HP Baru
+                <span>📱</span>
+                <span>HP Baru</span>
               </Link>
               <Link 
                 href="/hp-second" 
-                className="nav-link"
+                className="nav-link nav-pill-second"
                 style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: 'rgba(0, 229, 255, 0.1)',
+                  border: '1px solid rgba(0, 229, 255, 0.4)',
                   color: '#00E5FF',
+                  fontWeight: 800,
+                  textDecoration: 'none',
+                  borderRadius: '100px',
+                  padding: '6px 14px'
                 }}
               >
-                🔄 HP Second
+                <span>🔄</span>
+                <span>HP Second</span>
               </Link>
             </nav>
 

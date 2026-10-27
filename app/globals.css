@@ -212,6 +212,136 @@ body::before {
   box-shadow: 0 0 20px var(--accent-lime-glow);
 }
 
+/* Nav Pills matching circular grid / capsules */
+.nav-pill-adu {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 75, 75, 0.12);
+  border: 1px solid rgba(255, 75, 75, 0.45);
+  color: #FF6B6B;
+  font-weight: 800;
+  text-decoration: none;
+  border-radius: 100px;
+  padding: 6px 14px;
+  font-size: 13px;
+  box-shadow: 0 0 14px rgba(255, 75, 75, 0.12);
+  transition: all 0.2s ease;
+}
+
+.nav-pill-adu:hover {
+  background: rgba(255, 75, 75, 0.22);
+  border-color: #FF6B6B;
+  color: #FFFFFF;
+  box-shadow: 0 0 20px rgba(255, 75, 75, 0.35);
+  transform: translateY(-1px);
+}
+
+.nav-pill-baru {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(198, 255, 0, 0.1);
+  border: 1px solid var(--border-lime);
+  color: var(--accent-lime);
+  font-weight: 800;
+  text-decoration: none;
+  border-radius: 100px;
+  padding: 6px 14px;
+  font-size: 13px;
+  box-shadow: 0 0 14px rgba(198, 255, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.nav-pill-baru:hover {
+  background: rgba(198, 255, 0, 0.2);
+  border-color: var(--accent-lime);
+  color: #FFFFFF;
+  box-shadow: 0 0 20px var(--accent-lime-glow);
+  transform: translateY(-1px);
+}
+
+.nav-pill-second {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 229, 255, 0.1);
+  border: 1px solid rgba(0, 229, 255, 0.4);
+  color: #00E5FF;
+  font-weight: 800;
+  text-decoration: none;
+  border-radius: 100px;
+  padding: 6px 14px;
+  font-size: 13px;
+  box-shadow: 0 0 14px rgba(0, 229, 255, 0.12);
+  transition: all 0.2s ease;
+}
+
+.nav-pill-second:hover {
+  background: rgba(0, 229, 255, 0.2);
+  border-color: #00E5FF;
+  color: #FFFFFF;
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.35);
+  transform: translateY(-1px);
+}
+
+/* Global Button Utilities */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: inherit;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 12px;
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #FFFFFF;
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #FFFFFF;
+  text-decoration: none;
+}
+
+/* Product Detail Page Adukan HP CTA Button */
+.btn-adukan-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 54px;
+  padding: 14px 18px;
+  font-size: 14.5px;
+  font-weight: 800;
+  border-radius: 12px;
+  background: rgba(255, 75, 75, 0.12);
+  border: 1.5px solid rgba(255, 75, 75, 0.5);
+  color: #FF6B6B;
+  text-decoration: none;
+  box-shadow: 0 4px 16px rgba(255, 75, 75, 0.18);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.btn-adukan-cta:hover {
+  background: rgba(255, 75, 75, 0.24);
+  border-color: #FF6B6B;
+  color: #FFFFFF;
+  box-shadow: 0 6px 24px rgba(255, 75, 75, 0.35);
+  transform: translateY(-2px);
+  text-decoration: none;
+}
+
 /* Hero Section */
 .hero-section {
   padding: 64px 0 48px 0;

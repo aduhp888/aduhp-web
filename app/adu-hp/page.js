@@ -345,24 +345,60 @@ export default function AduHpDedicatedPage() {
               </Link>
 
               <button 
-                className="nav-link active"
+                className="nav-link nav-pill-adu active"
                 style={{
-                  background: 'rgba(198, 255, 0, 0.12)',
-                  borderColor: 'var(--accent-lime)',
-                  color: 'var(--accent-lime)',
-                  fontWeight: 800
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: 'rgba(255, 75, 75, 0.18)',
+                  borderColor: '#FF6B6B',
+                  color: '#FF6B6B',
+                  fontWeight: 800,
+                  borderRadius: '100px',
+                  padding: '6px 14px',
+                  boxShadow: '0 0 16px rgba(255, 75, 75, 0.25)'
                 }}
               >
                 <span>⚔️</span>
                 <span>Adu HP</span>
               </button>
 
-              <Link href="/hp-baru" className="nav-link" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+              <Link 
+                href="/hp-baru" 
+                className="nav-link nav-pill-baru" 
+                style={{ 
+                  display: 'inline-flex', 
+                  alignItems: 'center', 
+                  gap: '6px',
+                  background: 'rgba(198, 255, 0, 0.1)',
+                  border: '1px solid var(--border-lime)',
+                  color: 'var(--accent-lime)',
+                  fontWeight: 800,
+                  textDecoration: 'none',
+                  borderRadius: '100px',
+                  padding: '6px 14px'
+                }}
+              >
                 <span>📱</span>
                 <span>HP Baru</span>
               </Link>
 
-              <Link href="/hp-second" className="nav-link" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: '#00E5FF' }}>
+              <Link 
+                href="/hp-second" 
+                className="nav-link nav-pill-second" 
+                style={{ 
+                  display: 'inline-flex', 
+                  alignItems: 'center', 
+                  gap: '6px', 
+                  background: 'rgba(0, 229, 255, 0.1)',
+                  border: '1px solid rgba(0, 229, 255, 0.4)',
+                  color: '#00E5FF',
+                  fontWeight: 800,
+                  textDecoration: 'none',
+                  borderRadius: '100px',
+                  padding: '6px 14px'
+                }}
+              >
                 <span>🔄</span>
                 <span>HP Second</span>
               </Link>
