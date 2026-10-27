@@ -736,9 +736,9 @@ export default function AduHpDedicatedPage() {
                     flexDirection: 'column',
                     gap: '4px'
                   }}>
-                    <div>💻 <strong>Chipset:</strong> {phone.specs.chipset}</div>
-                    <div>📱 <strong>Layar:</strong> {phone.specs.display}</div>
-                    <div>🔋 <strong>Baterai:</strong> {phone.specs.battery}</div>
+                    <div>💻 <strong>Chipset:</strong> {phone.specs?.chipset || '-'}</div>
+                    <div>📱 <strong>Layar:</strong> {phone.specs?.display || '-'}</div>
+                    <div>🔋 <strong>Baterai:</strong> {phone.specs?.battery || '5.000 mAh'}</div>
                   </div>
 
                   {/* Slot Actions */}
@@ -1326,7 +1326,7 @@ export default function AduHpDedicatedPage() {
                       <td className="spec-key-label">Kapasitas & Watt Charger</td>
                       {slotPhones.map(phone => (
                         <td key={phone.id} className="spec-val-cell spec-highlight-good">
-                          {phone.specs.battery}
+                          {phone.specs?.battery || '-'}
                         </td>
                       ))}
                     </tr>
