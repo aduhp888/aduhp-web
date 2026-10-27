@@ -196,8 +196,9 @@ export default function ProductDetailPage() {
   const originalPrice = product?.original_price || (currentPrice > 0 ? Math.round(currentPrice * 1.1) : 0);
   const discountPercent = originalPrice > currentPrice ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100) : 0;
 
-  // Check if current variant is out of stock
-  const isOutOfStock = !selectedVariant || (selectedVariant.stock !== undefined && selectedVariant.stock <= 0);
+  // Current active stock strictly synchronized with database
+  const currentVariantStock = selectedVariant?.stock !== undefined ? Number(selectedVariant.stock) : (Number(product?.stock) || 0);
+  const isOutOfStock = currentVariantStock <= 0;
 
   // Add to Cart
   const handleAddToCart = () => {
@@ -529,7 +530,7 @@ export default function ProductDetailPage() {
                 Brand: {product.brand}
               </span>
 
-              {product.stock <= 5 && product.stock > 0 && (
+              {currentVariantStock > 0 && currentVariantStock <= 5 && (
                 <span style={{
                   background: 'rgba(255, 77, 77, 0.15)',
                   color: '#FF6B6B',
@@ -538,7 +539,33 @@ export default function ProductDetailPage() {
                   fontSize: '11px',
                   fontWeight: 700
                 }}>
-                  🔥 Sisa {product.stock} Unit!
+                  🔥 Sisa {currentVariantStock} Unit!
+                </span>
+              )}
+
+              {currentVariantStock === 0 && (
+                <span style={{
+                  background: 'rgba(255, 69, 58, 0.2)',
+                  color: '#FF453A',
+                  padding: '4px 10px',
+                  borderRadius: '100px',
+                  fontSize: '11px',
+                  fontWeight: 700
+                }}>
+                  ⚠️ Stok Varian Habis
+                </span>
+              )}
+
+              {currentVariantStock > 5 && (
+                <span style={{
+                  background: 'rgba(52, 199, 89, 0.15)',
+                  color: '#34C759',
+                  padding: '4px 10px',
+                  borderRadius: '100px',
+                  fontSize: '11px',
+                  fontWeight: 700
+                }}>
+                  ✓ Tersedia {currentVariantStock} Unit
                 </span>
               )}
             </div>
@@ -623,7 +650,15 @@ export default function ProductDetailPage() {
                     <button
                       key={i}
                       type="button"
-                      onClick={() => setSelectedVariant(v)}
+                      onClick={() => {
+                        setSelectedVariant(v);
+                        const vStock = v.stock !== undefined ? Number(v.stock) : 0;
+                        if (vStock > 0) {
+                          setQuantity(prev => Math.min(prev, vStock));
+                        } else {
+                          setQuantity(1);
+                        }
+                      }}
                       style={{
                         padding: '12px 14px',
                         borderRadius: '12px',
@@ -781,18 +816,15 @@ export default function ProductDetailPage() {
                 </span>
                 <button
                   type="button"
-                  onClick={() => setQuantity(prev => {
-                    const max = selectedVariant?.stock > 0 ? selectedVariant.stock : 10;
-                    return prev < max ? prev + 1 : prev;
-                  })}
-                  disabled={selectedVariant?.stock > 0 && quantity >= selectedVariant.stock}
+                  onClick={() => setQuantity(prev => (prev < currentVariantStock ? prev + 1 : prev))}
+                  disabled={currentVariantStock <= 0 || quantity >= currentVariantStock}
                   style={{
                     width: '38px',
                     height: '38px',
                     background: 'none',
                     border: 'none',
-                    color: (selectedVariant?.stock > 0 && quantity >= selectedVariant.stock) ? '#555' : '#fff',
-                    cursor: (selectedVariant?.stock > 0 && quantity >= selectedVariant.stock) ? 'not-allowed' : 'pointer',
+                    color: (currentVariantStock <= 0 || quantity >= currentVariantStock) ? '#555' : '#fff',
+                    cursor: (currentVariantStock <= 0 || quantity >= currentVariantStock) ? 'not-allowed' : 'pointer',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center'
@@ -803,10 +835,10 @@ export default function ProductDetailPage() {
                 </button>
               </div>
 
-              <span style={{ fontSize: '12px', color: '#888' }}>
-                {selectedVariant?.stock > 0 
-                  ? `Stok tersedia: ${selectedVariant.stock} unit`
-                  : (product?.stock > 0 ? `Stok tersedia: ${product.stock} unit` : 'Stok habis')}
+              <span style={{ fontSize: '12px', color: currentVariantStock > 0 ? '#888' : '#FF6B6B', fontWeight: 600 }}>
+                {currentVariantStock > 0 
+                  ? `Stok tersedia: ${currentVariantStock} unit`
+                  : 'Stok varian ini habis'}
               </span>
             </div>
 

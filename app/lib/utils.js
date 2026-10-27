@@ -96,7 +96,7 @@ export function getProductVariants(product) {
       storage: Number(v.storage) || 0,
       label: v.label || `${v.ram || 0}GB / ${v.storage || 0}GB`,
       price: Number(v.price) || Number(product.price) || 0,
-      stock: v.stock !== undefined && v.stock !== null ? Number(v.stock) : (product.stock || 5),
+      stock: v.stock !== undefined && v.stock !== null ? Number(v.stock) : 0,
       isDefault: v.isDefault ?? v.is_default ?? (idx === 0)
     }));
   }
@@ -104,7 +104,8 @@ export function getProductVariants(product) {
   const baseRam = Number(product?.ram_gb) || 8;
   const baseStorage = Number(product?.storage_gb) || 256;
   const basePrice = Number(product?.price) || 3000000;
-  const baseStock = product?.stock !== undefined && product?.stock !== null ? Number(product.stock) : 5;
+  // STOCK REAL DARI DATABASE
+  const realStock = product?.stock !== undefined && product?.stock !== null ? Number(product.stock) : 0;
 
   // Jika produk Certified Second: unit fisik spesifik bersertifikat QC
   if (product?.condition === 'second') {
@@ -114,32 +115,32 @@ export function getProductVariants(product) {
         storage: baseStorage,
         label: `${baseRam}GB / ${baseStorage}GB`,
         price: basePrice,
-        stock: baseStock > 0 ? baseStock : 1,
+        stock: realStock,
         isDefault: true
       }
     ];
   }
 
-  // Jika HP Baru BNIB: Sediakan pilihan opsi varian RAM & Storage standar pasar smartphone
+  // Jika HP Baru BNIB: Varian default menggunakan stok riil database. Varian alternatif opsional jika belum ada stok di gudang bernilai 0 (Habis)
   if (basePrice >= 8000000) {
     // Flagship Tier
     return [
-      { ram: baseRam, storage: baseStorage, label: `${baseRam}GB / ${baseStorage}GB`, price: basePrice, stock: Math.max(baseStock, 6), isDefault: true },
-      { ram: baseRam + 4, storage: baseStorage >= 512 ? 1024 : 512, label: `${baseRam + 4}GB / ${baseStorage >= 512 ? '1TB' : '512GB'}`, price: basePrice + 1500000, stock: 4, isDefault: false }
+      { ram: baseRam, storage: baseStorage, label: `${baseRam}GB / ${baseStorage}GB`, price: basePrice, stock: realStock, isDefault: true },
+      { ram: baseRam + 4, storage: baseStorage >= 512 ? 1024 : 512, label: `${baseRam + 4}GB / ${baseStorage >= 512 ? '1TB' : '512GB'}`, price: basePrice + 1500000, stock: 0, isDefault: false }
     ];
   } else if (basePrice >= 2500000) {
-    // Mid-Range Tier (seperti OPPO A6x, POCO, Redmi Note, Samsung A series)
+    // Mid-Range Tier (seperti OPPO A6x)
     const upgradeRam = baseRam <= 6 ? 8 : (baseRam + 4);
     const upgradeStorage = baseStorage <= 128 ? 256 : (baseStorage * 2);
     return [
-      { ram: baseRam, storage: baseStorage, label: `${baseRam}GB / ${baseStorage}GB`, price: basePrice, stock: Math.max(baseStock, 8), isDefault: true },
-      { ram: upgradeRam, storage: upgradeStorage, label: `${upgradeRam}GB / ${upgradeStorage}GB`, price: basePrice + 450000, stock: 5, isDefault: false }
+      { ram: baseRam, storage: baseStorage, label: `${baseRam}GB / ${baseStorage}GB`, price: basePrice, stock: realStock, isDefault: true },
+      { ram: upgradeRam, storage: upgradeStorage, label: `${upgradeRam}GB / ${upgradeStorage}GB`, price: basePrice + 450000, stock: 0, isDefault: false }
     ];
   } else {
     // Entry Level (< 2.5 Juta)
     return [
-      { ram: baseRam, storage: baseStorage, label: `${baseRam}GB / ${baseStorage}GB`, price: basePrice, stock: Math.max(baseStock, 10), isDefault: true },
-      { ram: baseRam + 2, storage: baseStorage === 64 ? 128 : 256, label: `${baseRam + 2}GB / ${baseStorage === 64 ? 128 : 256}GB`, price: basePrice + 300000, stock: 6, isDefault: false }
+      { ram: baseRam, storage: baseStorage, label: `${baseRam}GB / ${baseStorage}GB`, price: basePrice, stock: realStock, isDefault: true },
+      { ram: baseRam + 2, storage: baseStorage === 64 ? 128 : 256, label: `${baseRam + 2}GB / ${baseStorage === 64 ? 128 : 256}GB`, price: basePrice + 300000, stock: 0, isDefault: false }
     ];
   }
 }
