@@ -84,101 +84,161 @@ export function AuthProvider({ children }) {
   }, []);
 
   // 3. Kirim Kode OTP (bisa via Email atau WhatsApp / No. HP)
-  const sendOtp = async ({ email, phone, displayName }) => {
-    const cleanEmail = email ? email.trim() : null;
-    let cleanPhone = null;
+  const sendOtp = async ({ method = 'email', email, phone, displayName }) => {
+    const isEmail = method === 'email' || (!phone && email);
+    const nama = displayName ? displayName.trim() : '';
 
-    if (phone) {
-      cleanPhone = phone.trim().replace(/[-\s]/g, '');
-      if (cleanPhone.startsWith('0')) {
-        cleanPhone = '+62' + cleanPhone.slice(1);
-      } else if (cleanPhone.startsWith('62')) {
-        cleanPhone = '+' + cleanPhone;
-      } else if (!cleanPhone.startsWith('+')) {
-        cleanPhone = '+62' + cleanPhone;
+    if (isEmail) {
+      if (!email || !email.trim()) {
+        throw new Error('Harap masukkan alamat Email Anda.');
       }
-    }
-
-    const options = {
-      shouldCreateUser: true,
-      data: {
-        display_name: displayName || undefined,
-        full_name: displayName || undefined,
-        phone: cleanPhone || undefined
-      }
-    };
-
-    if (cleanEmail) {
+      const cleanEmail = email.trim();
       const { data, error } = await supabase.auth.signInWithOtp({
         email: cleanEmail,
-        options
+        options: {
+          data: {
+            display_name: nama || undefined,
+            full_name: nama || undefined
+          }
+        }
       });
       if (error) throw error;
       return { success: true, method: 'email', target: cleanEmail, data };
-    } else if (cleanPhone) {
-      const { data, error } = await supabase.auth.signInWithOtp({
-        phone: cleanPhone,
-        options
-      });
-      if (error) throw error;
-      return { success: true, method: 'phone', target: cleanPhone, data };
-    }
+    } else {
+      // WhatsApp Method
+      if (!phone || !phone.trim()) {
+        throw new Error('Harap masukkan Nomor WhatsApp aktif Anda.');
+      }
+      const rawWa = phone.trim().replace(/\D/g, '');
+      const waClean = rawWa.startsWith('0') ? '62' + rawWa.slice(1) : (rawWa.startsWith('62') ? rawWa : '62' + rawWa);
 
-    throw new Error('Harap masukkan alamat Email atau Nomor WhatsApp aktif.');
+      // Panggil Supabase Edge Function 'send-wa-otp'
+      try {
+        const { data, error } = await supabase.functions.invoke('send-wa-otp', {
+          body: {
+            phone: waClean,
+            display_name: nama || undefined
+          }
+        });
+
+        if (error) {
+          console.warn('send-wa-otp edge function warning:', error);
+          // Fallback ke Supabase Phone Auth jika Edge Function belum aktif
+          const { data: phoneData, error: phoneError } = await supabase.auth.signInWithOtp({
+            phone: '+' + waClean,
+            options: {
+              data: {
+                display_name: nama || undefined,
+                full_name: nama || undefined,
+                phone: waClean
+              }
+            }
+          });
+          if (phoneError) throw (error || phoneError);
+          return { success: true, method: 'whatsapp', target: waClean, data: phoneData };
+        }
+
+        return { success: true, method: 'whatsapp', target: waClean, data };
+      } catch (err) {
+        console.warn('Fallback error for WhatsApp OTP:', err);
+        const { data: phoneData, error: phoneError } = await supabase.auth.signInWithOtp({
+          phone: '+' + waClean,
+          options: {
+            data: {
+              display_name: nama || undefined,
+              full_name: nama || undefined,
+              phone: waClean
+            }
+          }
+        });
+        if (phoneError) throw (err || phoneError);
+        return { success: true, method: 'whatsapp', target: waClean, data: phoneData };
+      }
+    }
   };
 
   // 4. Verifikasi Kode OTP (6 digit)
-  const verifyOtp = async ({ email, phone, token, displayName, whatsappNumber }) => {
+  const verifyOtp = async ({ method = 'email', email, phone, token, displayName, whatsappNumber }) => {
     const cleanToken = token ? token.trim().replace(/\s/g, '') : '';
     if (!cleanToken || cleanToken.length < 6) {
       throw new Error('Kode OTP harus terdiri dari 6 digit.');
     }
 
-    let params = {
-      token: cleanToken
-    };
-
-    let targetEmail = null;
+    const nama = displayName ? displayName.trim() : '';
+    let targetEmail = email ? email.trim() : null;
     let targetPhone = null;
 
-    if (email) {
-      targetEmail = email.trim();
-      params.email = targetEmail;
-      params.type = 'email';
-    } else if (phone) {
-      let cleanPhone = phone.trim().replace(/[-\s]/g, '');
-      if (cleanPhone.startsWith('0')) cleanPhone = '+62' + cleanPhone.slice(1);
-      else if (cleanPhone.startsWith('62')) cleanPhone = '+' + cleanPhone;
-      else if (!cleanPhone.startsWith('+')) cleanPhone = '+62' + cleanPhone;
-
-      targetPhone = cleanPhone;
-      params.phone = cleanPhone;
-      params.type = 'sms';
-    } else {
-      throw new Error('Target verifikasi (Email atau No. WhatsApp) tidak ditemukan.');
+    if (phone) {
+      const rawWa = phone.trim().replace(/\D/g, '');
+      targetPhone = rawWa.startsWith('0') ? '62' + rawWa.slice(1) : (rawWa.startsWith('62') ? rawWa : '62' + rawWa);
     }
 
-    const { data, error } = await supabase.auth.verifyOtp(params);
-    if (error) throw error;
+    let authUser = null;
+    let data = null;
+
+    if (method === 'email' || targetEmail) {
+      const res = await supabase.auth.verifyOtp({
+        email: targetEmail,
+        token: cleanToken,
+        type: 'email'
+      });
+      if (res.error) throw res.error;
+      data = res.data;
+      authUser = data?.user;
+    } else {
+      // WhatsApp OTP verification
+      try {
+        const efRes = await supabase.functions.invoke('verify-wa-otp', {
+          body: {
+            phone: targetPhone,
+            token: cleanToken,
+            display_name: nama || undefined
+          }
+        });
+        if (efRes.data && efRes.data.user) {
+          data = efRes.data;
+          authUser = data.user;
+        } else {
+          const res = await supabase.auth.verifyOtp({
+            phone: '+' + targetPhone,
+            token: cleanToken,
+            type: 'sms'
+          });
+          if (res.error) throw (efRes.error || res.error);
+          data = res.data;
+          authUser = data?.user;
+        }
+      } catch (err) {
+        const res = await supabase.auth.verifyOtp({
+          phone: '+' + targetPhone,
+          token: cleanToken,
+          type: 'sms'
+        });
+        if (res.error) throw (err || res.error);
+        data = res.data;
+        authUser = data?.user;
+      }
+    }
 
     // Sinkronisasi data ke public.users
-    if (data?.user) {
-      const finalName = displayName || data.user.user_metadata?.display_name || data.user.user_metadata?.full_name || '';
-      const finalPhone = targetPhone || whatsappNumber || data.user.phone || data.user.user_metadata?.phone || '';
+    // Mencegah duplikasi baris dan mengisi kolom whatsapp_number / display_name yang tadinya NULL
+    if (authUser) {
+      const finalName = nama || authUser.user_metadata?.display_name || authUser.user_metadata?.full_name || null;
+      const finalPhone = targetPhone || whatsappNumber || authUser.phone || null;
 
       try {
         await supabase.from('users').upsert({
-          id: data.user.id,
-          display_name: finalName || null,
-          email: data.user.email || targetEmail || null,
-          whatsapp_number: finalPhone || null,
-          is_guest: data.user.is_anonymous || false
+          id: authUser.id,
+          display_name: finalName,
+          email: authUser.email || targetEmail || null,
+          whatsapp_number: finalPhone,
+          is_guest: authUser.is_anonymous || false
         }, { onConflict: 'id' });
       } catch (syncErr) {
         console.warn('Sync to public.users error:', syncErr);
       }
 
-      await fetchProfile(data.user.id);
+      await fetchProfile(authUser.id);
     }
 
     return data;

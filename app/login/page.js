@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
+import { supabase } from '../lib/supabase';
 import { 
   Lock, 
   Mail, 
@@ -27,7 +28,7 @@ function LoginContent() {
   const searchParams = useSearchParams();
   const redirectUrl = searchParams.get('redirect') || '/';
 
-  const { sendOtp, verifyOtp, signIn, signUp, signInAsGuest, user } = useAuth();
+  const { signIn, signUp, signInAsGuest, user } = useAuth();
 
   // If already logged in, redirect immediately
   useEffect(() => {
@@ -39,8 +40,8 @@ function LoginContent() {
   // Main Auth Tab: 'otp' (default) | 'password' | 'register'
   const [activeTab, setActiveTab] = useState('otp');
 
-  // OTP State
-  const [otpChannel, setOtpChannel] = useState('email'); // 'email' | 'phone'
+  // OTP State: method is 'email' | 'whatsapp'
+  const [method, setMethod] = useState('email'); // 'email' | 'whatsapp'
   const [otpStep, setOtpStep] = useState('input'); // 'input' | 'verify'
   const [otpEmail, setOtpEmail] = useState('');
   const [otpPhone, setOtpPhone] = useState('');
@@ -78,25 +79,77 @@ function LoginContent() {
     setErrorMsg('');
     setSuccessMsg('');
 
-    if (otpChannel === 'email' && !otpEmail.trim()) {
+    const nama = otpDisplayName.trim();
+
+    if (method === 'email' && !otpEmail.trim()) {
       setErrorMsg('Harap masukkan alamat Email Anda.');
       return;
     }
-    if (otpChannel === 'phone' && (!otpPhone.trim() || otpPhone.length < 9)) {
+    if (method === 'whatsapp' && (!otpPhone.trim() || otpPhone.length < 9)) {
       setErrorMsg('Harap masukkan Nomor WhatsApp aktif (minimal 9 digit).');
       return;
     }
 
     setLoading(true);
     try {
-      await sendOtp({
-        email: otpChannel === 'email' ? otpEmail.trim() : null,
-        phone: otpChannel === 'phone' ? otpPhone.trim() : null,
-        displayName: otpDisplayName.trim() || undefined
-      });
+      if (method === 'email') {
+        const { error } = await supabase.auth.signInWithOtp({
+          email: otpEmail.trim(),
+          options: {
+            data: {
+              display_name: nama || undefined,
+              full_name: nama || undefined
+            }
+          }
+        });
+        if (error) throw error;
+        setSuccessMsg(`✓ Kode OTP 6 digit telah dikirim ke Email: ${otpEmail.trim()}. Silakan cek kotak masuk.`);
+      } else {
+        const rawWa = otpPhone.trim().replace(/\D/g, '');
+        const wa = rawWa.startsWith('0') ? '62' + rawWa.slice(1) : (rawWa.startsWith('62') ? rawWa : '62' + rawWa);
 
-      const target = otpChannel === 'email' ? otpEmail.trim() : otpPhone.trim();
-      setSuccessMsg(`✓ Kode OTP 6 digit telah dikirim ke ${target}. Silakan cek kotak masuk.`);
+        // Panggil Supabase Edge Function 'send-wa-otp'
+        try {
+          const { error } = await supabase.functions.invoke('send-wa-otp', {
+            body: {
+              phone: '62' + (rawWa.startsWith('0') ? rawWa.slice(1) : (rawWa.startsWith('62') ? rawWa.slice(2) : rawWa)),
+              display_name: nama || undefined
+            }
+          });
+
+          if (error) {
+            console.warn('send-wa-otp edge function warning:', error);
+            // Fallback ke Supabase phone auth jika edge function belum aktif
+            const { error: phoneErr } = await supabase.auth.signInWithOtp({
+              phone: '+' + wa,
+              options: {
+                data: {
+                  display_name: nama || undefined,
+                  full_name: nama || undefined,
+                  phone: wa
+                }
+              }
+            });
+            if (phoneErr) throw (error || phoneErr);
+          }
+        } catch (efErr) {
+          console.warn('Fallback ke Supabase phone auth:', efErr);
+          const { error: phoneErr } = await supabase.auth.signInWithOtp({
+            phone: '+' + wa,
+            options: {
+              data: {
+                display_name: nama || undefined,
+                full_name: nama || undefined,
+                phone: wa
+              }
+            }
+          });
+          if (phoneErr) throw (efErr || phoneErr);
+        }
+
+        setSuccessMsg(`✓ Kode OTP 6 digit telah dikirim ke WhatsApp: +${wa}. Silakan cek pesan masuk.`);
+      }
+
       setOtpStep('verify');
       setResendCooldown(60);
     } catch (err) {
@@ -104,8 +157,8 @@ function LoginContent() {
       let msg = err.message || 'Gagal mengirim kode OTP.';
 
       if (msg.includes('phone_provider_disabled') || msg.includes('Unsupported phone provider')) {
-        msg = 'Penyedia SMS/WhatsApp OTP belum diaktifkan di dashboard Supabase (Authentication > Providers > Phone). Silakan gunakan OTP Email di bawah ini yang sudah langsung aktif.';
-        setOtpChannel('email');
+        msg = 'Penyedia SMS/WhatsApp OTP belum diaktifkan di dashboard Supabase. Silakan gunakan tab OTP Email yang sudah aktif.';
+        setMethod('email');
       } else if (msg.includes('rate limit')) {
         msg = 'Terlalu banyak permintaan OTP. Harap tunggu beberapa saat sebelum mencoba kembali.';
       }
@@ -121,20 +174,85 @@ function LoginContent() {
     setErrorMsg('');
     setSuccessMsg('');
 
-    if (!otpToken.trim() || otpToken.trim().length < 6) {
+    const token = otpToken.trim().replace(/\s/g, '');
+    if (!token || token.length < 6) {
       setErrorMsg('Harap masukkan 6 digit kode OTP verifikasi.');
       return;
     }
 
     setLoading(true);
     try {
-      await verifyOtp({
-        email: otpChannel === 'email' ? otpEmail.trim() : null,
-        phone: otpChannel === 'phone' ? otpPhone.trim() : null,
-        token: otpToken.trim(),
-        displayName: otpDisplayName.trim() || undefined,
-        whatsappNumber: otpPhone.trim() || undefined
-      });
+      const nama = otpDisplayName.trim();
+      let authUser = null;
+      let targetPhone = null;
+
+      if (method === 'email') {
+        const { data, error } = await supabase.auth.verifyOtp({
+          email: otpEmail.trim(),
+          token: token,
+          type: 'email'
+        });
+        if (error) throw error;
+        authUser = data?.user;
+      } else {
+        const rawWa = otpPhone.trim().replace(/\D/g, '');
+        targetPhone = rawWa.startsWith('0') ? '62' + rawWa.slice(1) : (rawWa.startsWith('62') ? rawWa : '62' + rawWa);
+
+        try {
+          const efRes = await supabase.functions.invoke('verify-wa-otp', {
+            body: { phone: targetPhone, token: token, display_name: nama || undefined }
+          });
+          if (efRes.data?.user) {
+            authUser = efRes.data.user;
+          } else {
+            const { data, error } = await supabase.auth.verifyOtp({
+              phone: '+' + targetPhone,
+              token: token,
+              type: 'sms'
+            });
+            if (error) throw (efRes.error || error);
+            authUser = data?.user;
+          }
+        } catch (efErr) {
+          const { data, error } = await supabase.auth.verifyOtp({
+            phone: '+' + targetPhone,
+            token: token,
+            type: 'sms'
+          });
+          if (error) throw (efErr || error);
+          authUser = data?.user;
+        }
+      }
+
+      // SINKRONISASI KE public.users (ANTI DUPLIKAT & AUTO-FILL KOLOM KOSONG)
+      if (authUser) {
+        const finalName = nama || authUser.user_metadata?.display_name || authUser.user_metadata?.full_name || null;
+        const finalEmail = authUser.email || (method === 'email' ? otpEmail.trim() : null);
+        const finalPhone = targetPhone || (method === 'whatsapp' ? targetPhone : null);
+
+        // Ambil data user yang ada di public.users untuk menjaga nilai kolom yang sudah ada sebelumnya
+        const { data: existingUser } = await supabase
+          .from('users')
+          .select('id, display_name, email, whatsapp_number')
+          .eq('id', authUser.id)
+          .maybeSingle();
+
+        const updatePayload = {
+          id: authUser.id,
+          display_name: finalName || existingUser?.display_name || null,
+          email: finalEmail || existingUser?.email || null,
+          whatsapp_number: finalPhone || existingUser?.whatsapp_number || null,
+          is_guest: false
+        };
+
+        // Jika nomor whatsapp baru dimasukkan saat login email, atau email baru dimasukkan saat login WA:
+        if (otpPhone.trim() && !updatePayload.whatsapp_number) {
+          const raw = otpPhone.trim().replace(/\D/g, '');
+          updatePayload.whatsapp_number = raw.startsWith('0') ? '62' + raw.slice(1) : (raw.startsWith('62') ? raw : '62' + raw);
+        }
+
+        await supabase.from('users').upsert(updatePayload, { onConflict: 'id' });
+      }
 
       setSuccessMsg('✓ Verifikasi OTP berhasil! Anda sedang dialihkan...');
       setTimeout(() => {
@@ -430,13 +548,13 @@ function LoginContent() {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                   <button
                     type="button"
-                    onClick={() => { setOtpChannel('email'); setErrorMsg(''); }}
+                    onClick={() => { setMethod('email'); setErrorMsg(''); }}
                     style={{
                       padding: '10px',
                       borderRadius: '10px',
-                      border: otpChannel === 'email' ? '2px solid var(--accent-lime)' : '1px solid rgba(255, 255, 255, 0.1)',
-                      background: otpChannel === 'email' ? 'rgba(198, 255, 0, 0.08)' : '#1a1a22',
-                      color: otpChannel === 'email' ? 'var(--accent-lime)' : '#aaa',
+                      border: method === 'email' ? '2px solid var(--accent-lime)' : '1px solid rgba(255, 255, 255, 0.1)',
+                      background: method === 'email' ? 'rgba(198, 255, 0, 0.08)' : '#1a1a22',
+                      color: method === 'email' ? 'var(--accent-lime)' : '#aaa',
                       fontSize: '12.5px',
                       fontWeight: 700,
                       cursor: 'pointer',
@@ -452,13 +570,13 @@ function LoginContent() {
 
                   <button
                     type="button"
-                    onClick={() => { setOtpChannel('phone'); setErrorMsg(''); }}
+                    onClick={() => { setMethod('whatsapp'); setErrorMsg(''); }}
                     style={{
                       padding: '10px',
                       borderRadius: '10px',
-                      border: otpChannel === 'phone' ? '2px solid #25D366' : '1px solid rgba(255, 255, 255, 0.1)',
-                      background: otpChannel === 'phone' ? 'rgba(37, 211, 102, 0.08)' : '#1a1a22',
-                      color: otpChannel === 'phone' ? '#25D366' : '#aaa',
+                      border: method === 'whatsapp' ? '2px solid #25D366' : '1px solid rgba(255, 255, 255, 0.1)',
+                      background: method === 'whatsapp' ? 'rgba(37, 211, 102, 0.08)' : '#1a1a22',
+                      color: method === 'whatsapp' ? '#25D366' : '#aaa',
                       fontSize: '12.5px',
                       fontWeight: 700,
                       cursor: 'pointer',
@@ -502,7 +620,7 @@ function LoginContent() {
                 </div>
 
                 {/* Email or Phone Input */}
-                {otpChannel === 'email' ? (
+                {method === 'email' ? (
                   <div>
                     <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#aaa', marginBottom: '6px' }}>
                       Alamat Email <span style={{ color: '#FF453A' }}>*</span>
@@ -599,7 +717,7 @@ function LoginContent() {
                   <p style={{ fontSize: '12px', color: '#888', margin: 0, lineHeight: 1.4 }}>
                     Kode verifikasi telah dikirim ke{' '}
                     <strong style={{ color: '#fff' }}>
-                      {otpChannel === 'email' ? otpEmail : otpPhone}
+                      {method === 'email' ? otpEmail : otpPhone}
                     </strong>
                   </p>
                 </div>
