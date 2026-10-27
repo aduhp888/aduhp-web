@@ -33,6 +33,7 @@ import {
 } from 'lucide-react';
 import { PRICE_TIERS, BRAND_OPTIONS } from '../data/entryPhones';
 import { supabase } from '../lib/supabase';
+import { normalizeAntutu } from '../lib/utils';
 import NavbarCartAndAuth from '../components/NavbarCartAndAuth';
 
 function formatIDR(amount) {
@@ -102,7 +103,7 @@ export default function AduHpDedicatedPage() {
             ...p,
             is_for_sale: p.is_for_sale !== false,
             sale_status: p.sale_status || (p.is_for_sale === false ? 'compare_only' : 'dijual'),
-            antutu: p.antutu || { total: 0, cpu: 0, gpu: 0, memory: 0, ux: 0, tier: '' },
+            antutu: normalizeAntutu(p.antutu),
             gaming_fps: p.gaming_fps || { mlbb: '60 FPS', pubg: '60 FPS', genshin: '45 FPS' },
             specs: p.specs || {}
           }));

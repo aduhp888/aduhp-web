@@ -31,7 +31,7 @@ import {
 import { CERTIFIED_SECOND_PHONES } from '../data/secondPhones';
 import { PRICE_TIERS } from '../data/entryPhones';
 import { supabase } from '../lib/supabase';
-import { getProductVariants, getProductColors } from '../lib/utils';
+import { getProductVariants, getProductColors, normalizeAntutu } from '../lib/utils';
 import NavbarCartAndAuth from '../components/NavbarCartAndAuth';
 import { useCart } from '../context/CartContext';
 
@@ -113,7 +113,10 @@ export default function HpSecondPage() {
           .order('created_at', { ascending: false });
 
         if (data) {
-          setProducts(data);
+          setProducts(data.map(item => ({
+            ...item,
+            antutu: normalizeAntutu(item.antutu)
+          })));
         } else {
           setProducts([]);
         }

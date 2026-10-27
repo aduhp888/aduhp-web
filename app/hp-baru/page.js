@@ -30,7 +30,7 @@ import {
 } from 'lucide-react';
 import { PRICE_TIERS } from '../data/entryPhones';
 import { supabase } from '../lib/supabase';
-import { getProductVariants, getProductColors } from '../lib/utils';
+import { getProductVariants, getProductColors, normalizeAntutu } from '../lib/utils';
 import NavbarCartAndAuth from '../components/NavbarCartAndAuth';
 import { useCart } from '../context/CartContext';
 
@@ -134,7 +134,8 @@ export default function HpBaruPage() {
           const list = data.map(item => ({
             ...item,
             is_for_sale: item.is_for_sale !== false,
-            sale_status: item.sale_status || (item.is_for_sale === false ? 'compare_only' : 'dijual')
+            sale_status: item.sale_status || (item.is_for_sale === false ? 'compare_only' : 'dijual'),
+            antutu: normalizeAntutu(item.antutu)
           }));
           setProducts(list);
         } else {

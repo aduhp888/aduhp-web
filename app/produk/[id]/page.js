@@ -43,7 +43,8 @@ import {
   PHOTO_SLOT_DESCRIPTIONS, 
   getProductVariants, 
   getProductColors,
-  getColorStockForVariant
+  getColorStockForVariant,
+  normalizeAntutu
 } from '../../lib/utils';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
@@ -88,8 +89,12 @@ export default function ProductDetailPage() {
 
         const { data, error } = await query.single();
         if (data) {
-          setProduct(data);
-          const variantsList = getProductVariants(data);
+          const normalized = {
+            ...data,
+            antutu: normalizeAntutu(data.antutu)
+          };
+          setProduct(normalized);
+          const variantsList = getProductVariants(normalized);
           const defaultVar = variantsList.find(v => v.isDefault && v.stock > 0) || variantsList.find(v => v.stock > 0) || variantsList[0];
           setSelectedVariant(defaultVar);
           const colorsList = getProductColors(data);

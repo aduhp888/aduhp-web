@@ -15,6 +15,60 @@ export function generateOrderNumber() {
   return `ADU-${dateStr}-${randomSuffix}`;
 }
 
+export function normalizeAntutu(antutu) {
+  if (!antutu) {
+    return { total: 0, cpu: 0, gpu: 0, memory: 0, ux: 0, tier: '-' };
+  }
+
+  let total = 0;
+  let cpu = 0;
+  let gpu = 0;
+  let memory = 0;
+  let ux = 0;
+  let tier = '';
+
+  if (typeof antutu === 'number' || (typeof antutu === 'string' && !isNaN(Number(antutu)))) {
+    total = Number(antutu) || 0;
+  } else if (typeof antutu === 'object') {
+    total = Number(antutu.total) || 0;
+    cpu = Number(antutu.cpu) || 0;
+    gpu = Number(antutu.gpu) || 0;
+    memory = Number(antutu.memory) || 0;
+    ux = Number(antutu.ux) || 0;
+    tier = antutu.tier || '';
+  }
+
+  // Auto-estimate missing breakdown if total is present but subscores are missing / zero
+  if (total > 0) {
+    if (cpu === 0 && gpu === 0 && memory === 0 && ux === 0) {
+      cpu = Math.round(total * 0.35);
+      gpu = Math.round(total * 0.25);
+      memory = Math.round(total * 0.20);
+      ux = total - cpu - gpu - memory;
+    } else if (memory === 0 && ux === 0) {
+      const remaining = Math.max(0, total - cpu - gpu);
+      memory = Math.round(remaining * 0.5);
+      ux = remaining - memory;
+    }
+  }
+
+  if (!tier && total > 0) {
+    if (total >= 1500000) tier = 'Raja Flagship';
+    else if (total >= 900000) tier = 'Flagship Killer';
+    else if (total >= 450000) tier = 'Mid-Range Value Tier';
+    else tier = 'Entry Level Hemat';
+  }
+
+  return {
+    total,
+    cpu,
+    gpu,
+    memory,
+    ux,
+    tier: tier || '-'
+  };
+}
+
 export const CORPORATE_ACCOUNTS = {
   companyName: 'PT. SECOND CIRCLE TEKNOLOGI',
   legalEntity: 'Perseroan Terbatas Berbadan Hukum Resmi RI',

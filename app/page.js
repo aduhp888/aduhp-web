@@ -30,6 +30,7 @@ import {
 
 import { PRICE_TIERS } from './data/entryPhones';
 import { supabase } from './lib/supabase';
+import { normalizeAntutu } from './lib/utils';
 import NavbarCartAndAuth from './components/NavbarCartAndAuth';
 
 const NEEDS_LIST = [
@@ -200,7 +201,7 @@ export default function LandingPage() {
             ...item,
             is_for_sale: item.is_for_sale !== false,
             sale_status: item.sale_status || (item.is_for_sale === false ? 'compare_only' : 'dijual'),
-            antutu: item.antutu || { total: 0, cpu: 0, gpu: 0, memory: 0, ux: 0, tier: '' },
+            antutu: normalizeAntutu(item.antutu),
             scores: item.scores || {
               ngojol: 95,
               game: 88,
