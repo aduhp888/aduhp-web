@@ -1132,7 +1132,7 @@ export default function ProductDetailPage() {
                       <span style={{ fontSize: '15px', fontWeight: 800, color: '#fff' }}>Skor AnTuTu Benchmark v10:</span>
                     </div>
                     <span style={{ fontSize: '20px', fontWeight: 900, color: 'var(--accent-lime)', fontFamily: 'var(--font-mono)' }}>
-                      {product.antutu?.total ? product.antutu.total.toLocaleString('id-ID') : '1.450.000'} Poin
+                      {product.antutu?.total ? Number(product.antutu.total).toLocaleString('id-ID') : '1.450.000'} Poin
                     </span>
                   </div>
 
@@ -1202,7 +1202,7 @@ export default function ProductDetailPage() {
                         <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.04)', paddingBottom: '6px' }}>
                           <span style={{ color: '#888' }}>Skor AnTuTu v10:</span>
                           <span style={{ color: 'var(--accent-lime)', fontWeight: 700, textAlign: 'right' }}>
-                            {product.antutu?.total ? `${product.antutu.total.toLocaleString('id-ID')} Poin` : '1.450.000 Poin'}
+                            {product.antutu?.total ? `${Number(product.antutu.total).toLocaleString('id-ID')} Poin` : '1.450.000 Poin'}
                           </span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>

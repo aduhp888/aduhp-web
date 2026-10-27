@@ -849,7 +849,7 @@ export default function LandingPage() {
                     </div>
 
                     {/* AnTuTu Score Badge */}
-                    {phone?.antutu && (
+                    {phone?.antutu?.total ? (
                       <div style={{
                         background: 'linear-gradient(135deg, rgba(255, 109, 0, 0.12) 0%, rgba(20, 20, 20, 0.9) 100%)',
                         border: '1px solid rgba(255, 109, 0, 0.35)',
@@ -865,10 +865,10 @@ export default function LandingPage() {
                           <span style={{ fontSize: '11px', fontWeight: 800, color: '#FF9100' }}>AnTuTu v10</span>
                         </div>
                         <div style={{ fontSize: '13.5px', fontWeight: 900, fontFamily: 'var(--font-mono)', color: '#fff' }}>
-                          {phone.antutu.total.toLocaleString('id-ID')} Poin
+                          {Number(phone.antutu.total).toLocaleString('id-ID')} Poin
                         </div>
                       </div>
-                    )}
+                    ) : null}
 
                     {/* AI Score Bar */}
                     <div className="ai-score-container">

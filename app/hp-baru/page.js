@@ -761,7 +761,7 @@ export default function HpBaruPage() {
                             <span>AnTuTu v10:</span>
                           </div>
                           <span style={{ fontWeight: 900, color: '#fff', fontFamily: 'var(--font-mono)' }}>
-                            {phone.antutu.total.toLocaleString('id-ID')}
+                            {Number(phone.antutu.total).toLocaleString('id-ID')}
                           </span>
                         </div>
                       ) : null}

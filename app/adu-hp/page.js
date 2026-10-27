@@ -311,7 +311,7 @@ export default function AduHpDedicatedPage() {
       `📱 Model: ${phone.name}\n` +
       `📦 Kondisi: 100% Baru Segel (BNIB Resmi)\n` +
       `🛡️ Garansi: ${phone.official_distributor}\n` +
-      `⚡ Skor AnTuTu v10: ${phone.antutu.total.toLocaleString('id-ID')} Poin\n` +
+      `⚡ Skor AnTuTu v10: ${phone.antutu?.total ? Number(phone.antutu.total).toLocaleString('id-ID') : '-'} Poin\n` +
       `💰 Harga Promo: ${formatIDR(phone.price)}\n\n` +
       `Mohon info kesiapan unit & pengiriman dengan packing kayu asuransi.`
     );
@@ -648,11 +648,11 @@ export default function AduHpDedicatedPage() {
                             <Flame size={11} />
                             <span>ANTUTU v10</span>
                           </div>
-                          <span className="antutu-tier-label">{phone.antutu.tier}</span>
+                          <span className="antutu-tier-label">{phone.antutu?.tier || '-'}</span>
                         </div>
 
                         <div className="antutu-score-huge">
-                          {phone.antutu.total.toLocaleString('id-ID')}
+                          {Number(phone.antutu?.total || 0).toLocaleString('id-ID')}
                           <span style={{ fontSize: '13px', color: '#999', fontWeight: 600, marginLeft: '6px' }}>Poin</span>
                         </div>
 
@@ -660,25 +660,25 @@ export default function AduHpDedicatedPage() {
                           <div className="subscore-item">
                             <span className="subscore-label">CPU (Proses)</span>
                             <span className="subscore-value" style={{ color: '#60a5fa' }}>
-                              {phone.antutu.cpu.toLocaleString('id-ID')}
+                              {Number(phone.antutu?.cpu || 0).toLocaleString('id-ID')}
                             </span>
                           </div>
                           <div className="subscore-item">
                             <span className="subscore-label">GPU (Gaming)</span>
                             <span className="subscore-value" style={{ color: '#f87171' }}>
-                              {phone.antutu.gpu.toLocaleString('id-ID')}
+                              {Number(phone.antutu?.gpu || 0).toLocaleString('id-ID')}
                             </span>
                           </div>
                           <div className="subscore-item">
                             <span className="subscore-label">Memory (RAM/ROM)</span>
                             <span className="subscore-value" style={{ color: '#fbbf24' }}>
-                              {phone.antutu.memory.toLocaleString('id-ID')}
+                              {Number(phone.antutu?.memory || 0).toLocaleString('id-ID')}
                             </span>
                           </div>
                           <div className="subscore-item">
                             <span className="subscore-label">UX (Kelancaran)</span>
                             <span className="subscore-value" style={{ color: '#34d399' }}>
-                              {phone.antutu.ux.toLocaleString('id-ID')}
+                              {Number(phone.antutu?.ux || 0).toLocaleString('id-ID')}
                             </span>
                           </div>
                         </div>
@@ -848,10 +848,10 @@ export default function AduHpDedicatedPage() {
                   <div className="winner-banner-meta">
                     <h3>
                       <span>👑 JUARA PERFORMA DITETAPKAN:</span>
-                      <span className="winner-champion-name">{slotPhones[highestAnTuTuSlotIdx].name}</span>
+                      <span className="winner-champion-name">{slotPhones[highestAnTuTuSlotIdx]?.name}</span>
                     </h3>
                     <p>
-                      Mencetak skor tertinggi <strong>{slotPhones[highestAnTuTuSlotIdx].antutu.total.toLocaleString('id-ID')} Poin</strong> AnTuTu v10 dengan chipset <strong>{slotPhones[highestAnTuTuSlotIdx].specs.chipset}</strong>!
+                      Mencetak skor tertinggi <strong>{Number(slotPhones[highestAnTuTuSlotIdx]?.antutu?.total || 0).toLocaleString('id-ID')} Poin</strong> AnTuTu v10 dengan chipset <strong>{slotPhones[highestAnTuTuSlotIdx]?.specs?.chipset || '-'}</strong>!
                     </p>
                   </div>
                 </div>
@@ -985,7 +985,7 @@ export default function AduHpDedicatedPage() {
                           </div>
                         </div>
                         <div className="phone-bar-val-outside" style={{ color: isWin ? 'var(--accent-lime)' : '#fff' }}>
-                          {phone.antutu.total.toLocaleString('id-ID')}
+                          {Number(phone.antutu?.total || 0).toLocaleString('id-ID')}
                         </div>
                       </div>
                     );
@@ -1003,7 +1003,8 @@ export default function AduHpDedicatedPage() {
                   </div>
 
                   {slotPhones.map(phone => {
-                    const pct = Math.round((phone.antutu.cpu / maxCPU) * 100);
+                    const cpuVal = phone.antutu?.cpu || 0;
+                    const pct = Math.round((cpuVal / maxCPU) * 100);
                     return (
                       <div key={phone.id} className="phone-bar-row">
                         <div className="phone-bar-name" title={phone.name}>
@@ -1021,7 +1022,7 @@ export default function AduHpDedicatedPage() {
                           </div>
                         </div>
                         <div className="phone-bar-val-outside" style={{ color: '#93c5fd' }}>
-                          {phone.antutu.cpu.toLocaleString('id-ID')}
+                          {Number(cpuVal).toLocaleString('id-ID')}
                         </div>
                       </div>
                     );
@@ -1039,7 +1040,8 @@ export default function AduHpDedicatedPage() {
                   </div>
 
                   {slotPhones.map(phone => {
-                    const pct = Math.round((phone.antutu.gpu / maxGPU) * 100);
+                    const gpuVal = phone.antutu?.gpu || 0;
+                    const pct = Math.round((gpuVal / maxGPU) * 100);
                     return (
                       <div key={phone.id} className="phone-bar-row">
                         <div className="phone-bar-name" title={phone.name}>
@@ -1057,7 +1059,7 @@ export default function AduHpDedicatedPage() {
                           </div>
                         </div>
                         <div className="phone-bar-val-outside" style={{ color: '#fca5a5' }}>
-                          {phone.antutu.gpu.toLocaleString('id-ID')}
+                          {Number(gpuVal).toLocaleString('id-ID')}
                         </div>
                       </div>
                     );
@@ -1074,7 +1076,8 @@ export default function AduHpDedicatedPage() {
                       </div>
                     </div>
                     {slotPhones.map(phone => {
-                      const pct = Math.round((phone.antutu.memory / maxMemory) * 100);
+                      const memVal = phone.antutu?.memory || 0;
+                      const pct = Math.round((memVal / maxMemory) * 100);
                       return (
                         <div key={phone.id} className="phone-bar-row">
                           <div className="phone-bar-name">{phone.brand} {phone.name.split(' ')[1]}</div>
@@ -1082,7 +1085,7 @@ export default function AduHpDedicatedPage() {
                             <div className="phone-bar-fill" style={{ width: `${pct}%`, background: '#fbbf24' }}></div>
                           </div>
                           <div className="phone-bar-val-outside" style={{ color: '#fde68a' }}>
-                            {phone.antutu.memory.toLocaleString('id-ID')}
+                            {Number(memVal).toLocaleString('id-ID')}
                           </div>
                         </div>
                       );
@@ -1097,7 +1100,8 @@ export default function AduHpDedicatedPage() {
                       </div>
                     </div>
                     {slotPhones.map(phone => {
-                      const pct = Math.round((phone.antutu.ux / maxUX) * 100);
+                      const uxVal = phone.antutu?.ux || 0;
+                      const pct = Math.round((uxVal / maxUX) * 100);
                       return (
                         <div key={phone.id} className="phone-bar-row">
                           <div className="phone-bar-name">{phone.brand} {phone.name.split(' ')[1]}</div>
@@ -1105,7 +1109,7 @@ export default function AduHpDedicatedPage() {
                             <div className="phone-bar-fill" style={{ width: `${pct}%`, background: '#34d399' }}></div>
                           </div>
                           <div className="phone-bar-val-outside" style={{ color: '#a7f3d0' }}>
-                            {phone.antutu.ux.toLocaleString('id-ID')}
+                            {Number(uxVal).toLocaleString('id-ID')}
                           </div>
                         </div>
                       );
@@ -1139,8 +1143,8 @@ export default function AduHpDedicatedPage() {
                     Fakta Head-to-Head AnTuTu:
                   </div>
                   <p style={{ fontSize: '13px', color: '#ccc', lineHeight: 1.5 }}>
-                    <strong>{slotPhones[highestAnTuTuSlotIdx].name}</strong> memimpin duel ini dengan total <strong>{slotPhones[highestAnTuTuSlotIdx].antutu.total.toLocaleString('id-ID')} poin</strong> ({slotPhones[highestAnTuTuSlotIdx].antutu.efficiency_rating}). 
-                    Sementara <strong>{slotPhones[0].name}</strong> memberikan rasio nilai ekonomis terbaik sebesar <strong>{getVfmScore(slotPhones[0])} poin per seribu rupiah</strong>.
+                    <strong>{slotPhones[highestAnTuTuSlotIdx]?.name}</strong> memimpin duel ini dengan total <strong>{Number(slotPhones[highestAnTuTuSlotIdx]?.antutu?.total || 0).toLocaleString('id-ID')} poin</strong> ({slotPhones[highestAnTuTuSlotIdx]?.antutu?.efficiency_rating || 'Optimal'}). 
+                    Sementara <strong>{slotPhones[0]?.name}</strong> memberikan rasio nilai ekonomis terbaik sebesar <strong>{getVfmScore(slotPhones[0])} poin per seribu rupiah</strong>.
                   </p>
                 </div>
               </div>
@@ -1282,7 +1286,7 @@ export default function AduHpDedicatedPage() {
                       <td className="spec-key-label">Skor AnTuTu v10</td>
                       {slotPhones.map(phone => (
                         <td key={phone.id} className="spec-val-cell" style={{ fontWeight: 800, color: '#FF9100' }}>
-                          {phone.antutu.total.toLocaleString('id-ID')} Poin
+                          {phone.antutu?.total ? `${Number(phone.antutu.total).toLocaleString('id-ID')} Poin` : '-'}
                         </td>
                       ))}
                     </tr>
@@ -1715,24 +1719,28 @@ export default function AduHpDedicatedPage() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                         {/* AnTuTu Badge in Modal */}
                         <div style={{ textAlign: 'right' }}>
-                          <div style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                            background: 'rgba(255, 145, 0, 0.12)',
-                            color: '#FF9100',
-                            padding: '3px 8px',
-                            borderRadius: '6px',
-                            fontSize: '11px',
-                            fontWeight: 800,
-                            fontFamily: 'var(--font-mono)'
-                          }}>
-                            <Flame size={12} />
-                            <span>{phone.antutu.total.toLocaleString('id-ID')} Poin</span>
-                          </div>
-                          <div style={{ fontSize: '10.5px', color: '#777', marginTop: '3px' }}>
-                            {phone.antutu.tier}
-                          </div>
+                          {phone.antutu?.total ? (
+                            <div style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              background: 'rgba(255, 145, 0, 0.12)',
+                              color: '#FF9100',
+                              padding: '3px 8px',
+                              borderRadius: '6px',
+                              fontSize: '11px',
+                              fontWeight: 800,
+                              fontFamily: 'var(--font-mono)'
+                            }}>
+                              <Flame size={12} />
+                              <span>{Number(phone.antutu.total).toLocaleString('id-ID')} Poin</span>
+                            </div>
+                          ) : null}
+                          {phone.antutu?.tier && (
+                            <div style={{ fontSize: '10.5px', color: '#777', marginTop: '3px' }}>
+                              {phone.antutu.tier}
+                            </div>
+                          )}
                         </div>
 
                         {/* Price & Select Button */}
