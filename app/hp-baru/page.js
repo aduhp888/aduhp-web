@@ -757,40 +757,13 @@ export default function HpBaruPage() {
                           )}
                         </div>
 
-                        {/* Link / Button Pilih Varian & Detail */}
-                        <Link
-                          href={`/produk/${phone.id}`}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            background: 'rgba(255, 255, 255, 0.04)',
-                            border: '1px solid rgba(255, 255, 255, 0.08)',
-                            borderRadius: '8px',
-                            padding: '6px 10px',
-                            marginTop: '10px',
-                            textDecoration: 'none',
-                            color: '#ccc',
-                            fontSize: '11px',
-                            transition: 'all 0.15s ease'
-                          }}
-                        >
-                          <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                            <span>💾</span>
-                            <span>Pilih RAM & Warna:</span>
-                          </span>
-                          <span style={{ color: 'var(--accent-lime)', fontWeight: 800 }}>
-                            Lihat Detail →
-                          </span>
-                        </Link>
-
-                        {/* CTA Buttons */}
-                        <div style={{ display: 'grid', gridTemplateColumns: phone.is_for_sale === false ? '1fr 1fr' : '0.9fr 1.15fr 1.15fr', gap: '6px', marginTop: '12px' }}>
+                        {/* CTA Buttons: Bersih & Langsung Mengarahkan ke Detail untuk Pilih Varian */}
+                        <div style={{ display: 'grid', gridTemplateColumns: phone.is_for_sale === false ? '1fr 1fr' : '0.8fr 1.6fr', gap: '8px', marginTop: '14px' }}>
                           <Link
                             href={`/adu-hp?slot1=${phone.id}`}
                             className="btn btn-secondary btn-sm"
-                            style={{ justifyContent: 'center', fontSize: '11px', padding: '7px 4px' }}
-                            title="Adukan HP Ini di Arena Derby"
+                            style={{ justifyContent: 'center', fontSize: '11.5px', padding: '8px 6px' }}
+                            title="Adukan HP Ini di Arena Duel"
                           >
                             <span>⚔️ Adu</span>
                           </Link>
@@ -800,7 +773,7 @@ export default function HpBaruPage() {
                                 display: 'inline-flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                padding: '6px 10px',
+                                padding: '8px 8px',
                                 borderRadius: '6px',
                                 background: 'rgba(255, 255, 255, 0.04)',
                                 border: '1px dashed rgba(255, 255, 255, 0.18)',
@@ -815,48 +788,26 @@ export default function HpBaruPage() {
                               <span>⚖️ Pembanding</span>
                             </div>
                           ) : (
-                            <>
-                              <button
-                                type="button"
-                                onClick={(e) => handleQuickAddToCart(e, phone)}
-                                style={{
-                                  background: 'rgba(198, 255, 0, 0.1)',
-                                  border: '1px solid var(--accent-lime)',
-                                  color: 'var(--accent-lime)',
-                                  borderRadius: '6px',
-                                  fontSize: '11px',
-                                  fontWeight: 800,
-                                  cursor: 'pointer',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  gap: '4px',
-                                  padding: '7px 4px',
-                                  transition: 'all 0.15s ease'
-                                }}
-                                title="Tambahkan ke Keranjang Belanja"
-                              >
-                                <ShoppingBag size={12} />
-                                <span>+ Keranjang</span>
-                              </button>
-
-                              <Link
-                                href={getDirectCheckoutUrl(phone)}
-                                className="btn btn-primary btn-sm"
-                                style={{
-                                  justifyContent: 'center',
-                                  fontSize: '11px',
-                                  background: 'var(--accent-lime)',
-                                  color: '#000',
-                                  fontWeight: 800,
-                                  textDecoration: 'none',
-                                  padding: '7px 4px'
-                                }}
-                                title="Beli langsung unit ini dan lanjut ke halaman Checkout"
-                              >
-                                <span>Beli Langsung</span>
-                              </Link>
-                            </>
+                            <Link
+                              href={`/produk/${phone.id}`}
+                              className="btn btn-primary btn-sm"
+                              style={{
+                                justifyContent: 'center',
+                                fontSize: '11.5px',
+                                background: 'var(--accent-lime)',
+                                color: '#000',
+                                fontWeight: 900,
+                                textDecoration: 'none',
+                                padding: '8px 10px',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '6px'
+                              }}
+                              title="Buka detail untuk memilih varian RAM, warna, dan melakukan pembelian"
+                            >
+                              <ShoppingBag size={13} />
+                              <span>Pilih Varian & Beli</span>
+                            </Link>
                           )}
                         </div>
                       </div>

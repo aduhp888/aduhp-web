@@ -1118,8 +1118,8 @@ export default function ProductDetailPage() {
                         <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.04)', paddingBottom: '6px' }}>
                           <span style={{ color: '#888' }}>Pilihan Varian:</span>
                           <span style={{ color: '#fff', fontWeight: 600, textAlign: 'right' }}>
-                            {product.specs?.variants && product.specs.variants.length > 0 
-                              ? product.specs.variants.map(v => `${v.ram}/${v.storage}GB`).join(', ') 
+                            {variants && variants.length > 0 
+                              ? variants.map(v => `${v.ram}/${v.storage}GB`).join(', ') 
                               : (product.ram_gb ? `${product.ram_gb}/${product.storage_gb}GB` : 'Tersedia')}
                           </span>
                         </div>

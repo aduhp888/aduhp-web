@@ -801,7 +801,9 @@ export default function LandingPage() {
 
                   {/* Image */}
                   <div className="phone-img-container">
-                    <img src={imgUrl} alt={phone?.name} className="phone-img" />
+                    <Link href={`/produk/${phone?.id}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' }}>
+                      <img src={imgUrl} alt={phone?.name} className="phone-img" />
+                    </Link>
                   </div>
 
                   {/* Body Info */}
@@ -819,7 +821,9 @@ export default function LandingPage() {
                       )}
                     </div>
 
-                    <h3 className="phone-title">{phone?.name}</h3>
+                    <Link href={`/produk/${phone?.id}`} style={{ textDecoration: 'none' }}>
+                      <h3 className="phone-title" style={{ transition: 'color 0.15s ease' }}>{phone?.name}</h3>
+                    </Link>
 
                     <div className="phone-price-row">
                       {phone?.is_for_sale === false ? (
@@ -950,15 +954,21 @@ export default function LandingPage() {
                           <span>⚖️ Tidak Dijual</span>
                         </div>
                       ) : (
-                        <a
-                          href={makeWhatsAppUrl(phone?.name, phone?.price, phone?.condition)}
-                          target="_blank"
-                          rel="noreferrer"
+                        <Link
+                          href={`/produk/${phone?.id}`}
                           className="btn-order-wa"
+                          style={{
+                            textDecoration: 'none',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '6px'
+                          }}
+                          title="Buka halaman produk untuk pilih varian RAM dan warna"
                         >
-                          <MessageCircle size={14} />
-                          <span>Beli</span>
-                        </a>
+                          <ShoppingBag size={14} />
+                          <span>Pilih & Beli</span>
+                        </Link>
                       )}
                     </div>
                   </div>
@@ -1138,13 +1148,13 @@ export default function LandingPage() {
                           ⚔️ Masukkan Meja Adu
                         </button>
 
-                        <button
-                          onClick={() => addToCart(item)}
+                        <Link
+                          href={`/produk/${item.id}`}
                           className="btn-primary-lime"
-                          style={{ padding: '6px 14px', fontSize: '12px' }}
+                          style={{ padding: '6px 14px', fontSize: '12px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                         >
-                          + Beli
-                        </button>
+                          Pilih & Beli
+                        </Link>
                       </div>
                     </div>
                   </div>

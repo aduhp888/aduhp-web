@@ -637,84 +637,37 @@ export default function HpSecondPage() {
                           )}
                         </div>
 
-                        {/* Link / Button Detail & QC Unit */}
-                        <Link
-                          href={`/produk/${phone.id}`}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            background: 'rgba(255, 255, 255, 0.04)',
-                            border: '1px solid rgba(255, 255, 255, 0.08)',
-                            borderRadius: '8px',
-                            padding: '6px 10px',
-                            marginTop: '10px',
-                            textDecoration: 'none',
-                            color: '#ccc',
-                            fontSize: '11px',
-                            transition: 'all 0.15s ease'
-                          }}
-                        >
-                          <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                            <span>💾</span>
-                            <span>Lihat QC, RAM & Detail:</span>
-                          </span>
-                          <span style={{ color: '#00E5FF', fontWeight: 800 }}>
-                            Buka Halaman →
-                          </span>
-                        </Link>
-
-                        {/* CTA Buttons */}
-                        <div style={{ display: 'grid', gridTemplateColumns: '0.9fr 1.15fr 1.15fr', gap: '6px', marginTop: '12px' }}>
+                        {/* CTA Buttons: Bersih & Langsung Mengarahkan ke Detail untuk Cek QC & Varian */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '0.85fr 1.65fr', gap: '8px', marginTop: '14px' }}>
                           <button
                             type="button"
                             onClick={() => setLightboxData({ product: phone, activeIndex: 0 })}
                             className="btn btn-secondary btn-sm"
-                            style={{ justifyContent: 'center', fontSize: '11px', padding: '7px 4px' }}
-                            title="Buka 5 Foto Pemeriksaan QC"
+                            style={{ justifyContent: 'center', fontSize: '11.5px', padding: '8px 6px' }}
+                            title="Buka 5 Foto Pemeriksaan QC Fisik"
                           >
-                            <span>🔍 5 Foto</span>
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={(e) => handleQuickAddToCart(e, phone)}
-                            style={{
-                              background: 'rgba(0, 229, 255, 0.1)',
-                              border: '1px solid #00E5FF',
-                              color: '#00E5FF',
-                              borderRadius: '6px',
-                              fontSize: '11px',
-                              fontWeight: 800,
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              gap: '4px',
-                              padding: '7px 4px',
-                              transition: 'all 0.15s ease'
-                            }}
-                            title="Tambahkan ke Keranjang Belanja"
-                          >
-                            <ShoppingBag size={12} />
-                            <span>+ Keranjang</span>
+                            <span>🔍 5 Foto QC</span>
                           </button>
 
                           <Link
-                            href={getDirectCheckoutUrl(phone)}
+                            href={`/produk/${phone.id}`}
                             className="btn btn-primary btn-sm"
                             style={{
                               justifyContent: 'center',
-                              fontSize: '11px',
+                              fontSize: '11.5px',
                               background: '#00E5FF',
                               color: '#000',
                               fontWeight: 900,
                               textDecoration: 'none',
-                              padding: '7px 4px'
+                              padding: '8px 10px',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '6px'
                             }}
-                            title="Beli langsung unit ini dan lanjut ke halaman Checkout"
+                            title="Buka detail untuk cek sertifikat QC, garansi toko, dan beli unit ini"
                           >
-                            <span>Beli Langsung</span>
+                            <ShoppingBag size={13} />
+                            <span>Cek QC & Beli</span>
                           </Link>
                         </div>
                       </div>
