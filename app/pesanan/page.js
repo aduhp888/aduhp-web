@@ -90,7 +90,7 @@ const FILTER_TABS = [
 
 export default function PesananPage() {
   const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
   const [activeTab, setActiveTab] = useState('all');
@@ -110,8 +110,8 @@ export default function PesananPage() {
       setLoadingOrders(true);
 
       const fetchedList = [];
-      const userEmail = user.email || '';
-      const userPhone = user.user_metadata?.phone || '';
+      const userEmail = profile?.email || user.email || '';
+      const userPhone = profile?.whatsapp_number || user.phone || user.user_metadata?.phone || '';
 
       try {
         // Query Supabase dapur_orders by email or phone
@@ -269,10 +269,10 @@ export default function PesananPage() {
               Akun Pembeli Terverifikasi
             </div>
             <h1 style={{ fontSize: '24px', fontWeight: 900, color: '#fff', marginTop: '4px' }}>
-              {user.user_metadata?.full_name || 'Pelanggan Setia aduhp.com'}
+              {profile?.display_name || user.user_metadata?.display_name || user.user_metadata?.full_name || 'Pelanggan Setia aduhp.com'}
             </h1>
             <p style={{ fontSize: '13px', color: '#888', marginTop: '4px' }}>
-              {user.email} {user.user_metadata?.phone && `• ${user.user_metadata.phone}`}
+              {profile?.email || user.email} {(profile?.whatsapp_number || user.user_metadata?.phone) && `• ${profile?.whatsapp_number || user.user_metadata?.phone}`}
             </p>
           </div>
 

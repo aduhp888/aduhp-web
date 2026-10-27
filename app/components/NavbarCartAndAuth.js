@@ -8,8 +8,11 @@ import { ShoppingBag, User, LogOut, Package, ChevronDown } from 'lucide-react';
 
 export default function NavbarCartAndAuth() {
   const { totalItems, openCart } = useCart();
-  const { user, signOut } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  const displayName = profile?.display_name || user?.user_metadata?.display_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
+  const displayEmailOrPhone = profile?.email || user?.email || profile?.whatsapp_number || '';
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -82,10 +85,10 @@ export default function NavbarCartAndAuth() {
               fontSize: '11px',
               fontWeight: 900
             }}>
-              {(user.user_metadata?.full_name?.[0] || user.email?.[0] || 'U').toUpperCase()}
+              {(displayName[0] || 'U').toUpperCase()}
             </div>
             <span style={{ maxWidth: '100px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {user.user_metadata?.full_name?.split(' ')[0] || user.email?.split('@')[0]}
+              {displayName.split(' ')[0]}
             </span>
             <ChevronDown size={14} color="#888" />
           </button>
@@ -109,10 +112,10 @@ export default function NavbarCartAndAuth() {
             >
               <div style={{ padding: '8px 10px', borderBottom: '1px solid rgba(255, 255, 255, 0.06)', marginBottom: '4px' }}>
                 <div style={{ fontSize: '12px', fontWeight: 700, color: '#fff' }}>
-                  {user.user_metadata?.full_name || 'Pelanggan aduHP'}
+                  {displayName}
                 </div>
                 <div style={{ fontSize: '10px', color: '#888', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {user.email}
+                  {displayEmailOrPhone}
                 </div>
               </div>
 

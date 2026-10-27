@@ -38,7 +38,7 @@ import { useCart } from '../context/CartContext';
 function CheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user, loading: authLoading } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
   const { clearCart } = useCart();
 
   // Params from product detail
@@ -83,20 +83,24 @@ function CheckoutContent() {
     }
   }, [user, authLoading, router]);
 
-  // 2. Auto-fill data dari profil akun pembeli yang sedang login
+  // 2. Auto-fill data dari profil akun pembeli yang sedang login (tabel public.users & auth)
   useEffect(() => {
     if (user) {
-      if (user.user_metadata?.full_name && !customerName) {
-        setCustomerName(user.user_metadata.full_name);
+      const name = profile?.display_name || user.user_metadata?.display_name || user.user_metadata?.full_name;
+      const phone = profile?.whatsapp_number || user.phone || user.user_metadata?.phone;
+      const email = profile?.email || user.email;
+
+      if (name && !customerName) {
+        setCustomerName(name);
       }
-      if (user.user_metadata?.phone && !customerPhone) {
-        setCustomerPhone(user.user_metadata.phone);
+      if (phone && !customerPhone) {
+        setCustomerPhone(phone);
       }
-      if (user.email && !customerEmail) {
-        setCustomerEmail(user.email);
+      if (email && !customerEmail) {
+        setCustomerEmail(email);
       }
     }
-  }, [user]);
+  }, [user, profile]);
 
   // Update cities when province changes
   useEffect(() => {
