@@ -775,18 +775,31 @@ export default function LandingPage() {
                 Katalog HP Masih Kosong
               </h3>
               <p style={{ color: '#888', fontSize: '14px', lineHeight: 1.6, marginBottom: '24px' }}>
-                Belum ada handphone yang tersimpan di database Supabase untuk diadu. Silakan tambahkan HP Baru atau HP Second melalui Admin Panel Dapur aduHP.
+                Katalog perbandingan handphone sedang disiapkan atau disinkronisasi. Silakan muat ulang halaman atau jelajahi katalog produk kami.
               </p>
-              <a
-                href="https://dapur.aduhp.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-primary-lime"
-                style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 24px', fontWeight: 800 }}
-              >
-                <span>Buka Admin Panel Dapur aduHP</span>
-                <ExternalLink size={15} />
-              </a>
+              <div style={{ display: 'inline-flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center' }}>
+                <button
+                  type="button"
+                  onClick={() => window.location.reload()}
+                  className="btn-primary-lime"
+                  style={{ cursor: 'pointer', border: 'none', display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 24px', fontWeight: 800 }}
+                >
+                  <span>Muat Ulang Halaman</span>
+                  <RefreshCw size={15} />
+                </button>
+                {process.env.NEXT_PUBLIC_ADMIN_URL && (
+                  <a
+                    href={process.env.NEXT_PUBLIC_ADMIN_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-outline-cyber"
+                    style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 18px', fontSize: '0.85rem' }}
+                  >
+                    <span>Akses Pengelola</span>
+                    <ExternalLink size={14} />
+                  </a>
+                )}
+              </div>
             </div>
           ) : (
             <div className="battle-arena-grid">
