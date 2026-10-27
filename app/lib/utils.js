@@ -97,6 +97,7 @@ export function getProductVariants(product) {
       label: v.label || `${v.ram || 0}GB / ${v.storage || 0}GB`,
       price: Number(v.price) || Number(product.price) || 0,
       stock: v.stock !== undefined && v.stock !== null ? Number(v.stock) : 0,
+      color_stocks: Array.isArray(v.color_stocks) ? v.color_stocks : [],
       isDefault: v.isDefault ?? v.is_default ?? (idx === 0)
     }));
   }
@@ -190,4 +191,19 @@ export function getProductColors(product) {
   }
 
   return colors;
+}
+
+export function getColorStockForVariant(variant, colorName) {
+  if (!variant) return 0;
+  if (Array.isArray(variant.color_stocks) && variant.color_stocks.length > 0) {
+    const target = (colorName || '').trim().toLowerCase();
+    const matched = variant.color_stocks.find(
+      c => (c.name || '').trim().toLowerCase() === target
+    );
+    if (matched) {
+      return Math.max(0, Number(matched.stock) || 0);
+    }
+  }
+  // Fallback to variant total stock if color_stocks array is not provided
+  return Math.max(0, Number(variant.stock) || 0);
 }

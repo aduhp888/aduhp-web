@@ -60,7 +60,21 @@ export function CartProvider({ children }) {
     const storage = variant?.storage || product.storage_gb || 256;
     const colorName = color || product.color || 'Standard';
     const price = variant?.price || product.price || 0;
-    const maxStock = variant?.stock !== undefined ? Number(variant.stock) : (product.stock !== undefined ? Number(product.stock) : 5);
+    
+    // Check specific color stock from variant if available
+    let maxStock = variant?.stock !== undefined ? Number(variant.stock) : (product.stock !== undefined ? Number(product.stock) : 5);
+    if (variant?.color_stocks && Array.isArray(variant.color_stocks) && variant.color_stocks.length > 0) {
+      const targetColor = colorName.trim().toLowerCase();
+      const matched = variant.color_stocks.find(c => (c.name || '').trim().toLowerCase() === targetColor);
+      if (matched && matched.stock !== undefined) {
+        maxStock = Number(matched.stock);
+      }
+    }
+    
+    // Guard against adding zero-stock item
+    if (maxStock <= 0) {
+      return;
+    }
     const image = (Array.isArray(product.images) && product.images[0]) ? product.images[0] : (product.image || '');
     
     // Unique identifier for this specific product + variant + color configuration

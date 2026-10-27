@@ -41,7 +41,8 @@ import {
   formatIDR, 
   PHOTO_SLOT_DESCRIPTIONS, 
   getProductVariants, 
-  getProductColors 
+  getProductColors,
+  getColorStockForVariant
 } from '../../lib/utils';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
@@ -196,20 +197,21 @@ export default function ProductDetailPage() {
   const originalPrice = product?.original_price || (currentPrice > 0 ? Math.round(currentPrice * 1.1) : 0);
   const discountPercent = originalPrice > currentPrice ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100) : 0;
 
-  // Current active stock strictly synchronized with database
-  const currentVariantStock = selectedVariant?.stock !== undefined ? Number(selectedVariant.stock) : (Number(product?.stock) || 0);
-  const isOutOfStock = currentVariantStock <= 0;
+  // Current active stock strictly synchronized with selected variant AND selected color
+  const currentColorStock = getColorStockForVariant(selectedVariant, selectedColor);
+  const currentVariantStock = currentColorStock;
+  const isOutOfStock = currentColorStock <= 0;
 
   // Add to Cart
   const handleAddToCart = () => {
     if (!product) return;
     if (isOutOfStock) {
-      setToastMessage(`⚠️ Stok varian ${selectedVariant?.label || ''} saat ini sedang habis.`);
+      setToastMessage(`⚠️ Stok varian ${selectedVariant?.label || ''} warna "${selectedColor}" saat ini sedang habis.`);
       setTimeout(() => setToastMessage(null), 3500);
       return;
     }
     addToCart(product, selectedVariant, selectedColor, quantity);
-    setToastMessage(`✓ ${product.name} (${selectedVariant?.label || ''}) berhasil masuk ke keranjang!`);
+    setToastMessage(`✓ ${product.name} (${selectedVariant?.label || ''} - ${selectedColor}) berhasil masuk ke keranjang!`);
     setTimeout(() => setToastMessage(null), 3500);
   };
 
@@ -217,7 +219,7 @@ export default function ProductDetailPage() {
   const handleDirectBuy = () => {
     if (!product) return;
     if (isOutOfStock) {
-      setToastMessage(`⚠️ Stok varian ${selectedVariant?.label || ''} saat ini sedang habis.`);
+      setToastMessage(`⚠️ Stok varian ${selectedVariant?.label || ''} warna "${selectedColor}" saat ini sedang habis.`);
       setTimeout(() => setToastMessage(null), 3500);
       return;
     }
@@ -652,9 +654,19 @@ export default function ProductDetailPage() {
                       type="button"
                       onClick={() => {
                         setSelectedVariant(v);
-                        const vStock = v.stock !== undefined ? Number(v.stock) : 0;
-                        if (vStock > 0) {
-                          setQuantity(prev => Math.min(prev, vStock));
+                        // Auto switch color if current selectedColor has 0 stock in newly selected variant
+                        let activeColor = selectedColor;
+                        const currentStockInNewVar = getColorStockForVariant(v, selectedColor);
+                        if (currentStockInNewVar <= 0) {
+                          const firstInStock = colors.find(c => getColorStockForVariant(v, c.name) > 0);
+                          if (firstInStock) {
+                            activeColor = firstInStock.name;
+                            setSelectedColor(firstInStock.name);
+                          }
+                        }
+                        const colorStock = getColorStockForVariant(v, activeColor);
+                        if (colorStock > 0) {
+                          setQuantity(prev => Math.min(prev, colorStock));
                         } else {
                           setQuantity(1);
                         }
@@ -715,8 +727,8 @@ export default function ProductDetailPage() {
                 })}
               </div>
 
-              {/* Notice if selected variant is out of stock */}
-              {isOutOfStock && (
+              {/* Notice if selected variant is out of stock entirely */}
+              {selectedVariant?.stock !== undefined && Number(selectedVariant.stock) <= 0 && (
                 <div style={{
                   marginTop: '12px',
                   padding: '10px 14px',
@@ -730,46 +742,121 @@ export default function ProductDetailPage() {
                   color: '#FF9E9E'
                 }}>
                   <AlertCircle size={15} color="#FF453A" />
-                  <span>Varian <strong>{selectedVariant?.label}</strong> saat ini stoknya kosong. Harga di atas adalah harga referensi katalog.</span>
+                  <span>Varian <strong>{selectedVariant?.label}</strong> saat ini semua stoknya kosong. Harga di atas adalah harga referensi katalog.</span>
                 </div>
               )}
             </div>
 
             {/* COLOR SELECTION */}
             <div style={{ marginBottom: '28px' }}>
-              <label style={{ display: 'block', fontSize: '13px', fontWeight: 800, color: '#fff', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '10px' }}>
-                🎨 Pilihan Warna Unit: <span style={{ color: '#ccc', fontWeight: 600 }}>{selectedColor}</span>
-              </label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 800, color: '#fff', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  🎨 Pilihan Warna Unit: <span style={{ color: '#ccc', fontWeight: 600 }}>{selectedColor}</span>
+                </label>
+                {selectedVariant && (
+                  <span style={{ fontSize: '11px', color: currentColorStock > 0 ? '#34C759' : '#FF6B6B', fontWeight: 700 }}>
+                    {currentColorStock > 0 ? `● Stok: ${currentColorStock} Unit` : '● Stok Warna Ini Habis'}
+                  </span>
+                )}
+              </div>
 
               <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                 {colors.map((c, i) => {
                   const isSelected = selectedColor === c.name;
+                  const colorStock = getColorStockForVariant(selectedVariant, c.name);
+                  const isColorEmpty = colorStock <= 0;
                   return (
                     <button
                       key={i}
                       type="button"
-                      onClick={() => setSelectedColor(c.name)}
+                      onClick={() => {
+                        setSelectedColor(c.name);
+                        if (colorStock > 0) {
+                          setQuantity(prev => Math.min(prev, colorStock));
+                        } else {
+                          setQuantity(1);
+                        }
+                      }}
                       style={{
                         display: 'flex',
                         alignItems: 'center',
                         gap: '8px',
-                        padding: '8px 16px',
+                        padding: '8px 14px',
                         borderRadius: '10px',
-                        background: isSelected ? 'rgba(255, 255, 255, 0.1)' : '#16161c',
-                        border: isSelected ? `2px solid ${themeColor}` : '1px solid rgba(255, 255, 255, 0.1)',
-                        color: '#fff',
+                        background: isSelected 
+                          ? (isColorEmpty ? 'rgba(255, 69, 58, 0.15)' : 'rgba(255, 255, 255, 0.1)') 
+                          : (isColorEmpty ? 'rgba(255, 255, 255, 0.02)' : '#16161c'),
+                        border: isSelected 
+                          ? `2px solid ${isColorEmpty ? '#FF453A' : themeColor}` 
+                          : (isColorEmpty ? '1px dashed rgba(255, 255, 255, 0.15)' : '1px solid rgba(255, 255, 255, 0.1)'),
+                        color: isColorEmpty && !isSelected ? '#777' : '#fff',
                         fontSize: '13px',
                         fontWeight: 600,
-                        cursor: 'pointer'
+                        cursor: 'pointer',
+                        opacity: isColorEmpty && !isSelected ? 0.6 : 1,
+                        transition: 'all 0.2s ease'
                       }}
                     >
-                      <span style={{ width: '14px', height: '14px', borderRadius: '50%', background: c.hex, border: '1px solid rgba(255,255,255,0.3)' }} />
+                      <span style={{
+                        width: '14px',
+                        height: '14px',
+                        borderRadius: '50%',
+                        background: c.hex,
+                        border: '1px solid rgba(255,255,255,0.3)',
+                        opacity: isColorEmpty ? 0.5 : 1
+                      }} />
                       <span>{c.name}</span>
-                      {isSelected && <Check size={14} color={themeColor} />}
+                      {isColorEmpty ? (
+                        <span style={{
+                          fontSize: '9px',
+                          background: 'rgba(255, 69, 58, 0.2)',
+                          color: '#FF6B6B',
+                          padding: '2px 5px',
+                          borderRadius: '4px',
+                          fontWeight: 800
+                        }}>
+                          Habis
+                        </span>
+                      ) : (
+                        colorStock <= 3 && (
+                          <span style={{
+                            fontSize: '9px',
+                            background: 'rgba(255, 159, 10, 0.2)',
+                            color: '#FF9F0A',
+                            padding: '2px 5px',
+                            borderRadius: '4px',
+                            fontWeight: 700
+                          }}>
+                            Sisa {colorStock}
+                          </span>
+                        )
+                      )}
+                      {isSelected && <Check size={14} color={isColorEmpty ? '#FF453A' : themeColor} />}
                     </button>
                   );
                 })}
               </div>
+
+              {/* Warning banner if current selected color is out of stock */}
+              {isOutOfStock && (
+                <div style={{
+                  marginTop: '12px',
+                  padding: '10px 14px',
+                  background: 'rgba(255, 69, 58, 0.08)',
+                  border: '1px solid rgba(255, 69, 58, 0.25)',
+                  borderRadius: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  fontSize: '12.5px',
+                  color: '#FF9E9E'
+                }}>
+                  <AlertCircle size={15} color="#FF453A" />
+                  <span>
+                    Varian <strong>{selectedVariant?.label}</strong> untuk pilihan warna <strong>"{selectedColor}"</strong> saat ini stoknya habis. Silakan pilih warna lain yang masih ready.
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* QUANTITY SELECTOR */}
