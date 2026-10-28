@@ -19,8 +19,8 @@ import {
 import { supabase } from '../lib/supabase';
 import { formatIDR } from '../lib/utils';
 
-// Nomor WhatsApp resmi fallback sesuai arahan (+621511843450)
-const WA_NUMBER = '621511843450';
+// Nomor WhatsApp resmi admin & teknisi (+6281511843450)
+const WA_NUMBER = '6281511843450';
 
 function playNotificationSound() {
   try {

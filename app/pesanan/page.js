@@ -584,7 +584,7 @@ export default function PesananPage() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                       {/* WhatsApp Help */}
                       <a
-                        href={`https://wa.me/6281234567890?text=${encodeURIComponent(`Halo Admin PT. SECOND CIRCLE TEKNOLOGI (aduhp.com), saya ingin menanyakan status pesanan saya #${order.order_number}`)}`}
+                        href={`https://wa.me/6281511843450?text=${encodeURIComponent(`Halo Admin PT. SECOND CIRCLE TEKNOLOGI (aduhp.com), saya ingin menanyakan status pesanan saya #${order.order_number}`)}`}
                         target="_blank"
                         rel="noreferrer"
                         style={{

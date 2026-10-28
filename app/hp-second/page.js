@@ -183,7 +183,7 @@ export default function HpSecondPage() {
       `🛡️ *Garansi:* ${phone.official_distributor || 'Garansi Toko 30 Hari'}\n\n` +
       `Bisa tolong kirimkan video inspeksi fisik 5 sudut dan apakah unit ini masih tersedia? Terima kasih.`
     );
-    return `https://wa.me/6281234567890?text=${text}`;
+    return `https://wa.me/6281511843450?text=${text}`;
   }
 
   return (

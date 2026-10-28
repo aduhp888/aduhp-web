@@ -295,7 +295,7 @@ export default function LandingPage() {
       `💰 Harga: ${formatIDR(price)}\n\n` +
       `Mohon info stok fisik & nomor resi pengiriman se-Indonesia.`
     );
-    return `https://wa.me/6281234567890?text=${text}`;
+    return `https://wa.me/6281511843450?text=${text}`;
   }
 
   function makeCartCheckoutUrl() {
@@ -307,7 +307,7 @@ export default function LandingPage() {
       `\n\n💵 Total Pembayaran: ${formatIDR(total)}\n` +
       `Mohon panduan transfer manual PT & invoice garansi 40 titik cek.`
     );
-    return `https://wa.me/6281234567890?text=${text}`;
+    return `https://wa.me/6281511843450?text=${text}`;
   }
 
   // Filtered products for catalog modal
@@ -1021,7 +1021,7 @@ export default function LandingPage() {
             </div>
 
             <a
-              href="https://wa.me/6281234567890?text=Halo%20Teknisi%20aduHP!%20Saya%20mau%20konsultasi%20hasil%20aduan%20HP%20di%20aduhp.com"
+              href="https://wa.me/6281511843450?text=Halo%20Teknisi%20aduHP!%20Saya%20mau%20konsultasi%20hasil%20aduan%20HP%20di%20aduhp.com"
               target="_blank"
               rel="noreferrer"
               className="btn-primary-lime"

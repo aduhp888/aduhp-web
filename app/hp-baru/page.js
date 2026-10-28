@@ -194,7 +194,7 @@ export default function HpBaruPage() {
       `🛡️ *Garansi:* ${phone.official_distributor || 'Resmi Indonesia'}\n\n` +
       `Apakah stok unit segel ini ready untuk dikirim? Terima kasih.`
     );
-    return `https://wa.me/6281234567890?text=${text}`;
+    return `https://wa.me/6281511843450?text=${text}`;
   }
 
   return (

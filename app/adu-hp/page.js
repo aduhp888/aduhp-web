@@ -353,7 +353,7 @@ export default function AduHpDedicatedPage() {
       `💰 Harga Promo: ${formatIDR(phone.price)}\n\n` +
       `Mohon info kesiapan unit & pengiriman dengan packing kayu asuransi.`
     );
-    return `https://wa.me/6281234567890?text=${text}`;
+    return `https://wa.me/6281511843450?text=${text}`;
   }
 
   return (

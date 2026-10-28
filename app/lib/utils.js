@@ -92,7 +92,7 @@ export const CORPORATE_ACCOUNTS = {
   legalEntity: 'Perseroan Terbatas Berbadan Hukum Resmi RI',
   nib: '0220202619881',
   ahyuNumber: 'AHU-0029102.AH.01.01.TAHUN 2024',
-  financeWhatsapp: '6281234567890',
+  financeWhatsapp: '6281511843450',
   address: 'aduHP Technology Tower Lt. 18, Jl. TB Simatupang No. 88, Jakarta Selatan 12520',
   banks: [
     {
