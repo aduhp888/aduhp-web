@@ -757,9 +757,9 @@ export default function HpBaruPage() {
                           marginBottom: '14px',
                           fontSize: '12px'
                         }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#FF9100', fontWeight: 800 }}>
-                            <Flame size={14} />
-                            <span>AnTuTu v10:</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: phone.antutu?.version === 'v11' ? '#C084FC' : '#FF9100', fontWeight: 800 }}>
+                            <Flame size={14} color={phone.antutu?.version === 'v11' ? '#C084FC' : '#FF9100'} />
+                            <span>AnTuTu {phone.antutu?.version ? phone.antutu.version.toUpperCase() : 'v10'}:</span>
                           </div>
                           <span style={{ fontWeight: 900, color: '#fff', fontFamily: 'var(--font-mono)' }}>
                             {Number(phone.antutu.total).toLocaleString('id-ID')}

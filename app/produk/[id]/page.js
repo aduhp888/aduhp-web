@@ -1133,8 +1133,10 @@ export default function ProductDetailPage() {
                 <div style={{ background: '#14141a', padding: '18px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <Flame size={20} color="#FF9100" />
-                      <span style={{ fontSize: '15px', fontWeight: 800, color: '#fff' }}>Skor AnTuTu Benchmark v10:</span>
+                      <Flame size={20} color={product.antutu?.version === 'v11' ? '#C084FC' : '#FF9100'} />
+                      <span style={{ fontSize: '15px', fontWeight: 800, color: '#fff' }}>
+                        Skor AnTuTu Benchmark {product.antutu?.version ? product.antutu.version.toUpperCase() : 'v10'}:
+                      </span>
                     </div>
                     <span style={{ fontSize: '20px', fontWeight: 900, color: 'var(--accent-lime)', fontFamily: 'var(--font-mono)' }}>
                       {product.antutu?.total ? Number(product.antutu.total).toLocaleString('id-ID') : '1.450.000'} Poin
@@ -1205,8 +1207,10 @@ export default function ProductDetailPage() {
                           <span style={{ color: '#fff', fontWeight: 600, textAlign: 'right' }}>{product.specs?.os || 'Android OS Modern'}</span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.04)', paddingBottom: '6px' }}>
-                          <span style={{ color: '#888' }}>Skor AnTuTu v10:</span>
-                          <span style={{ color: 'var(--accent-lime)', fontWeight: 700, textAlign: 'right' }}>
+                          <span style={{ color: '#888' }}>
+                            Skor AnTuTu {product.antutu?.version ? product.antutu.version.toUpperCase() : 'v10'}:
+                          </span>
+                          <span style={{ color: product.antutu?.version === 'v11' ? '#C084FC' : 'var(--accent-lime)', fontWeight: 700, textAlign: 'right' }}>
                             {product.antutu?.total ? `${Number(product.antutu.total).toLocaleString('id-ID')} Poin` : '1.450.000 Poin'}
                           </span>
                         </div>

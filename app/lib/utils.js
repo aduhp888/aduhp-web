@@ -17,7 +17,7 @@ export function generateOrderNumber() {
 
 export function normalizeAntutu(antutu) {
   if (!antutu) {
-    return { total: 0, cpu: 0, gpu: 0, memory: 0, ux: 0, tier: '-' };
+    return { version: 'v10', total: 0, cpu: 0, gpu: 0, memory: 0, ux: 0, tier: '-' };
   }
 
   let total = 0;
@@ -26,6 +26,7 @@ export function normalizeAntutu(antutu) {
   let memory = 0;
   let ux = 0;
   let tier = '';
+  let version = 'v10';
 
   if (typeof antutu === 'number' || (typeof antutu === 'string' && !isNaN(Number(antutu)))) {
     total = Number(antutu) || 0;
@@ -36,6 +37,14 @@ export function normalizeAntutu(antutu) {
     memory = Number(antutu.memory) || 0;
     ux = Number(antutu.ux) || 0;
     tier = antutu.tier || '';
+
+    // Detect benchmark version (default to v10 if omitted)
+    const rawVersion = String(antutu.version || '').toLowerCase();
+    if (rawVersion.includes('11') || rawVersion === 'v11') {
+      version = 'v11';
+    } else {
+      version = 'v10';
+    }
   }
 
   // Auto-estimate missing breakdown if total is present but subscores are missing / zero
@@ -52,14 +61,23 @@ export function normalizeAntutu(antutu) {
     }
   }
 
+  // Tier categorization based on version
   if (!tier && total > 0) {
-    if (total >= 1500000) tier = 'Raja Flagship';
-    else if (total >= 900000) tier = 'Flagship Killer';
-    else if (total >= 450000) tier = 'Mid-Range Value Tier';
-    else tier = 'Entry Level Hemat';
+    if (version === 'v11') {
+      if (total >= 1800000) tier = 'Raja Flagship (v11)';
+      else if (total >= 1100000) tier = 'Flagship Killer (v11)';
+      else if (total >= 550000) tier = 'Mid-Range Value Tier (v11)';
+      else tier = 'Entry Level Hemat (v11)';
+    } else {
+      if (total >= 1500000) tier = 'Raja Flagship';
+      else if (total >= 900000) tier = 'Flagship Killer';
+      else if (total >= 450000) tier = 'Mid-Range Value Tier';
+      else tier = 'Entry Level Hemat';
+    }
   }
 
   return {
+    version,
     total,
     cpu,
     gpu,

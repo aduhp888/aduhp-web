@@ -29,7 +29,8 @@ import {
   Lock,
   Trophy,
   Radio,
-  Play
+  Play,
+  AlertTriangle
 } from 'lucide-react';
 import { PRICE_TIERS, BRAND_OPTIONS } from '../data/entryPhones';
 import { supabase } from '../lib/supabase';
@@ -189,6 +190,24 @@ export default function AduHpDedicatedPage() {
     return maxIdx;
   }, [slotPhones]);
 
+  // Detect if compared phones have differing AnTuTu versions (v10 vs v11)
+  const antutuVersions = useMemo(() => {
+    return slotPhones.map(p => p?.antutu?.version || 'v10');
+  }, [slotPhones]);
+
+  const hasVersionMismatch = useMemo(() => {
+    if (slotPhones.length <= 1) return false;
+    const versions = new Set(antutuVersions);
+    return versions.size > 1;
+  }, [antutuVersions, slotPhones]);
+
+  const dominantVersion = useMemo(() => {
+    const hasV11 = antutuVersions.some(v => v === 'v11');
+    const hasV10 = antutuVersions.some(v => v === 'v10');
+    if (hasV11 && hasV10) return 'mixed';
+    return hasV11 ? 'v11' : 'v10';
+  }, [antutuVersions]);
+
   // Calculate AnTuTu value score (points per Rp 1.000)
   function getVfmScore(phone) {
     if (!phone?.price) return 0;
@@ -312,7 +331,7 @@ export default function AduHpDedicatedPage() {
       `📱 Model: ${phone.name}\n` +
       `📦 Kondisi: 100% Baru Segel (BNIB Resmi)\n` +
       `🛡️ Garansi: ${phone.official_distributor}\n` +
-      `⚡ Skor AnTuTu v10: ${phone.antutu?.total ? Number(phone.antutu.total).toLocaleString('id-ID') : '-'} Poin\n` +
+      `⚡ Skor AnTuTu ${phone.antutu?.version ? phone.antutu.version.toUpperCase() : 'v10'}: ${phone.antutu?.total ? Number(phone.antutu.total).toLocaleString('id-ID') : '-'} Poin\n` +
       `💰 Harga Promo: ${formatIDR(phone.price)}\n\n` +
       `Mohon info kesiapan unit & pengiriman dengan packing kayu asuransi.`
     );
@@ -658,9 +677,9 @@ export default function AduHpDedicatedPage() {
                       {/* AnTuTu Spotlight Card */}
                       <div className="antutu-spotlight-card" style={{ animation: 'revealFadeIn 0.5s ease' }}>
                         <div className="antutu-spotlight-header">
-                          <div className="antutu-badge-mini">
-                            <Flame size={11} />
-                            <span>ANTUTU v10</span>
+                          <div className={`antutu-badge-mini ${phone.antutu?.version === 'v11' ? 'v11' : ''}`}>
+                            <Flame size={11} color={phone.antutu?.version === 'v11' ? '#C084FC' : '#FF9100'} />
+                            <span>ANTUTU {phone.antutu?.version ? phone.antutu.version.toUpperCase() : 'V10'}</span>
                           </div>
                           <span className="antutu-tier-label">{phone.antutu?.tier || '-'}</span>
                         </div>
@@ -865,7 +884,7 @@ export default function AduHpDedicatedPage() {
                       <span className="winner-champion-name">{slotPhones[highestAnTuTuSlotIdx]?.name}</span>
                     </h3>
                     <p>
-                      Mencetak skor tertinggi <strong>{Number(slotPhones[highestAnTuTuSlotIdx]?.antutu?.total || 0).toLocaleString('id-ID')} Poin</strong> AnTuTu v10 dengan chipset <strong>{slotPhones[highestAnTuTuSlotIdx]?.specs?.chipset || '-'}</strong>!
+                      Mencetak skor tertinggi <strong>{Number(slotPhones[highestAnTuTuSlotIdx]?.antutu?.total || 0).toLocaleString('id-ID')} Poin</strong> AnTuTu {slotPhones[highestAnTuTuSlotIdx]?.antutu?.version ? slotPhones[highestAnTuTuSlotIdx]?.antutu?.version.toUpperCase() : 'v10'} dengan chipset <strong>{slotPhones[highestAnTuTuSlotIdx]?.specs?.chipset || '-'}</strong>!
                     </p>
                   </div>
                 </div>
@@ -905,7 +924,7 @@ export default function AduHpDedicatedPage() {
             flexWrap: 'wrap'
           }}>
             {[
-              { id: 'antutu', label: '📊 Perbandingan Skor AnTuTu v10', icon: Gauge },
+              { id: 'antutu', label: `📊 Perbandingan Skor AnTuTu ${hasVersionMismatch ? '(v10 & v11)' : (dominantVersion === 'v11' ? 'v11' : 'v10')}`, icon: Gauge },
               { id: 'gaming', label: '🎮 Uji Performa Game & FPS', icon: Activity },
               { id: 'specs', label: '📑 Matriks Spesifikasi Lengkap', icon: Layers },
               { id: 'verdict', label: '💡 Rekomendasi & Kesimpulan AI', icon: Sparkles },
@@ -946,7 +965,7 @@ export default function AduHpDedicatedPage() {
                 <div>
                   <h3 className="section-headline-title">
                     <Flame size={24} color="#FF9100" />
-                    <span>Visualisasi Skor AnTuTu Benchmark v10</span>
+                    <span>Visualisasi Skor AnTuTu Benchmark {hasVersionMismatch ? '(v10 & v11)' : (dominantVersion === 'v11' ? 'v11' : 'v10')}</span>
                   </h3>
                   <p className="section-headline-desc">
                     Perbandingan visual matematis untuk mengukur kekuatan prosesor, kartu grafis, kecepatan memori, dan kelancaran sistem operasi.
@@ -954,17 +973,31 @@ export default function AduHpDedicatedPage() {
                 </div>
 
                 <div style={{
-                  background: 'rgba(255, 145, 0, 0.1)',
-                  border: '1px solid rgba(255, 145, 0, 0.3)',
+                  background: hasVersionMismatch ? 'rgba(234, 179, 8, 0.15)' : 'rgba(255, 145, 0, 0.1)',
+                  border: hasVersionMismatch ? '1px solid rgba(234, 179, 8, 0.4)' : '1px solid rgba(255, 145, 0, 0.3)',
                   padding: '8px 16px',
                   borderRadius: '10px',
                   fontSize: '12px',
-                  color: '#FFB74D',
+                  color: hasVersionMismatch ? '#FACC15' : '#FFB74D',
                   fontWeight: 700
                 }}>
-                  Standar Uji: AnTuTu v10 Official Lab
+                  {hasVersionMismatch ? '⚡ Status: Multi-Version Test Lab' : `Standar Uji: AnTuTu ${dominantVersion.toUpperCase()} Official Lab`}
                 </div>
               </div>
+
+              {/* Version Mismatch Warning Disclaimer */}
+              {hasVersionMismatch && (
+                <div className="antutu-version-warning-banner">
+                  <AlertTriangle size={20} color="#facc15" style={{ flexShrink: 0, marginTop: '2px' }} />
+                  <div>
+                    <strong>⚠️ Catatan Senior Developer: Versi Benchmark Berbeda</strong>
+                    <span>
+                      Smartphone yang Anda komparasikan diuji dengan versi AnTuTu yang berbeda ({slotPhones.map(p => `${p.name} [${p.antutu?.version?.toUpperCase() || 'V10'}]`).join(' vs ')}). 
+                      Skor total AnTuTu v11 tidak dapat dikomparasikan secara linier 1-banding-1 dengan v10 karena arsitektur pengujian grafis 3D & bobot AI v11 menghasilkan rentang angka yang berbeda. Gunakan komparasi ini sebagai gambaran umum, bukan perbandingan identik.
+                    </span>
+                  </div>
+                </div>
+              )}
 
               <div className="antutu-bars-container">
                 {/* 1. TOTAL SCORE */}
@@ -972,7 +1005,7 @@ export default function AduHpDedicatedPage() {
                   <div className="metric-group-header">
                     <div className="metric-group-title">
                       <Zap size={16} color="var(--accent-lime)" />
-                      <span>Total Skor AnTuTu v10 (Semakin tinggi semakin kencang)</span>
+                      <span>Total Skor AnTuTu {hasVersionMismatch ? '(v10 & v11)' : (dominantVersion === 'v11' ? 'v11' : 'v10')}</span>
                     </div>
                     <span className="metric-group-desc">Kombinasi CPU + GPU + MEM + UX</span>
                   </div>
@@ -1297,10 +1330,17 @@ export default function AduHpDedicatedPage() {
                       ))}
                     </tr>
                     <tr>
-                      <td className="spec-key-label">Skor AnTuTu v10</td>
+                      <td className="spec-key-label">Skor AnTuTu</td>
                       {slotPhones.map(phone => (
-                        <td key={phone.id} className="spec-val-cell" style={{ fontWeight: 800, color: '#FF9100' }}>
-                          {phone.antutu?.total ? `${Number(phone.antutu.total).toLocaleString('id-ID')} Poin` : '-'}
+                        <td key={phone.id} className="spec-val-cell" style={{ fontWeight: 800, color: phone.antutu?.version === 'v11' ? '#C084FC' : '#FF9100' }}>
+                          {phone.antutu?.total ? (
+                            <span>
+                              {Number(phone.antutu.total).toLocaleString('id-ID')} Poin
+                              <span style={{ fontSize: '10px', marginLeft: '5px', opacity: 0.85, fontWeight: 700 }}>
+                                ({phone.antutu?.version ? phone.antutu.version.toUpperCase() : 'V10'})
+                              </span>
+                            </span>
+                          ) : '-'}
                         </td>
                       ))}
                     </tr>

@@ -875,8 +875,10 @@ export default function LandingPage() {
                         justifyContent: 'space-between'
                       }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <Flame size={14} color="#FF9100" />
-                          <span style={{ fontSize: '11px', fontWeight: 800, color: '#FF9100' }}>AnTuTu v10</span>
+                          <Flame size={14} color={phone.antutu?.version === 'v11' ? '#C084FC' : '#FF9100'} />
+                          <span style={{ fontSize: '11px', fontWeight: 800, color: phone.antutu?.version === 'v11' ? '#C084FC' : '#FF9100' }}>
+                            AnTuTu {phone.antutu?.version ? phone.antutu.version.toUpperCase() : 'v10'}
+                          </span>
                         </div>
                         <div style={{ fontSize: '13.5px', fontWeight: 900, fontFamily: 'var(--font-mono)', color: '#fff' }}>
                           {Number(phone.antutu.total).toLocaleString('id-ID')} Poin

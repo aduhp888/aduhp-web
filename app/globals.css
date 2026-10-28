@@ -1291,6 +1291,35 @@ body::before {
   letter-spacing: 0.5px;
 }
 
+.antutu-badge-mini.v11 {
+  background: linear-gradient(135deg, #7c3aed, #9333ea);
+  color: #fff;
+  box-shadow: 0 0 10px rgba(147, 51, 234, 0.4);
+}
+
+.antutu-version-warning-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: rgba(234, 179, 8, 0.08);
+  border: 1px solid rgba(234, 179, 8, 0.35);
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-bottom: 22px;
+  color: #fef08a;
+  font-size: 13px;
+  line-height: 1.5;
+  animation: revealFadeIn 0.4s ease;
+}
+
+.antutu-version-warning-banner strong {
+  display: block;
+  color: #facc15;
+  font-weight: 800;
+  margin-bottom: 3px;
+  font-size: 13.5px;
+}
+
 .antutu-tier-label {
   font-size: 11px;
   color: #bbb;
