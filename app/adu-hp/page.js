@@ -32,7 +32,7 @@ import {
   Play,
   AlertTriangle
 } from 'lucide-react';
-import { PRICE_TIERS, BRAND_OPTIONS } from '../data/entryPhones';
+import { PRICE_TIERS, BRAND_OPTIONS, matchPriceTier } from '../data/entryPhones';
 import { supabase } from '../lib/supabase';
 import { normalizeAntutu } from '../lib/utils';
 import NavbarCartAndAuth from '../components/NavbarCartAndAuth';
@@ -49,28 +49,46 @@ function formatIDR(amount) {
 // Preset Head-to-Head Derby Aduan per Kategori Harga (Dinamis dari Supabase)
 const PRESET_DERBIES = [
   {
-    id: 'derby-flagship',
-    label: '👑 Raja Flagship (AnTuTu 2 Juta+)',
-    tier: 'flagship',
-    desc: 'Duel HP Kelas Ultra Flagship Tertinggi'
+    id: 'derby-15-jt-plus',
+    label: '👑 Ultra Flagship (15 Juta+)',
+    tier: '15-jt-plus',
+    desc: 'Duel HP Kelas Tertinggi & Layar Lipat'
   },
   {
-    id: 'derby-flagship-killer',
-    label: '🚀 Flagship Killer (Rp 4 - 8 Juta)',
-    tier: '4-8-jt',
+    id: 'derby-10-15-jt',
+    label: '💎 Premium Flagship (10 - 15 Juta)',
+    tier: '10-15-jt',
+    desc: 'Duel HP Premium Spek Tertinggi'
+  },
+  {
+    id: 'derby-8-10-jt',
+    label: '✨ Sub-Flagship (8 - 10 Juta)',
+    tier: '8-10-jt',
+    desc: 'Duel HP Flagship Ringkas & Mewah'
+  },
+  {
+    id: 'derby-6-8-jt',
+    label: '🚀 Flagship Killer (6 - 8 Juta)',
+    tier: '6-8-jt',
     desc: 'Duel HP Flagship Killer Performa Tinggi'
   },
   {
-    id: 'derby-2jt',
-    label: '⚡ Mid-Range Best Value (Rp 2 - 4 Juta)',
-    tier: '2-4-jt',
-    desc: 'Duel HP Mid-Range Value & Gaming'
+    id: 'derby-4-6-jt',
+    label: '🎯 Upper Mid-Range (4 - 6 Juta)',
+    tier: '4-6-jt',
+    desc: 'Duel HP Mid-Range Kelas Atas Terbaik'
   },
   {
-    id: 'derby-1jt',
-    label: '💰 Entry Level Hemat (Rp 1 - 2 Juta)',
+    id: 'derby-2-4-jt',
+    label: '⚡ Mid-Range Sweet Spot (2 - 4 Juta)',
+    tier: '2-4-jt',
+    desc: 'Duel HP Paling Laris & Gaming Hemat'
+  },
+  {
+    id: 'derby-1-2-jt',
+    label: '💰 Entry Level Hemat (1 - 2 Juta)',
     tier: '1-2-jt',
-    desc: 'Duel HP Entry Level Paling Terjangkau'
+    desc: 'Duel HP Murah Terjangkau Terbaik'
   },
   {
     id: 'derby-cross-tier',
@@ -221,7 +239,7 @@ export default function AduHpDedicatedPage() {
       const chipsetMatch = (phone.specs?.chipset || '').toLowerCase().includes(searchQuery.toLowerCase());
       const matchSearch = nameMatch || chipsetMatch;
       const matchBrand = selectedBrand === 'Semua Brand' || (phone.brand || '').toLowerCase() === selectedBrand.toLowerCase();
-      const matchTier = selectedPriceTier === 'all' || phone.price_tier === selectedPriceTier;
+      const matchTier = selectedPriceTier === 'all' || matchPriceTier(phone, selectedPriceTier);
       const matchSale = selectedSaleStatus === 'all' ||
                         (selectedSaleStatus === 'dijual' && phone.is_for_sale !== false) ||
                         (selectedSaleStatus === 'compare_only' && phone.is_for_sale === false);
@@ -285,7 +303,7 @@ export default function AduHpDedicatedPage() {
     if (derby.tier === 'all') {
       setSelectedPhoneIds(allPhones.slice(0, 3).map(p => p.id));
     } else {
-      const matching = allPhones.filter(p => p.price_tier === derby.tier);
+      const matching = allPhones.filter(p => matchPriceTier(p, derby.tier));
       if (matching.length > 0) {
         setSelectedPhoneIds(matching.slice(0, 3).map(p => p.id));
       } else {
@@ -307,13 +325,13 @@ export default function AduHpDedicatedPage() {
       setSelectedPhoneIds(allPhones.slice(0, 3).map(p => p.id));
       setActiveDerby('derby-cross-tier');
     } else {
-      const matching = allPhones.filter(p => p.price_tier === tierId);
+      const matching = allPhones.filter(p => matchPriceTier(p, tierId));
       if (matching.length > 0) {
         setSelectedPhoneIds(matching.slice(0, 3).map(p => p.id));
       } else {
         setSelectedPhoneIds(allPhones.slice(0, 3).map(p => p.id));
       }
-      setActiveDerby(tierId === '1-2-jt' ? 'derby-1jt' : tierId === '2-4-jt' ? 'derby-2jt' : tierId === '4-8-jt' ? 'derby-flagship-killer' : 'derby-flagship');
+      setActiveDerby(`derby-${tierId}`);
     }
     setBattleState('idle');
   }
@@ -477,10 +495,10 @@ export default function AduHpDedicatedPage() {
             </h1>
 
             <p className="adu-subtitle">
-              Pilih tier harga: <strong>Rp 1 - 2 Jutaan</strong>, <strong>Rp 2 - 4 Jutaan</strong>, <strong>Rp 4 - 8 Jutaan</strong>, hingga <strong>Ultra Flagship (8 Juta+)</strong>. Telusuri skor AnTuTu v10 asli, performa gaming FPS, efisiensi chipset, hingga rasio nilai per rupiah!
+              Pilih kelas harga: <strong>1 - 2 Juta</strong>, <strong>2 - 4 Juta</strong>, <strong>4 - 6 Juta</strong>, <strong>6 - 8 Juta</strong>, <strong>8 - 10 Juta</strong>, <strong>10 - 15 Juta</strong>, hingga <strong>15 Juta ke Atas</strong>. Telusuri skor AnTuTu v10 & v11 asli, performa gaming FPS, efisiensi chipset, hingga rasio nilai per rupiah!
             </p>
 
-            {/* Pilihan Kategori Harga HP: 1-2 Juta, 2-4 Juta, 4-8 Juta, Flagship */}
+            {/* Pilihan Kategori Harga HP (7 Kategori) */}
             <div className="price-tier-selector-container">
               <div className="price-tier-header-label">
                 <SlidersHorizontal size={14} color="var(--accent-lime)" />

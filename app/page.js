@@ -28,7 +28,7 @@ import {
   Mail
 } from 'lucide-react';
 
-import { PRICE_TIERS } from './data/entryPhones';
+import { PRICE_TIERS, matchPriceTier } from './data/entryPhones';
 import { supabase } from './lib/supabase';
 import { normalizeAntutu } from './lib/utils';
 import NavbarCartAndAuth from './components/NavbarCartAndAuth';
@@ -97,7 +97,7 @@ export default function LandingPage() {
     if (tierId === 'all') {
       setComparedIds(products.slice(0, 3).map(p => p.id));
     } else {
-      const tierPhones = products.filter(p => p.price_tier === tierId);
+      const tierPhones = products.filter(p => matchPriceTier(p, tierId));
       if (tierPhones.length > 0) {
         setComparedIds(tierPhones.slice(0, 3).map(p => p.id));
       } else {
@@ -318,7 +318,7 @@ export default function LandingPage() {
                             (p.specs?.chipset && p.specs.chipset.toLowerCase().includes(searchQuery.toLowerCase()));
       const matchesBrand = filterBrand === 'all' || p.brand.toLowerCase() === filterBrand.toLowerCase();
       const matchesBudget = !filterBudgetMax || p.price <= filterBudgetMax;
-      const matchesTier = filterCatalogTier === 'all' || p.price_tier === filterCatalogTier;
+      const matchesTier = filterCatalogTier === 'all' || matchPriceTier(p, filterCatalogTier);
       return matchesSearch && matchesBrand && matchesBudget && matchesTier;
     });
   }, [products, searchQuery, filterBrand, filterBudgetMax, filterCatalogTier]);

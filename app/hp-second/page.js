@@ -28,8 +28,7 @@ import {
   BatteryCharging,
   Info
 } from 'lucide-react';
-import { CERTIFIED_SECOND_PHONES } from '../data/secondPhones';
-import { PRICE_TIERS } from '../data/entryPhones';
+import { PRICE_TIERS, matchPriceTier } from '../data/entryPhones';
 import { supabase } from '../lib/supabase';
 import { getProductVariants, getProductColors, normalizeAntutu } from '../lib/utils';
 import NavbarCartAndAuth from '../components/NavbarCartAndAuth';
@@ -149,8 +148,8 @@ export default function HpSecondPage() {
       // Grade filter
       const matchesGrade = selectedGrade === 'all' || (p.grade && p.grade.includes(selectedGrade));
 
-      // Tier filter
-      const matchesTier = selectedTier === 'all' || p.price_tier === selectedTier;
+      // Tier filter (dual-safety: ID match or numeric price range)
+      const matchesTier = selectedTier === 'all' || matchPriceTier(p, selectedTier);
 
       // Search filter
       const q = searchQuery.toLowerCase();
@@ -407,6 +406,34 @@ export default function HpSecondPage() {
                     {g.label}
                   </button>
                 ))}
+              </div>
+            </div>
+
+            {/* Price Tier Filter Pills Row (7 Kategori) */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', borderTop: '1px solid rgba(255, 255, 255, 0.06)', paddingTop: '10px', marginTop: '10px' }}>
+              <span style={{ fontSize: '12px', color: '#777' }}>Harga:</span>
+              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                {PRICE_TIERS.map(tier => {
+                  const isSelected = selectedTier === tier.id;
+                  return (
+                    <button
+                      key={tier.id}
+                      onClick={() => setSelectedTier(tier.id)}
+                      style={{
+                        padding: '5px 12px',
+                        borderRadius: '8px',
+                        background: isSelected ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.04)',
+                        border: isSelected ? `1px solid ${tier.color || '#fff'}` : '1px solid rgba(255, 255, 255, 0.08)',
+                        color: isSelected ? tier.color || '#fff' : '#888',
+                        fontSize: '12px',
+                        fontWeight: isSelected ? 800 : 500,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {tier.shortLabel}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>

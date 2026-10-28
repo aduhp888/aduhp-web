@@ -28,7 +28,7 @@ import {
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
-import { PRICE_TIERS } from '../data/entryPhones';
+import { PRICE_TIERS, matchPriceTier } from '../data/entryPhones';
 import { supabase } from '../lib/supabase';
 import { getProductVariants, getProductColors, normalizeAntutu } from '../lib/utils';
 import NavbarCartAndAuth from '../components/NavbarCartAndAuth';
@@ -167,8 +167,8 @@ export default function HpBaruPage() {
         }
       }
 
-      // Tier filter
-      const matchesTier = selectedTier === 'all' || p.price_tier === selectedTier;
+      // Tier filter (dual-safety: ID match or numeric price range)
+      const matchesTier = selectedTier === 'all' || matchPriceTier(p, selectedTier);
 
       // Sale status filter
       const matchesSale = saleFilter === 'all' ||
