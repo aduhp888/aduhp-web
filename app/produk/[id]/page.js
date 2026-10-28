@@ -1639,11 +1639,11 @@ export default function ProductDetailPage() {
       {product && (
         <StockChatWidget
           product={product}
-          selectedRam={selectedRam}
-          selectedStorage={selectedStorage}
-          selectedColor={selectedColor}
+          selectedRam={selectedVariant?.ram || product?.ram_gb || 8}
+          selectedStorage={selectedVariant?.storage || product?.storage_gb || 256}
+          selectedColor={selectedColor || product?.color || 'Standard'}
           currentStock={currentVariantStock}
-          displayPrice={displayPrice}
+          displayPrice={currentPrice}
           themeColor={themeColor}
           isOpen={isChatOpen}
           onClose={() => setIsChatOpen(false)}
