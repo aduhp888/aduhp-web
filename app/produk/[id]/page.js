@@ -35,8 +35,10 @@ import {
   Minus,
   ArrowRight,
   Lock,
-  Swords
+  Swords,
+  MessageCircle
 } from 'lucide-react';
+import StockChatWidget from '../../components/StockChatWidget';
 import { supabase } from '../../lib/supabase';
 import { 
   formatIDR, 
@@ -72,6 +74,7 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1);
   const [toastMessage, setToastMessage] = useState(null);
   const [activeTab, setActiveTab] = useState('specs'); // 'specs' | 'qc' | 'garansi'
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   // Fetch product from Supabase or fallback
   useEffect(() => {
@@ -928,11 +931,45 @@ export default function ProductDetailPage() {
                 </button>
               </div>
 
-              <span style={{ fontSize: '12px', color: currentVariantStock > 0 ? '#888' : '#FF6B6B', fontWeight: 600 }}>
-                {currentVariantStock > 0 
-                  ? `Stok tersedia: ${currentVariantStock} unit`
-                  : 'Stok varian ini habis'}
-              </span>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '12px', color: currentVariantStock > 0 ? '#888' : '#FF6B6B', fontWeight: 600 }}>
+                  {currentVariantStock > 0 
+                    ? `Stok tersedia: ${currentVariantStock} unit`
+                    : 'Stok varian ini habis'}
+                </span>
+
+                <button
+                  type="button"
+                  onClick={() => setIsChatOpen(true)}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '6px 12px',
+                    background: 'rgba(198, 255, 0, 0.08)',
+                    border: '1px solid rgba(198, 255, 0, 0.35)',
+                    color: '#C6FF00',
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    boxShadow: '0 0 10px rgba(198, 255, 0, 0.1)'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(198, 255, 0, 0.18)';
+                    e.currentTarget.style.borderColor = '#C6FF00';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(198, 255, 0, 0.08)';
+                    e.currentTarget.style.borderColor = 'rgba(198, 255, 0, 0.35)';
+                  }}
+                  title="Tanya ketersediaan stok produk ini langsung ke admin dapur.aduhp.com"
+                >
+                  <MessageCircle size={14} />
+                  <span>Tanya Stok ke Admin</span>
+                </button>
+              </div>
             </div>
 
             {/* ACTION CTA BUTTONS GRID */}
@@ -1597,6 +1634,22 @@ export default function ProductDetailPage() {
           </button>
         </div>
       </div>
+
+      {/* LIVE CHAT WIDGET MODAL */}
+      {product && (
+        <StockChatWidget
+          product={product}
+          selectedRam={selectedRam}
+          selectedStorage={selectedStorage}
+          selectedColor={selectedColor}
+          currentStock={currentVariantStock}
+          displayPrice={displayPrice}
+          themeColor={themeColor}
+          isOpen={isChatOpen}
+          onClose={() => setIsChatOpen(false)}
+          user={user}
+        />
+      )}
     </div>
   );
 }
