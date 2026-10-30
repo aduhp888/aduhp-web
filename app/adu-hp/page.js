@@ -706,33 +706,6 @@ export default function AduHpDedicatedPage() {
                           {Number(phone.antutu?.total || 0).toLocaleString('id-ID')}
                           <span style={{ fontSize: '13px', color: '#999', fontWeight: 600, marginLeft: '6px' }}>Poin</span>
                         </div>
-
-                        <div className="antutu-subscores-grid">
-                          <div className="subscore-item">
-                            <span className="subscore-label">CPU (Proses)</span>
-                            <span className="subscore-value" style={{ color: '#60a5fa' }}>
-                              {Number(phone.antutu?.cpu || 0).toLocaleString('id-ID')}
-                            </span>
-                          </div>
-                          <div className="subscore-item">
-                            <span className="subscore-label">GPU (Gaming)</span>
-                            <span className="subscore-value" style={{ color: '#f87171' }}>
-                              {Number(phone.antutu?.gpu || 0).toLocaleString('id-ID')}
-                            </span>
-                          </div>
-                          <div className="subscore-item">
-                            <span className="subscore-label">Memory (RAM/ROM)</span>
-                            <span className="subscore-value" style={{ color: '#fbbf24' }}>
-                              {Number(phone.antutu?.memory || 0).toLocaleString('id-ID')}
-                            </span>
-                          </div>
-                          <div className="subscore-item">
-                            <span className="subscore-label">UX (Kelancaran)</span>
-                            <span className="subscore-value" style={{ color: '#34d399' }}>
-                              {Number(phone.antutu?.ux || 0).toLocaleString('id-ID')}
-                            </span>
-                          </div>
-                        </div>
                       </div>
 
                       {/* Value for Money Index */}
@@ -943,7 +916,6 @@ export default function AduHpDedicatedPage() {
           }}>
             {[
               { id: 'antutu', label: `📊 Perbandingan Skor AnTuTu ${hasVersionMismatch ? '(v10 & v11)' : (dominantVersion === 'v11' ? 'v11' : 'v10')}`, icon: Gauge },
-              { id: 'gaming', label: '🎮 Uji Performa Game & FPS', icon: Activity },
               { id: 'specs', label: '📑 Matriks Spesifikasi Lengkap', icon: Layers },
               { id: 'verdict', label: '💡 Rekomendasi & Kesimpulan AI', icon: Sparkles },
             ].map(tab => {
@@ -1056,131 +1028,6 @@ export default function AduHpDedicatedPage() {
                     );
                   })}
                 </div>
-
-                {/* 2. CPU SCORE */}
-                <div className="metric-bar-group">
-                  <div className="metric-group-header">
-                    <div className="metric-group-title">
-                      <Cpu size={16} color="#60a5fa" />
-                      <span>CPU Score — Kecepatan Pemrosesan & Buka Aplikasi</span>
-                    </div>
-                    <span className="metric-group-desc">Arsitektur Core & Fabrikasi (nm)</span>
-                  </div>
-
-                  {slotPhones.map(phone => {
-                    const cpuVal = phone.antutu?.cpu || 0;
-                    const pct = Math.round((cpuVal / maxCPU) * 100);
-                    return (
-                      <div key={phone.id} className="phone-bar-row">
-                        <div className="phone-bar-name" title={phone.name}>
-                          {phone.name}
-                        </div>
-                        <div className="phone-bar-track">
-                          <div 
-                            className="phone-bar-fill" 
-                            style={{ 
-                              width: `${pct}%`,
-                              background: 'linear-gradient(90deg, #1e40af, #60a5fa)'
-                            }}
-                          >
-                            <span className="phone-bar-number">{pct}%</span>
-                          </div>
-                        </div>
-                        <div className="phone-bar-val-outside" style={{ color: '#93c5fd' }}>
-                          {Number(cpuVal).toLocaleString('id-ID')}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* 3. GPU SCORE */}
-                <div className="metric-bar-group">
-                  <div className="metric-group-header">
-                    <div className="metric-group-title">
-                      <Gauge size={16} color="#f87171" />
-                      <span>GPU Score — Pengolahan Grafis 3D & Gaming FPS</span>
-                    </div>
-                    <span className="metric-group-desc">Kekuatan Render Grafis Game Berat</span>
-                  </div>
-
-                  {slotPhones.map(phone => {
-                    const gpuVal = phone.antutu?.gpu || 0;
-                    const pct = Math.round((gpuVal / maxGPU) * 100);
-                    return (
-                      <div key={phone.id} className="phone-bar-row">
-                        <div className="phone-bar-name" title={phone.name}>
-                          {phone.name}
-                        </div>
-                        <div className="phone-bar-track">
-                          <div 
-                            className="phone-bar-fill" 
-                            style={{ 
-                              width: `${pct}%`,
-                              background: 'linear-gradient(90deg, #991b1b, #f87171)'
-                            }}
-                          >
-                            <span className="phone-bar-number">{pct}%</span>
-                          </div>
-                        </div>
-                        <div className="phone-bar-val-outside" style={{ color: '#fca5a5' }}>
-                          {Number(gpuVal).toLocaleString('id-ID')}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* 4. MEMORY & UX GRID */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                  <div className="metric-bar-group">
-                    <div className="metric-group-header">
-                      <div className="metric-group-title">
-                        <Layers size={16} color="#fbbf24" />
-                        <span>Memory (RAM & Storage)</span>
-                      </div>
-                    </div>
-                    {slotPhones.map(phone => {
-                      const memVal = phone.antutu?.memory || 0;
-                      const pct = Math.round((memVal / maxMemory) * 100);
-                      return (
-                        <div key={phone.id} className="phone-bar-row">
-                          <div className="phone-bar-name">{phone.brand} {phone.name.split(' ')[1]}</div>
-                          <div className="phone-bar-track">
-                            <div className="phone-bar-fill" style={{ width: `${pct}%`, background: '#fbbf24' }}></div>
-                          </div>
-                          <div className="phone-bar-val-outside" style={{ color: '#fde68a' }}>
-                            {Number(memVal).toLocaleString('id-ID')}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  <div className="metric-bar-group">
-                    <div className="metric-group-header">
-                      <div className="metric-group-title">
-                        <TrendingUp size={16} color="#34d399" />
-                        <span>UX (Kelancaran Antarmuka)</span>
-                      </div>
-                    </div>
-                    {slotPhones.map(phone => {
-                      const uxVal = phone.antutu?.ux || 0;
-                      const pct = Math.round((uxVal / maxUX) * 100);
-                      return (
-                        <div key={phone.id} className="phone-bar-row">
-                          <div className="phone-bar-name">{phone.brand} {phone.name.split(' ')[1]}</div>
-                          <div className="phone-bar-track">
-                            <div className="phone-bar-fill" style={{ width: `${pct}%`, background: '#34d399' }}></div>
-                          </div>
-                          <div className="phone-bar-val-outside" style={{ color: '#a7f3d0' }}>
-                            {Number(uxVal).toLocaleString('id-ID')}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
               </div>
 
               {/* AnTuTu Performance Delta Banner */}
@@ -1211,75 +1058,6 @@ export default function AduHpDedicatedPage() {
                     <strong>{slotPhones[highestAnTuTuSlotIdx]?.name}</strong> memimpin duel ini dengan total <strong>{Number(slotPhones[highestAnTuTuSlotIdx]?.antutu?.total || 0).toLocaleString('id-ID')} poin</strong> ({slotPhones[highestAnTuTuSlotIdx]?.antutu?.efficiency_rating || 'Optimal'}). 
                     Sementara <strong>{slotPhones[0]?.name}</strong> memberikan rasio nilai ekonomis terbaik sebesar <strong>{getVfmScore(slotPhones[0])} poin per seribu rupiah</strong>.
                   </p>
-                </div>
-              </div>
-            </section>
-          )}
-
-          {/* TAB 2: GAMING FPS TESTS */}
-          {activeTab === 'gaming' && (
-            <section className="specs-table-section">
-              <div className="section-headline">
-                <div>
-                  <h3 className="section-headline-title">
-                    <Activity size={24} color="#00E5FF" />
-                    <span>Uji Real Game Populer & Perkiraan FPS</span>
-                  </h3>
-                  <p className="section-headline-desc">
-                    Estimasi kelancaran bermain game di ruangan suhu normal 25°C - 30°C tanpa cooler tambahan.
-                  </p>
-                </div>
-              </div>
-
-              <div className="gaming-matrix-grid">
-                {/* 1. Mobile Legends */}
-                <div className="game-test-card">
-                  <div className="game-test-icon">⚔️</div>
-                  <div className="game-test-title">Mobile Legends: Bang Bang</div>
-                  {slotPhones.map(phone => (
-                    <div key={phone.id} className="game-fps-phone-item">
-                      <span className="game-fps-name">{phone.name}</span>
-                      <span className="game-fps-val">{phone.gaming_fps.mlbb}</span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* 2. Free Fire */}
-                <div className="game-test-card">
-                  <div className="game-test-icon">🔫</div>
-                  <div className="game-test-title">Free Fire MAX</div>
-                  {slotPhones.map(phone => (
-                    <div key={phone.id} className="game-fps-phone-item">
-                      <span className="game-fps-name">{phone.name}</span>
-                      <span className="game-fps-val">{phone.gaming_fps.freefire}</span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* 3. PUBG Mobile */}
-                <div className="game-test-card">
-                  <div className="game-test-icon">🎯</div>
-                  <div className="game-test-title">PUBG Mobile</div>
-                  {slotPhones.map(phone => (
-                    <div key={phone.id} className="game-fps-phone-item">
-                      <span className="game-fps-name">{phone.name}</span>
-                      <span className="game-fps-val">{phone.gaming_fps.pubg}</span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* 4. Genshin Impact */}
-                <div className="game-test-card">
-                  <div className="game-test-icon">🐉</div>
-                  <div className="game-test-title">Genshin Impact (Heavy 3D)</div>
-                  {slotPhones.map(phone => (
-                    <div key={phone.id} className="game-fps-phone-item">
-                      <span className="game-fps-name">{phone.name}</span>
-                      <span className="game-fps-val" style={{ color: '#FFB74D' }}>
-                        {phone.gaming_fps.genshin}
-                      </span>
-                    </div>
-                  ))}
                 </div>
               </div>
             </section>

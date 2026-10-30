@@ -1098,10 +1098,8 @@ export default function ProductDetailPage() {
                     padding: '10px 16px',
                     fontSize: '14px',
                     fontWeight: 700,
-                    cursor: 'pointer'
-                  }}
-                >
-                  🔥 AnTuTu & Gaming FPS
+                      >
+                  🔥 Skor AnTuTu
                 </button>
                 <button
                   onClick={() => setActiveTab('full_specs')}
@@ -1167,37 +1165,35 @@ export default function ProductDetailPage() {
 
               {/* Tab 2: Benchmark */}
               {activeTab === 'benchmark' && (
-                <div style={{ background: '#14141a', padding: '18px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <Flame size={20} color={product.antutu?.version === 'v11' ? '#C084FC' : '#FF9100'} />
-                      <span style={{ fontSize: '15px', fontWeight: 800, color: '#fff' }}>
-                        Skor AnTuTu Benchmark {product.antutu?.version ? product.antutu.version.toUpperCase() : 'v10'}:
-                      </span>
-                    </div>
-                    <span style={{ fontSize: '20px', fontWeight: 900, color: 'var(--accent-lime)', fontFamily: 'var(--font-mono)' }}>
-                      {product.antutu?.total ? Number(product.antutu.total).toLocaleString('id-ID') : '1.450.000'} Poin
-                    </span>
-                  </div>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', fontSize: '12px', marginBottom: '16px' }}>
-                    <div style={{ background: 'rgba(255,255,255,0.03)', padding: '10px', borderRadius: '8px' }}>
-                      <div style={{ color: '#888' }}>MLBB (Mobile Legends):</div>
-                      <div style={{ fontWeight: 800, color: '#fff', marginTop: '2px' }}>
-                        {product.gaming_fps?.mlbb || '120 FPS Ultra'}
+                <div style={{ background: '#14141a', padding: '20px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div style={{
+                        background: product.antutu?.version === 'v11' ? 'rgba(168, 85, 247, 0.15)' : 'rgba(255, 145, 0, 0.15)',
+                        padding: '10px',
+                        borderRadius: '10px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}>
+                        <Flame size={24} color={product.antutu?.version === 'v11' ? '#C084FC' : '#FF9100'} />
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '12px', color: '#888', fontWeight: 600 }}>Total Skor Benchmark</div>
+                        <span style={{ fontSize: '16px', fontWeight: 800, color: '#fff' }}>
+                          AnTuTu {product.antutu?.version ? product.antutu.version.toUpperCase() : 'v10'}
+                        </span>
                       </div>
                     </div>
-                    <div style={{ background: 'rgba(255,255,255,0.03)', padding: '10px', borderRadius: '8px' }}>
-                      <div style={{ color: '#888' }}>PUBG Mobile:</div>
-                      <div style={{ fontWeight: 800, color: '#fff', marginTop: '2px' }}>
-                        {product.gaming_fps?.pubg || '90 FPS Extreme'}
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: '24px', fontWeight: 900, color: 'var(--accent-lime)', fontFamily: 'var(--font-mono)' }}>
+                        {product.antutu?.total ? Number(product.antutu.total).toLocaleString('id-ID') : '1.450.000'} Poin
                       </div>
-                    </div>
-                    <div style={{ background: 'rgba(255,255,255,0.03)', padding: '10px', borderRadius: '8px' }}>
-                      <div style={{ color: '#888' }}>Genshin Impact:</div>
-                      <div style={{ fontWeight: 800, color: '#fff', marginTop: '2px' }}>
-                        {product.gaming_fps?.genshin || '55-60 FPS Highest'}
-                      </div>
+                      {product.antutu?.tier && (
+                        <div style={{ fontSize: '12.5px', color: '#ccc', fontWeight: 600 }}>
+                          Kategori: <span style={{ color: '#fff', fontWeight: 700 }}>{product.antutu.tier}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
