@@ -1098,7 +1098,9 @@ export default function ProductDetailPage() {
                     padding: '10px 16px',
                     fontSize: '14px',
                     fontWeight: 700,
-                      >
+                    cursor: 'pointer'
+                  }}
+                >
                   🔥 Skor AnTuTu
                 </button>
                 <button
